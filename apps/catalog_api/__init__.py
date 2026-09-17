@@ -1,0 +1,1 @@
+"""Aplicación Catalog API Facade."""

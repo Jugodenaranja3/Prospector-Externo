@@ -1,0 +1,54 @@
+# Configuración Centralizada de Fuentes — Prospector Externo DATAX
+# Integra parámetros operativos de FINRURAL y BBV con selección de workflows y semillas focalizadas.
+
+sources:
+  - source_id: finrural
+    name: "FINRURAL — Asociación de Instituciones Financieras de Desarrollo"
+    entrypoint: https://www.finrural.org.bo
+    workflow: html
+    seeds:
+      - https://www.finrural.org.bo/reporte-financiero-mensual-instituciones-financieras-de-desarrollo/
+      - https://www.finrural.org.bo/archivo-historico/
+    update_category: MONTHLY
+    allowed_extensions:
+      - .pdf
+      - .xlsx
+      - .xls
+      - .csv
+      - .zip
+    excluded_path_keywords:
+      - "/historia/"
+      - "/mision-y-vision/"
+      - "/estructura-organizacional/"
+      - "/glosario-de-microfinanzas/"
+      - "/manifiesto-de-las-microfinanzas/"
+      - "/que-son-las-ifd/"
+      - "/enlaces-de-interes/"
+      - "/impro-ifd/"
+    rate_limit_seconds: 1.0
+
+  - source_id: bbv
+    name: "Bolsa Boliviana de Valores (BBV)"
+    entrypoint: https://www.bbv.com.bo
+    workflow: commented_html
+    seeds:
+      - https://www.bbv.com.bo/estadisticas/
+      - https://www.bbv.com.bo/acerca-de-la-bolsa/memorias-anuales/
+      - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera/
+      - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera-2024/
+      - https://www.bbv.com.bo/hechos-relevantes-y-noticias/
+    update_category: DAILY
+    allowed_extensions:
+      - .pdf
+      - .xlsx
+      - .xls
+      - .csv
+      - .zip
+    excluded_path_keywords:
+      - "/historia/"
+      - "/mision-y-vision/"
+      - "/valores-y-estrategias/"
+      - "/trabaja-con-nosotros/"
+      - "/contacto/"
+      - "/aula-bursatil/"
+    rate_limit_seconds: 1.0

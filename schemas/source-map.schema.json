@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExternalSourceMap",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source",
+    "crawl_run",
+    "datasets"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "example": "1.0.0"
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "name", "base_url"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "base_url": { "type": "string" },
+        "allowed_domains": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "crawl_run": {
+      "type": "object",
+      "required": ["id", "started_at", "finished_at", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "started_at": { "type": "string" },
+        "finished_at": { "type": "string" },
+        "status": { "type": "string", "enum": ["success", "partial", "failed"] }
+      }
+    },
+    "datasets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dataset" }
+    },
+    "change_events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/changeEvent" }
+    }
+  },
+  "$defs": {
+    "dataset": {
+      "type": "object",
+      "required": ["id", "name", "source_url", "resources"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "source_url": { "type": "string" },
+        "periodicity": { "type": "string", "enum": ["monthly", "quarterly", "annual", "irregular", "unknown"] },
+        "resources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resource" }
+        }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "required": [
+        "id",
+        "url_origin",
+        "download_url",
+        "canonical_url",
+        "file_type",
+        "retrieved_at",
+        "metadata"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "url_origin": { "type": "string" },
+        "download_url": { "type": "string" },
+        "canonical_url": { "type": "string" },
+        "file_type": { "type": "string" },
+        "mime_type": { "type": ["string", "null"] },
+        "period_start": { "type": ["string", "null"] },
+        "period_end": { "type": ["string", "null"] },
+        "published_at": { "type": ["string", "null"] },
+        "retrieved_at": { "type": "string" },
+        "metadata": { "$ref": "#/$defs/metadata" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "content_length_bytes": { "type": ["integer", "null"] },
+        "sha256": { "type": ["string", "null"] },
+        "etag": { "type": ["string", "null"] },
+        "last_modified": { "type": ["string", "null"] },
+        "date_extraction_method": { "type": "string" },
+        "date_confidence": { "type": "string", "enum": ["high", "medium", "low", "unknown"] },
+        "geographic_coverage": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "entities": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "content_signature": { "type": ["string", "null"] },
+        "extracted_from_archive": { "type": ["string", "null"] }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "anchor_text": { "type": ["string", "null"] },
+        "context_text": { "type": ["string", "null"] },
+        "discovered_from": { "type": ["string", "null"] },
+        "extraction_methods": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "changeEvent": {
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "type": "string",
+          "enum": ["new_resource", "resource_missing", "url_changed", "content_changed", "duplicate_detected"]
+        },
+        "resource_id": { "type": "string" },
+        "previous_url": { "type": ["string", "null"] },
+        "current_url": { "type": ["string", "null"] },
+        "detected_at": { "type": "string" }
+      }
+    }
+  }
+}
