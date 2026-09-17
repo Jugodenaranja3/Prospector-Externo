@@ -5,9 +5,12 @@ Responsabilidades actuales:
 
 - usar httpx.AsyncClient;
 - aplicar cortesía compartida por host mediante HostPolitenessController;
-- centralizar todas las solicitudes HTTP en una única primitiva _request();
+- centralizar las solicitudes HTTP en una única primitiva _request();
 - clasificar errores HTTP y de transporte;
-- soportar GET textual y HEAD de metadatos;
+- soportar GET textual;
+- soportar HEAD para metadatos;
+- aplicar fallback HEAD -> GET mínimo ante 405/501;
+- evitar consumir el body durante el fallback de metadatos;
 - cerrar explícitamente conexiones y recursos.
 
 Todavía NO implementa:
@@ -15,12 +18,11 @@ Todavía NO implementa:
 - robots.txt real;
 - Retry-After;
 - retries/backoff;
-- fallback HEAD -> GET mínimo;
 - ETag / Last-Modified condicional;
-- Range requests;
-- presupuestos globales de recorrido.
+- budgets globales;
+- Range genérico para inspección de archivos.
 
-Esas capacidades se incorporarán incrementalmente sobre _request().
+Estas capacidades se incorporarán incrementalmente.
 """
 
 from __future__ import annotations
@@ -45,12 +47,15 @@ class AsyncResilientHttpClient:
     """
     Cliente HTTP asíncrono del Prospector Externo.
 
-    Las instancias pueden compartir un mismo HostPolitenessController,
-    permitiendo que múltiples workflows respeten una política común
-    de concurrencia y frecuencia por host.
+    Todas las operaciones HTTP pasan por `_request()` para compartir:
 
-    Todas las operaciones HTTP deben atravesar `_request()` para evitar
-    políticas divergentes entre GET, HEAD y futuras variantes como Range.
+    - validación;
+    - cortesía por host;
+    - transporte HTTP;
+    - clasificación de errores.
+
+    El HostPolitenessController puede compartirse entre diferentes
+    instancias y workflows durante una misma corrida.
     """
 
     DEFAULT_USER_AGENT = "DATAX-Prospector/1.0"
@@ -87,26 +92,23 @@ class AsyncResilientHttpClient:
         rate_limit_delay: Optional[float] = None,
         check_robots: bool = True,
         headers: Optional[Dict[str, str]] = None,
+        stream: bool = False,
     ) -> HttpRequestResult:
         """
-        Primitiva única para realizar solicitudes HTTP.
+        Primitiva única para solicitudes HTTP.
 
-        Toda operación HTTP pública del cliente debe terminar pasando por
-        este método.
+        Parámetro ``stream``:
 
-        En esta etapa aplica:
+        - False:
+          respuesta convencional administrada por httpx.
 
-        - validación básica de URL;
-        - política fail-safe mientras robots.txt no esté implementado;
-        - cortesía compartida por host;
-        - ejecución mediante httpx.AsyncClient;
-        - clasificación centralizada de errores.
+        - True:
+          devuelve la respuesta sin consumir su body. El caller
+          debe ejecutar ``await response.aclose()``.
 
         Retorna:
 
             (response, status_code, error_code)
-
-        Cuando existe un error controlado, ``response`` será None.
         """
 
         if self._closed:
@@ -114,6 +116,8 @@ class AsyncResilientHttpClient:
                 "AsyncResilientHttpClient ya fue cerrado"
             )
 
+        # Mientras RobotsPolicy no esté implementada, fallamos de forma
+        # segura cuando se solicita explícitamente su comprobación.
         if check_robots:
             return (
                 None,
@@ -141,15 +145,30 @@ class AsyncResilientHttpClient:
                 host,
                 min_interval_seconds=rate_limit_delay,
             ):
-                response = await self._client.request(
-                    normalized_method,
-                    url,
-                    headers=headers,
-                )
+                if stream:
+                    request = self._client.build_request(
+                        normalized_method,
+                        url,
+                        headers=headers,
+                    )
+
+                    response = await self._client.send(
+                        request,
+                        stream=True,
+                    )
+                else:
+                    response = await self._client.request(
+                        normalized_method,
+                        url,
+                        headers=headers,
+                    )
 
             status_code = response.status_code
 
             if response.is_error:
+                if stream:
+                    await response.aclose()
+
                 return (
                     None,
                     status_code,
@@ -177,7 +196,11 @@ class AsyncResilientHttpClient:
         *,
         rate_limit_delay: Optional[float] = None,
         check_robots: bool = True,
-    ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
+    ) -> Tuple[
+        Optional[str],
+        Optional[int],
+        Optional[str],
+    ]:
         """
         Obtiene contenido textual mediante GET.
 
@@ -218,11 +241,18 @@ class AsyncResilientHttpClient:
         Optional[str],
     ]:
         """
-        Obtiene metadatos mediante HEAD.
+        Obtiene metadatos HTTP.
 
-        Todavía no implementa fallback HEAD -> GET ante 405/501.
-        Ese comportamiento se incorporará posteriormente sobre la misma
-        primitiva `_request()`.
+        Flujo:
+
+        1. intenta HEAD;
+        2. si HEAD responde 405 o 501:
+           - ejecuta GET;
+           - solicita Range: bytes=0-0;
+           - usa streaming;
+           - NO consume el body;
+           - cierra inmediatamente la respuesta;
+        3. otros errores HEAD no activan fallback.
 
         Retorna:
 
@@ -236,26 +266,73 @@ class AsyncResilientHttpClient:
             check_robots=check_robots,
         )
 
-        if response is None:
+        # HEAD exitoso.
+        if response is not None:
+            return (
+                self._normalize_headers(response.headers),
+                status_code,
+                None,
+            )
+
+        # Solo 405/501 justifican fallback.
+        if status_code not in {405, 501}:
             return (
                 None,
                 status_code,
                 error,
             )
 
-        normalized_headers = {
-            key.lower(): value
-            for key, value in response.headers.items()
-        }
-
-        return (
-            normalized_headers,
-            status_code,
-            None,
+        fallback_response, fallback_status, fallback_error = (
+            await self._request(
+                "GET",
+                url,
+                rate_limit_delay=rate_limit_delay,
+                check_robots=check_robots,
+                headers={
+                    "Range": "bytes=0-0",
+                },
+                stream=True,
+            )
         )
 
+        if fallback_response is None:
+            return (
+                None,
+                fallback_status,
+                fallback_error,
+            )
+
+        try:
+            normalized_headers = self._normalize_headers(
+                fallback_response.headers
+            )
+
+            return (
+                normalized_headers,
+                fallback_status,
+                None,
+            )
+
+        finally:
+            # Fundamental:
+            # no consumimos el body del recurso.
+            await fallback_response.aclose()
+
+    @staticmethod
+    def _normalize_headers(
+        headers: httpx.Headers,
+    ) -> Dict[str, str]:
+        """
+        Convierte cabeceras HTTP a un diccionario con claves lowercase.
+        """
+
+        return {
+            key.lower(): value
+            for key, value in headers.items()
+        }
+
     async def aclose(self) -> None:
-        """Cierra conexiones y recursos mantenidos por httpx."""
+        """Cierra conexiones mantenidas por httpx."""
 
         if self._closed:
             return
@@ -263,7 +340,9 @@ class AsyncResilientHttpClient:
         await self._client.aclose()
         self._closed = True
 
-    async def __aenter__(self) -> "AsyncResilientHttpClient":
+    async def __aenter__(
+        self,
+    ) -> "AsyncResilientHttpClient":
         return self
 
     async def __aexit__(

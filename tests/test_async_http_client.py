@@ -262,3 +262,190 @@ def test_get_and_head_share_same_request_path_and_governor() -> None:
         assert snapshot.requests_started == 2
 
     asyncio.run(scenario())
+
+
+class GuardedAsyncStream(httpx.AsyncByteStream):
+    """
+    Stream de prueba que permite verificar que el body NO fue consumido.
+    """
+
+    def __init__(self) -> None:
+        self.was_read = False
+        self.was_closed = False
+
+    async def __aiter__(self):
+        self.was_read = True
+        yield b"contenido-binario-que-no-debe-leerse"
+
+    async def aclose(self) -> None:
+        self.was_closed = True
+
+
+def test_fetch_headers_falls_back_to_streaming_get_on_405() -> None:
+    async def scenario() -> None:
+        observed = []
+        stream = GuardedAsyncStream()
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            observed.append(
+                (
+                    request.method,
+                    request.headers.get("Range"),
+                )
+            )
+
+            if request.method == "HEAD":
+                return httpx.Response(
+                    status_code=405,
+                    request=request,
+                )
+
+            return httpx.Response(
+                status_code=200,
+                headers={
+                    "Content-Type": "application/pdf",
+                    "Content-Length": "99999999",
+                    "ETag": '"pdf-v1"',
+                },
+                stream=stream,
+                request=request,
+            )
+
+        transport = httpx.MockTransport(handler)
+
+        governor = HostPolitenessController(
+            default_concurrency_per_host=1,
+            default_min_interval_seconds=0.0,
+        )
+
+        client = AsyncResilientHttpClient(
+            transport=transport,
+            politeness_controller=governor,
+        )
+
+        try:
+            headers, status_code, error = await client.fetch_headers(
+                "https://example.test/report.pdf",
+                check_robots=False,
+            )
+        finally:
+            await client.aclose()
+
+        assert observed == [
+            ("HEAD", None),
+            ("GET", "bytes=0-0"),
+        ]
+
+        assert status_code == 200
+        assert error is None
+
+        assert headers is not None
+        assert headers["content-type"] == "application/pdf"
+        assert headers["etag"] == '"pdf-v1"'
+
+        # El fallback solo debe obtener cabeceras.
+        assert stream.was_read is False
+        assert stream.was_closed is True
+
+        snapshot = governor.snapshot("example.test")
+        assert snapshot.requests_started == 2
+
+    asyncio.run(scenario())
+
+
+def test_fetch_headers_falls_back_to_streaming_get_on_501() -> None:
+    async def scenario() -> None:
+        observed_methods = []
+        stream = GuardedAsyncStream()
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            observed_methods.append(request.method)
+
+            if request.method == "HEAD":
+                return httpx.Response(
+                    status_code=501,
+                    request=request,
+                )
+
+            return httpx.Response(
+                status_code=206,
+                headers={
+                    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                },
+                stream=stream,
+                request=request,
+            )
+
+        transport = httpx.MockTransport(handler)
+
+        governor = HostPolitenessController(
+            default_concurrency_per_host=1,
+            default_min_interval_seconds=0.0,
+        )
+
+        client = AsyncResilientHttpClient(
+            transport=transport,
+            politeness_controller=governor,
+        )
+
+        try:
+            headers, status_code, error = await client.fetch_headers(
+                "https://example.test/data.xlsx",
+                check_robots=False,
+            )
+        finally:
+            await client.aclose()
+
+        assert observed_methods == ["HEAD", "GET"]
+        assert status_code == 206
+        assert error is None
+        assert headers is not None
+
+        assert stream.was_read is False
+        assert stream.was_closed is True
+
+    asyncio.run(scenario())
+
+
+def test_fetch_headers_does_not_fallback_for_404() -> None:
+    async def scenario() -> None:
+        observed_methods = []
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            observed_methods.append(request.method)
+
+            return httpx.Response(
+                status_code=404,
+                request=request,
+            )
+
+        transport = httpx.MockTransport(handler)
+
+        governor = HostPolitenessController(
+            default_concurrency_per_host=1,
+            default_min_interval_seconds=0.0,
+        )
+
+        client = AsyncResilientHttpClient(
+            transport=transport,
+            politeness_controller=governor,
+        )
+
+        try:
+            headers, status_code, error = await client.fetch_headers(
+                "https://example.test/missing.pdf",
+                check_robots=False,
+            )
+        finally:
+            await client.aclose()
+
+        assert observed_methods == ["HEAD"]
+
+        assert headers is None
+        assert status_code == 404
+        assert error == "HTTP_404"
+
+        snapshot = governor.snapshot("example.test")
+        assert snapshot.requests_started == 1
+
+    asyncio.run(scenario())
