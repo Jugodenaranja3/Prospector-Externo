@@ -167,3 +167,98 @@ def test_two_clients_share_same_host_governor() -> None:
         assert snapshot.requests_started == 2
 
     asyncio.run(scenario())
+
+
+def test_fetch_headers_uses_head_and_shared_governor() -> None:
+    async def scenario() -> None:
+        observed_methods = []
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            observed_methods.append(request.method)
+
+            return httpx.Response(
+                status_code=200,
+                headers={
+                    "Content-Type": "application/pdf",
+                    "ETag": '"abc123"',
+                },
+                request=request,
+            )
+
+        transport = httpx.MockTransport(handler)
+
+        governor = HostPolitenessController(
+            default_concurrency_per_host=1,
+            default_min_interval_seconds=0.0,
+        )
+
+        client = AsyncResilientHttpClient(
+            transport=transport,
+            politeness_controller=governor,
+        )
+
+        try:
+            headers, status_code, error = await client.fetch_headers(
+                "https://example.test/report.pdf",
+                check_robots=False,
+            )
+        finally:
+            await client.aclose()
+
+        assert observed_methods == ["HEAD"]
+        assert status_code == 200
+        assert error is None
+        assert headers is not None
+        assert headers["content-type"] == "application/pdf"
+        assert headers["etag"] == '"abc123"'
+
+        snapshot = governor.snapshot("example.test")
+        assert snapshot.requests_started == 1
+
+    asyncio.run(scenario())
+
+def test_get_and_head_share_same_request_path_and_governor() -> None:
+    async def scenario() -> None:
+        observed_methods = []
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            observed_methods.append(request.method)
+
+            return httpx.Response(
+                status_code=200,
+                text="ok",
+                headers={"Content-Type": "text/plain"},
+                request=request,
+            )
+
+        transport = httpx.MockTransport(handler)
+
+        governor = HostPolitenessController(
+            default_concurrency_per_host=1,
+            default_min_interval_seconds=0.0,
+        )
+
+        client = AsyncResilientHttpClient(
+            transport=transport,
+            politeness_controller=governor,
+        )
+
+        try:
+            await client.fetch_html(
+                "https://example.test/page",
+                check_robots=False,
+            )
+
+            await client.fetch_headers(
+                "https://example.test/file.xlsx",
+                check_robots=False,
+            )
+        finally:
+            await client.aclose()
+
+        assert observed_methods == ["GET", "HEAD"]
+
+        snapshot = governor.snapshot("example.test")
+        assert snapshot.requests_started == 2
+
+    asyncio.run(scenario())

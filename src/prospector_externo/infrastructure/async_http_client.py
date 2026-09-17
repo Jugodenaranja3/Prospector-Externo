@@ -1,29 +1,31 @@
 """
 Cliente HTTP asíncrono base del Prospector Externo.
 
-Esta primera versión introduce únicamente:
+Responsabilidades actuales:
 
-- httpx.AsyncClient;
-- integración con HostPolitenessController compartido;
-- clasificación básica de errores;
-- cierre explícito del cliente.
+- usar httpx.AsyncClient;
+- aplicar cortesía compartida por host mediante HostPolitenessController;
+- centralizar todas las solicitudes HTTP en una única primitiva _request();
+- clasificar errores HTTP y de transporte;
+- soportar GET textual y HEAD de metadatos;
+- cerrar explícitamente conexiones y recursos.
 
 Todavía NO implementa:
 
-- robots.txt;
+- robots.txt real;
 - Retry-After;
 - retries/backoff;
-- HEAD -> GET;
-- ETag / Last-Modified;
+- fallback HEAD -> GET mínimo;
+- ETag / Last-Modified condicional;
 - Range requests;
-- budgets.
+- presupuestos globales de recorrido.
 
-Esas capacidades se incorporarán de forma incremental y con pruebas.
+Esas capacidades se incorporarán incrementalmente sobre _request().
 """
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import httpx
 
@@ -32,13 +34,23 @@ from prospector_externo.infrastructure.host_politeness import (
 )
 
 
+HttpRequestResult = Tuple[
+    Optional[httpx.Response],
+    Optional[int],
+    Optional[str],
+]
+
+
 class AsyncResilientHttpClient:
     """
-    Cliente HTTP asíncrono compartible por los workflows.
+    Cliente HTTP asíncrono del Prospector Externo.
 
-    La cortesía por host no vive dentro de cada instancia del cliente:
-    se delega a un HostPolitenessController que puede ser compartido
-    por toda una corrida.
+    Las instancias pueden compartir un mismo HostPolitenessController,
+    permitiendo que múltiples workflows respeten una política común
+    de concurrencia y frecuencia por host.
+
+    Todas las operaciones HTTP deben atravesar `_request()` para evitar
+    políticas divergentes entre GET, HEAD y futuras variantes como Range.
     """
 
     DEFAULT_USER_AGENT = "DATAX-Prospector/1.0"
@@ -67,24 +79,34 @@ class AsyncResilientHttpClient:
 
         self._closed = False
 
-    async def fetch_html(
+    async def _request(
         self,
+        method: str,
         url: str,
         *,
         rate_limit_delay: Optional[float] = None,
         check_robots: bool = True,
-    ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
+        headers: Optional[Dict[str, str]] = None,
+    ) -> HttpRequestResult:
         """
-        Obtiene contenido textual mediante GET.
+        Primitiva única para realizar solicitudes HTTP.
+
+        Toda operación HTTP pública del cliente debe terminar pasando por
+        este método.
+
+        En esta etapa aplica:
+
+        - validación básica de URL;
+        - política fail-safe mientras robots.txt no esté implementado;
+        - cortesía compartida por host;
+        - ejecución mediante httpx.AsyncClient;
+        - clasificación centralizada de errores.
 
         Retorna:
 
-            (html_text, status_code, error_code)
+            (response, status_code, error_code)
 
-        En esta etapa robots.txt todavía no está implementado en el
-        cliente asíncrono. Si ``check_robots`` permanece habilitado,
-        el método falla de forma segura en lugar de realizar una
-        solicitud que pueda omitir accidentalmente esa política.
+        Cuando existe un error controlado, ``response`` será None.
         """
 
         if self._closed:
@@ -101,20 +123,29 @@ class AsyncResilientHttpClient:
 
         try:
             parsed_url = httpx.URL(url)
-
-            host = parsed_url.host
-            if not host:
-                return None, None, "INVALID_URL"
-
         except Exception:
             return None, None, "INVALID_URL"
+
+        host = parsed_url.host
+
+        if not host:
+            return None, None, "INVALID_URL"
+
+        normalized_method = method.strip().upper()
+
+        if not normalized_method:
+            return None, None, "INVALID_HTTP_METHOD"
 
         try:
             async with self._politeness.slot(
                 host,
                 min_interval_seconds=rate_limit_delay,
             ):
-                response = await self._client.get(url)
+                response = await self._client.request(
+                    normalized_method,
+                    url,
+                    headers=headers,
+                )
 
             status_code = response.status_code
 
@@ -126,7 +157,7 @@ class AsyncResilientHttpClient:
                 )
 
             return (
-                response.text,
+                response,
                 status_code,
                 None,
             )
@@ -139,6 +170,89 @@ class AsyncResilientHttpClient:
 
         except httpx.RequestError:
             return None, None, "REQUEST_ERROR"
+
+    async def fetch_html(
+        self,
+        url: str,
+        *,
+        rate_limit_delay: Optional[float] = None,
+        check_robots: bool = True,
+    ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
+        """
+        Obtiene contenido textual mediante GET.
+
+        Retorna:
+
+            (html_text, status_code, error_code)
+        """
+
+        response, status_code, error = await self._request(
+            "GET",
+            url,
+            rate_limit_delay=rate_limit_delay,
+            check_robots=check_robots,
+        )
+
+        if response is None:
+            return (
+                None,
+                status_code,
+                error,
+            )
+
+        return (
+            response.text,
+            status_code,
+            None,
+        )
+
+    async def fetch_headers(
+        self,
+        url: str,
+        *,
+        rate_limit_delay: Optional[float] = None,
+        check_robots: bool = True,
+    ) -> Tuple[
+        Optional[Dict[str, str]],
+        Optional[int],
+        Optional[str],
+    ]:
+        """
+        Obtiene metadatos mediante HEAD.
+
+        Todavía no implementa fallback HEAD -> GET ante 405/501.
+        Ese comportamiento se incorporará posteriormente sobre la misma
+        primitiva `_request()`.
+
+        Retorna:
+
+            (headers, status_code, error_code)
+        """
+
+        response, status_code, error = await self._request(
+            "HEAD",
+            url,
+            rate_limit_delay=rate_limit_delay,
+            check_robots=check_robots,
+        )
+
+        if response is None:
+            return (
+                None,
+                status_code,
+                error,
+            )
+
+        normalized_headers = {
+            key.lower(): value
+            for key, value in response.headers.items()
+        }
+
+        return (
+            normalized_headers,
+            status_code,
+            None,
+        )
 
     async def aclose(self) -> None:
         """Cierra conexiones y recursos mantenidos por httpx."""
