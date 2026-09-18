@@ -1,0 +1,169 @@
+schema_version: source-endpoint-reconciliation-1.0
+generated_at: "2026-09-18"
+warning: >
+  Esta matriz conserva la identidad histórica de la fuente. Un sucesor institucional
+  no reemplaza automáticamente al source_id histórico. RETRY_CRAWL solo se usa
+  cuando existe una superficie actual suficientemente equivalente o un endpoint
+  operacional de la misma fuente.
+
+sources:
+  - source_id: fegasacruz
+    logical_code: FEGASACRUZ
+    historical_entrypoint: https://www.fegasacruz.org.bo
+    candidate_entrypoint: https://fegasacruz.org/
+    lifecycle: CURRENT_DOMAIN_CHANGED
+    action: RETRY_CRAWL
+    evidence_note: "Sitio público actual de FEGASACRUZ encontrado en dominio .org; la página se identifica como FEGASACRUZ."
+    evidence_url: https://fegasacruz.org/
+
+  - source_id: fmi
+    logical_code: FMI
+    historical_entrypoint: https://www.imf.org
+    candidate_entrypoint: https://www.imf.org
+    lifecycle: CURRENT_ACCESS_RESTRICTED
+    action: HOLD_ACCESS_REVIEW
+    evidence_note: "B6B.1 observó cadena de redirects terminando en HTTP 403."
+
+  - source_id: mefp
+    logical_code: MEFP
+    historical_entrypoint: https://www.economiayfinanzas.gob.bo
+    candidate_entrypoint: https://www.economiayfinanzas.gob.bo
+    lifecycle: CURRENT_TLS_CLIENT_INCOMPATIBILITY
+    action: HOLD_TLS_REVIEW
+    evidence_note: "El portal institucional sigue vigente públicamente, pero B6E falló con TLS verificado en el cliente local."
+
+  - source_id: statistics_denmark
+    logical_code: Statistics Denmark
+    historical_entrypoint: https://www.dst.dk
+    candidate_entrypoint: https://www.dst.dk/
+    lifecycle: CURRENT_RECOVERED_HTTP
+    action: RETRY_CRAWL
+    evidence_note: "B6E obtuvo HTTP 200 en las variantes probadas."
+
+  - source_id: vipfe
+    logical_code: VIPFE
+    historical_entrypoint: https://www.vipfe.gob.bo
+    candidate_entrypoint: https://sisin.planificacion.gob.bo/
+    lifecycle: CURRENT_SERVICE_ENDPOINT_CANDIDATE
+    action: RETRY_CRAWL
+    evidence_note: "El dominio histórico está degradado; SISIN es una superficie pública actual vinculada a VIPFE y publicación de inversión pública."
+    evidence_url: https://sisin.planificacion.gob.bo/
+
+  - source_id: atc
+    logical_code: ATC
+    historical_entrypoint: https://www.redenlace.com.bo
+    candidate_entrypoint: https://www.redenlace.com.bo
+    lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+    action: DEFER_B7_B8
+    evidence_note: "HTML + API discovery no encontraron recursos; no asignar JavaScript automáticamente."
+
+  - source_id: cadexco
+    logical_code: CADEXCO
+    historical_entrypoint: https://www.cadexco.org.bo
+    candidate_entrypoint: https://cadexco.bo/
+    lifecycle: CURRENT_DOMAIN_CHANGED
+    action: RETRY_CRAWL
+    evidence_note: "El portal actual se identifica como Cámara de Exportadores de Cochabamba y publica información/exportaciones."
+    evidence_url: https://cadexco.bo/
+
+  - source_id: fam
+    logical_code: FAM
+    historical_entrypoint: https://www.fam.bo
+    candidate_entrypoint: https://fam.org.bo/
+    lifecycle: CURRENT_DOMAIN_CHANGED
+    action: RETRY_CRAWL
+    evidence_note: "Portal público actual de FAM-Bolivia."
+    evidence_url: https://fam.org.bo/
+
+  - source_id: fundempresa
+    logical_code: FUNDEMPRESA
+    historical_entrypoint: https://www.fundempresa.org.bo
+    candidate_entrypoint: null
+    lifecycle: RETIRED_SUCCESSOR_IDENTIFIED
+    action: RETIRED_NO_SUBSTITUTION
+    successor_source_id: seprec
+    successor_entrypoint: https://www.seprec.gob.bo
+    evidence_note: "SEPREC asumió la prestación del Registro de Comercio desde el 1 de abril de 2022. SEPREC ya existe como fuente lógica separada."
+
+  - source_id: otros_historicos
+    logical_code: OTROS HISTORICOS
+    historical_entrypoint: https://www.doingbusiness.org
+    candidate_entrypoint: https://datacatalog.worldbank.org/search/dataset/0038564/doing-business
+    lifecycle: ARCHIVE_ONLY
+    action: ARCHIVE_NO_LIVE_PROMOTION
+    evidence_note: "Doing Business fue discontinuado en 2021; World Bank conserva datos históricos/archivo."
+    evidence_url: https://datacatalog.worldbank.org/search/dataset/0038564/doing-business
+
+  - source_id: sabsa
+    logical_code: SABSA
+    historical_entrypoint: https://www.sabsa.aero
+    candidate_entrypoint: null
+    lifecycle: RETIRED_SUCCESSOR_IDENTIFIED
+    action: RETIRED_NO_SUBSTITUTION
+    successor_entrypoint: https://naabol.gob.bo/
+    evidence_note: "Las operaciones aeroportuarias pasaron a NAABOL en 2022; no sustituir silenciosamente la identidad histórica SABSA."
+
+  - source_id: sicoes
+    logical_code: SICOES
+    historical_entrypoint: https://www.sicoes.gob.bo
+    candidate_entrypoint: https://www.sicoes.gob.bo
+    lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+    action: DEFER_B7_B8
+    evidence_note: "HTML + API discovery no encontraron recursos; robots y sitio deben seguir separados."
+
+  - source_id: bolcereales
+    logical_code: BOLCEREALES
+    historical_entrypoint: https://www.bolsadecereales.org.bo
+    candidate_entrypoint: null
+    lifecycle: HISTORICAL_DOMAIN_DEAD
+    action: NEEDS_IDENTITY_REVIEW
+    evidence_note: "El dominio histórico no resuelve. No usar automáticamente bolsadecereales.com porque corresponde a otra entidad/país."
+
+  - source_id: ceprobol
+    logical_code: CEPROBOL
+    historical_entrypoint: https://www.ceprobol.gob.bo
+    candidate_entrypoint: null
+    lifecycle: RETIRED
+    action: RETIRED_NO_SUBSTITUTION
+    evidence_note: "CEPROBOL concluyó actividades en 2008 al crearse PROMUEVE-BOLIVIA sobre su base; conservar como fuente histórica."
+
+  - source_id: ibch
+    logical_code: IBCH
+    historical_entrypoint: https://www.ibch.org.bo
+    candidate_entrypoint: null
+    lifecycle: HISTORICAL_DOMAIN_DEAD
+    action: NEEDS_IDENTITY_REVIEW
+    evidence_note: "El dominio histórico no resuelve y no hay reemplazo seguro confirmado."
+
+  - source_id: mhe
+    logical_code: MHE
+    historical_entrypoint: https://www.hidrocarburos.gob.bo
+    candidate_entrypoint: https://www.mhe.gob.bo/
+    lifecycle: CURRENT_DOMAIN_CHANGED
+    action: RETRY_CRAWL
+    evidence_note: "Portal público actual del Ministerio de Hidrocarburos y Energías."
+    evidence_url: https://www.mhe.gob.bo/
+
+  - source_id: undata
+    logical_code: UNDATA
+    historical_entrypoint: https://data.un.org
+    candidate_entrypoint: https://data.un.org
+    lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+    action: DEFER_B7_B8
+    evidence_note: "HTML + API discovery no encontraron recursos."
+
+  - source_id: sigma
+    logical_code: SIGMA
+    historical_entrypoint: https://www.sigmacorp.com.bo
+    candidate_entrypoint: https://www.sigmacorp.com.bo/
+    lifecycle: CURRENT_RECOVERED_HTTP
+    action: RETRY_CRAWL
+    evidence_note: "B6E obtuvo HTTP 200 en las variantes probadas."
+
+  - source_id: transtats
+    logical_code: TRANSTATS
+    historical_entrypoint: https://www.transtats.bts.gov
+    candidate_entrypoint: https://www.transtats.bts.gov
+    lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+    action: DEFER_B7_B8
+    evidence_note: "HTML + API discovery no encontraron recursos; requiere revisión B7/B8."
