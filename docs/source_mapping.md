@@ -51,3 +51,45 @@ El comando genera solo:
 ```
 
 Los outputs intermedios por fuente se crean en el directorio temporal del sistema y se destruyen automáticamente.
+
+## BATCH 6A.1 — evidencia física persistida
+
+A partir de BATCH 6A.1 el mapper no destruye los outputs de cada probe físico.
+
+La evidencia queda fuera de Git bajo:
+
+```text
+.runtime/source_mapping/
+├── latest.json
+├── latest.csv
+├── latest.md
+├── crawls/
+│   ├── anapo/
+│   ├── aps/
+│   └── ...
+├── logs/
+│   ├── anapo.log
+│   ├── aps.log
+│   └── ...
+├── probe_configs/
+│   ├── anapo.yaml
+│   ├── aps.yaml
+│   └── ...
+└── logical_sources/
+    ├── anapo.json
+    ├── aps.json
+    └── ...
+```
+
+`crawls/<source_id>/` contiene exactamente los artefactos emitidos por
+`apps.crawler_batch.main`: reportes de corrida, estado, snapshots y mapas.
+Estos son outputs reales del crawler y pueden ser consumidos o auditados.
+
+Los entrypoints compartidos se prueban físicamente una sola vez. Las fuentes
+lógicas reutilizadas apuntan al mismo `crawl_output_dir`, evitando duplicar
+evidencia sin perder trazabilidad.
+
+Además, los códigos HTTP de `robots.txt` quedan separados de los códigos
+observados durante el crawl del sitio. Un `404` de `robots.txt` ya no convierte
+por sí solo a una fuente en `HTTP_404`, y un `403` de robots puede clasificarse
+como `ROBOTS_BLOCKED`.

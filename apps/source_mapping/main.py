@@ -4,15 +4,15 @@ import argparse
 import csv
 import json
 import re
+import shutil
 import subprocess
 import sys
-import tempfile
 import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import yaml
 
@@ -34,8 +34,7 @@ def allowed_hosts_for(url: str) -> list[str]:
     if not host:
         return []
     base = host[4:] if host.startswith("www.") else host
-    values = [host, base, f"www.{base}"]
-    return list(dict.fromkeys(values))
+    return list(dict.fromkeys([host, base, f"www.{base}"]))
 
 
 def load_inventory(path: Path) -> list[dict[str, Any]]:
@@ -67,7 +66,7 @@ def build_probe_config(
                 "update_category": "MONTHLY",
                 "allowed_extensions": [
                     ".pdf", ".xlsx", ".xls", ".ods", ".csv",
-                    ".json", ".xml", ".zip"
+                    ".json", ".xml", ".zip",
                 ],
                 "excluded_path_keywords": [],
                 "ignore_robots_txt": False,
@@ -87,6 +86,7 @@ def build_probe_config(
                 "pagination_min_pages": 2,
                 "pagination_empty_streak": 2,
                 "pagination_window": 3,
+                # Baseline barato: mide capacidad HTTP/HTML actual.
                 "discover_sitemaps": False,
                 "max_sitemap_documents": 0,
                 "max_sitemap_urls": 0,
@@ -122,6 +122,14 @@ def inspect_probe_output(output_root: Path) -> dict[str, Any]:
     execution_statuses: list[str] = []
     stop_reasons: list[str] = []
     request_counts: list[int] = []
+
+    if not output_root.exists():
+        return {
+            "resources_found": 0,
+            "execution_status": None,
+            "stop_reason": None,
+            "requests_reported": None,
+        }
 
     for path in output_root.rglob("*.json"):
         try:
@@ -165,13 +173,39 @@ def inspect_probe_output(output_root: Path) -> dict[str, Any]:
     }
 
 
-def parse_http_codes(log_text: str) -> list[int]:
-    return [int(x) for x in re.findall(r'HTTP/\d(?:\.\d)?\s+(\d{3})', log_text)]
+HTTP_REQUEST_RE = re.compile(
+    r'HTTP Request:\s+(?P<method>[A-Z]+)\s+(?P<url>\S+)\s+"HTTP/\d(?:\.\d)?\s+(?P<code>\d{3})',
+    flags=re.IGNORECASE,
+)
+
+
+def parse_request_trace(log_text: str) -> list[dict[str, Any]]:
+    trace: list[dict[str, Any]] = []
+    for match in HTTP_REQUEST_RE.finditer(log_text):
+        url = match.group("url")
+        parsed = urlparse(url)
+        path = (parsed.path or "/").rstrip("/") or "/"
+        trace.append(
+            {
+                "method": match.group("method").upper(),
+                "url": url,
+                "status_code": int(match.group("code")),
+                "is_robots": path.lower().endswith("/robots.txt"),
+                "host": canonical_host(url),
+            }
+        )
+    return trace
 
 
 def parse_checkpoint_resources(log_text: str) -> int | None:
     matches = re.findall(r"\((\d+)\s+recursos\)", log_text, flags=re.IGNORECASE)
     return int(matches[-1]) if matches else None
+
+
+def split_http_codes(trace: list[dict[str, Any]]) -> tuple[list[int], list[int]]:
+    robots = sorted({item["status_code"] for item in trace if item["is_robots"]})
+    site = sorted({item["status_code"] for item in trace if not item["is_robots"]})
+    return robots, site
 
 
 def classify_probe(
@@ -181,67 +215,94 @@ def classify_probe(
     resources_found: int,
     execution_status: str | None,
     timed_out: bool,
+    request_trace: list[dict[str, Any]] | None = None,
 ) -> tuple[str, str]:
+    trace = request_trace if request_trace is not None else parse_request_trace(log_text)
+    robots_codes, site_codes = split_http_codes(trace)
     lower = log_text.lower()
-    http_codes = parse_http_codes(log_text)
 
     if timed_out:
         return "TIMEOUT", "review_reachability_or_runtime"
 
-    if (
-        ("robots" in lower and ("bloque" in lower or "disallow" in lower or "blocked" in lower))
-        and resources_found == 0
-    ):
+    # Robots se trata aparte; un 403/404 de robots.txt no se confunde
+    # con el estado HTTP del entrypoint.
+    if not site_codes and any(code in {401, 403} for code in robots_codes):
         return "ROBOTS_BLOCKED", "review_robots_policy"
-
-    if 403 in http_codes and resources_found == 0:
-        return "HTTP_403", "review_access_or_waf"
-
-    if 404 in http_codes and resources_found == 0:
-        return "HTTP_404", "review_entrypoint"
-
-    if any(token in lower for token in (
-        "name or service not known",
-        "nodename nor servname",
-        "getaddrinfo failed",
-        "connecterror",
-        "connection refused",
-        "dns",
-        "ssl error",
-    )) and resources_found == 0:
-        return "UNAVAILABLE", "review_domain_or_network"
-
-    if returncode != 0:
-        return "EXECUTION_ERROR", "inspect_error"
-
-    if execution_status and execution_status.upper() in {"FAILED", "ERROR"}:
-        return "EXECUTION_ERROR", "inspect_error"
 
     if resources_found > 0:
         return "GREEN_RESOURCES", "candidate_for_b6_http_html"
 
-    return "REACHABLE_NO_RESOURCES", "review_seed_or_workflow"
+    if execution_status and execution_status.upper() in {"FAILED", "ERROR"}:
+        if site_codes and not any(200 <= code < 400 for code in site_codes):
+            if any(code == 403 for code in site_codes):
+                return "HTTP_403", "review_access_or_waf"
+            if any(code == 404 for code in site_codes):
+                return "HTTP_404", "review_entrypoint"
+        if any(
+            token in lower
+            for token in (
+                "name or service not known",
+                "nodename nor servname",
+                "getaddrinfo failed",
+                "connection refused",
+                "connecterror",
+                "dns",
+                "ssl error",
+            )
+        ):
+            return "UNAVAILABLE", "review_domain_or_network"
+        return "EXECUTION_ERROR", "inspect_persisted_output"
+
+    if returncode != 0:
+        if site_codes and not any(200 <= code < 400 for code in site_codes):
+            if 403 in site_codes:
+                return "HTTP_403", "review_access_or_waf"
+            if 404 in site_codes:
+                return "HTTP_404", "review_entrypoint"
+        return "EXECUTION_ERROR", "inspect_persisted_output"
+
+    if any(200 <= code < 400 for code in site_codes):
+        return "REACHABLE_NO_RESOURCES", "review_seed_or_workflow"
+
+    if 403 in site_codes:
+        return "HTTP_403", "review_access_or_waf"
+    if 404 in site_codes:
+        return "HTTP_404", "review_entrypoint"
+
+    if not site_codes and any(code in {404, 405} for code in robots_codes):
+        return "REACHABLE_NO_RESOURCES", "review_seed_or_workflow"
+
+    return "EXECUTION_ERROR", "inspect_persisted_output"
 
 
-def error_excerpt(text: str, max_chars: int = 600) -> str | None:
-    interesting = []
+def error_excerpt(text: str, max_chars: int = 800) -> str | None:
+    interesting: list[str] = []
     for line in text.splitlines():
         low = line.lower()
-        if any(token in low for token in (
-            "critical", "error", "exception", "forbidden", "timeout",
-            "bloque", "blocked", "disallow", "404", "403"
-        )):
+        if any(
+            token in low
+            for token in (
+                "critical", "error", "exception", "forbidden", "timeout",
+                "bloque", "blocked", "disallow", " 404 ", " 403 ", " 500 ",
+            )
+        ):
             interesting.append(line.strip())
     if not interesting:
         return None
-    joined = " | ".join(interesting[-4:])
+    joined = " | ".join(interesting[-6:])
     return joined[-max_chars:]
+
+
+def safe_remove_tree(path: Path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
 
 
 def probe_source(
     source: dict[str, Any],
     *,
     python_executable: str,
+    report_dir: Path,
     max_requests: int,
     max_runtime_seconds: int,
     rate_limit_seconds: float,
@@ -252,109 +313,148 @@ def probe_source(
     started = time.monotonic()
     timed_out = False
 
-    with tempfile.TemporaryDirectory(prefix=f"prospector_map_{source['source_id']}_") as tmp:
-        tmp_path = Path(tmp)
-        config_path = tmp_path / "probe.yaml"
-        output_path = tmp_path / "output"
+    crawl_root = report_dir / "crawls" / source["source_id"]
+    log_path = report_dir / "logs" / f"{source['source_id']}.log"
+    config_path = report_dir / "probe_configs" / f"{source['source_id']}.yaml"
 
-        payload = build_probe_config(
-            source,
-            max_requests=max_requests,
-            max_runtime_seconds=max_runtime_seconds,
-            rate_limit_seconds=rate_limit_seconds,
-            max_depth=max_depth,
-            max_urls=max_urls,
-        )
-        config_path.write_text(
-            yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+    crawl_root.parent.mkdir(parents=True, exist_ok=True)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Nunca mezclar evidencia de una corrida previa.
+    safe_remove_tree(crawl_root)
+    crawl_root.mkdir(parents=True, exist_ok=True)
+
+    payload = build_probe_config(
+        source,
+        max_requests=max_requests,
+        max_runtime_seconds=max_runtime_seconds,
+        rate_limit_seconds=rate_limit_seconds,
+        max_depth=max_depth,
+        max_urls=max_urls,
+    )
+    config_path.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    cmd = [
+        python_executable,
+        "-m",
+        "apps.crawler_batch.main",
+        "--config",
+        str(config_path),
+        "--source",
+        source["source_id"],
+        "--output-dir",
+        str(crawl_root),
+        "--force",
+    ]
+
+    try:
+        process = subprocess.run(
+            cmd,
+            text=True,
             encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            timeout=subprocess_timeout,
         )
-
-        cmd = [
-            python_executable,
-            "-m",
-            "apps.crawler_batch.main",
-            "--config",
-            str(config_path),
-            "--source",
-            source["source_id"],
-            "--output-dir",
-            str(output_path),
-            "--force",
-        ]
-
-        try:
-            process = subprocess.run(
-                cmd,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                timeout=subprocess_timeout,
-            )
-            returncode = process.returncode
-            log_text = (process.stdout or "") + "\n" + (process.stderr or "")
-        except subprocess.TimeoutExpired as exc:
-            timed_out = True
-            returncode = 124
-            stdout = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
-            stderr = exc.stderr.decode("utf-8", "replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
-            log_text = stdout + "\n" + stderr
-
-        inspected = inspect_probe_output(output_path)
-        checkpoint_count = parse_checkpoint_resources(log_text)
-        resources_found = max(inspected["resources_found"], checkpoint_count or 0)
-
-        status, next_action = classify_probe(
-            returncode=returncode,
-            log_text=log_text,
-            resources_found=resources_found,
-            execution_status=inspected["execution_status"],
-            timed_out=timed_out,
+        returncode = process.returncode
+        log_text = (process.stdout or "") + "\n" + (process.stderr or "")
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        returncode = 124
+        stdout = (
+            exc.stdout.decode("utf-8", "replace")
+            if isinstance(exc.stdout, bytes)
+            else (exc.stdout or "")
         )
+        stderr = (
+            exc.stderr.decode("utf-8", "replace")
+            if isinstance(exc.stderr, bytes)
+            else (exc.stderr or "")
+        )
+        log_text = stdout + "\n" + stderr
 
-        http_codes = parse_http_codes(log_text)
+    log_path.write_text(log_text, encoding="utf-8", errors="replace")
 
-        return {
-            "source_id": source["source_id"],
-            "logical_code": source["logical_code"],
-            "name": source["name"],
-            "entrypoint": source["entrypoint"],
-            "host_key": source.get("host_key") or canonical_host(source["entrypoint"]),
-            "status": status,
-            "coverage_level": (
-                "L1_RESOURCE_DISCOVERY"
-                if status == "GREEN_RESOURCES"
-                else "L0_REACHABLE"
-                if status == "REACHABLE_NO_RESOURCES"
-                else "L_NEGATIVE"
-            ),
-            "probe_profile": "HTTP_HTML_BASELINE",
-            "resources_found": resources_found,
-            "http_codes": sorted(set(http_codes)),
-            "requests_reported": inspected["requests_reported"],
-            "execution_status": inspected["execution_status"],
-            "stop_reason": inspected["stop_reason"],
-            "elapsed_seconds": round(time.monotonic() - started, 2),
-            "next_action": next_action,
-            "error_excerpt": error_excerpt(log_text),
-            "reused_probe_from": None,
-        }
+    inspected = inspect_probe_output(crawl_root)
+    checkpoint_count = parse_checkpoint_resources(log_text)
+    resources_found = max(inspected["resources_found"], checkpoint_count or 0)
+
+    trace = parse_request_trace(log_text)
+    robots_codes, site_codes = split_http_codes(trace)
+
+    status, next_action = classify_probe(
+        returncode=returncode,
+        log_text=log_text,
+        resources_found=resources_found,
+        execution_status=inspected["execution_status"],
+        timed_out=timed_out,
+        request_trace=trace,
+    )
+
+    return {
+        "source_id": source["source_id"],
+        "logical_code": source["logical_code"],
+        "name": source["name"],
+        "entrypoint": source["entrypoint"],
+        "host_key": source.get("host_key") or canonical_host(source["entrypoint"]),
+        "status": status,
+        "coverage_level": (
+            "L1_RESOURCE_DISCOVERY"
+            if status == "GREEN_RESOURCES"
+            else "L0_REACHABLE"
+            if status == "REACHABLE_NO_RESOURCES"
+            else "L_NEGATIVE"
+        ),
+        "probe_profile": "HTTP_HTML_BASELINE",
+        "resources_found": resources_found,
+        "robots_http_codes": robots_codes,
+        "site_http_codes": site_codes,
+        "request_trace": trace,
+        "requests_reported": inspected["requests_reported"],
+        "execution_status": inspected["execution_status"],
+        "stop_reason": inspected["stop_reason"],
+        "elapsed_seconds": round(time.monotonic() - started, 2),
+        "next_action": next_action,
+        "error_excerpt": error_excerpt(log_text),
+        "reused_probe_from": None,
+        "crawl_output_dir": str(crawl_root),
+        "log_file": str(log_path),
+        "probe_config_file": str(config_path),
+    }
 
 
-def write_reports(results: list[dict[str, Any]], report_dir: Path, *, physical_probes: int) -> None:
+def write_logical_manifest(row: dict[str, Any], report_dir: Path) -> None:
+    logical_dir = report_dir / "logical_sources"
+    logical_dir.mkdir(parents=True, exist_ok=True)
+    path = logical_dir / f"{row['source_id']}.json"
+    path.write_text(
+        json.dumps(row, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+
+def write_reports(
+    results: list[dict[str, Any]],
+    report_dir: Path,
+    *,
+    physical_probes: int,
+) -> None:
     report_dir.mkdir(parents=True, exist_ok=True)
     summary = Counter(r["status"] for r in results)
     coverage = Counter(r["coverage_level"] for r in results)
 
     generated_at = datetime.now(timezone.utc).isoformat()
     payload = {
-        "schema_version": "source-mapping-report-1.0",
+        "schema_version": "source-mapping-report-1.1",
         "generated_at_utc": generated_at,
         "probe_profile": "HTTP_HTML_BASELINE",
         "warning": (
-            "Este reporte es un mapeo conservador de capacidad actual, no una validación 100% "
-            "ni una asignación definitiva de workflow."
+            "Mapeo conservador de capacidad actual. "
+            "Los outputs reales de cada probe físico quedan preservados en crawls/."
         ),
         "logical_sources": len(results),
         "physical_unique_entrypoint_probes": physical_probes,
@@ -370,16 +470,23 @@ def write_reports(results: list[dict[str, Any]], report_dir: Path, *, physical_p
 
     fieldnames = [
         "logical_code", "source_id", "name", "entrypoint", "host_key",
-        "status", "coverage_level", "resources_found", "http_codes",
+        "status", "coverage_level", "resources_found",
+        "robots_http_codes", "site_http_codes",
         "requests_reported", "execution_status", "stop_reason",
-        "elapsed_seconds", "next_action", "reused_probe_from", "error_excerpt",
+        "elapsed_seconds", "next_action", "reused_probe_from",
+        "crawl_output_dir", "log_file", "probe_config_file", "error_excerpt",
     ]
     with (report_dir / "latest.csv").open("w", encoding="utf-8-sig", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
         writer.writeheader()
         for row in results:
             item = dict(row)
-            item["http_codes"] = ",".join(map(str, row.get("http_codes") or []))
+            item["robots_http_codes"] = ",".join(
+                map(str, row.get("robots_http_codes") or [])
+            )
+            item["site_http_codes"] = ",".join(
+                map(str, row.get("site_http_codes") or [])
+            )
             writer.writerow({key: item.get(key) for key in fieldnames})
 
     lines = [
@@ -389,9 +496,9 @@ def write_reports(results: list[dict[str, Any]], report_dir: Path, *, physical_p
         f"- Fuentes lógicas: **{len(results)}**",
         f"- Probes físicos de entrypoints únicos: **{physical_probes}**",
         "- Perfil: **HTTP_HTML_BASELINE**",
+        "- Evidencia física: **preservada en `crawls/`**",
         "",
-        "> Este reporte no representa cobertura definitiva. Es una fotografía conservadora "
-        "del motor actual con budgets pequeños.",
+        "> Este reporte es una línea base, no cobertura definitiva.",
         "",
         "## Resumen",
         "",
@@ -401,30 +508,50 @@ def write_reports(results: list[dict[str, Any]], report_dir: Path, *, physical_p
     for key, count in sorted(summary.items()):
         lines.append(f"| {key} | {count} |")
 
-    lines.extend([
-        "",
-        "## Fuentes",
-        "",
-        "| Código | Estado | Recursos | HTTP | Siguiente acción |",
-        "|---|---|---:|---|---|",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Fuentes",
+            "",
+            "| Código | Estado | Recursos | Robots HTTP | Sitio HTTP | Output |",
+            "|---|---|---:|---|---|---|",
+        ]
+    )
     for row in results:
-        codes = ",".join(map(str, row.get("http_codes") or [])) or "-"
-        reuse = f" (reusa {row['reused_probe_from']})" if row.get("reused_probe_from") else ""
+        robots = ",".join(map(str, row.get("robots_http_codes") or [])) or "-"
+        site = ",".join(map(str, row.get("site_http_codes") or [])) or "-"
+        output = row.get("crawl_output_dir") or "-"
+        if row.get("reused_probe_from"):
+            output = f"{output} (reusa {row['reused_probe_from']})"
         lines.append(
-            f"| {row['logical_code']} | {row['status']}{reuse} | "
-            f"{row['resources_found']} | {codes} | {row['next_action']} |"
+            f"| {row['logical_code']} | {row['status']} | "
+            f"{row['resources_found']} | {robots} | {site} | `{output}` |"
         )
 
-    (report_dir / "latest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (report_dir / "latest.md").write_text(
+        "\n".join(lines) + "\n",
+        encoding="utf-8",
+    )
+
+    for row in results:
+        write_logical_manifest(row, report_dir)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Mapeo masivo conservador de las fuentes lógicas del Prospector Externo."
+        description=(
+            "Mapeo masivo conservador de fuentes con evidencia real persistida "
+            "fuera de Git."
+        )
     )
-    parser.add_argument("--inventory", default="config/source_inventory.yaml")
-    parser.add_argument("--report-dir", default=".runtime/source_mapping")
+    parser.add_argument(
+        "--inventory",
+        default="config/source_inventory.yaml",
+    )
+    parser.add_argument(
+        "--report-dir",
+        default=".runtime/source_mapping",
+    )
     parser.add_argument("--max-requests", type=int, default=5)
     parser.add_argument("--max-runtime", type=int, default=20)
     parser.add_argument("--subprocess-timeout", type=int, default=35)
@@ -435,17 +562,26 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
 
+    report_dir = Path(args.report_dir)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
     sources = load_inventory(Path(args.inventory))
     if args.limit is not None:
         if args.limit <= 0:
             raise SystemExit("--limit debe ser > 0")
         sources = sources[: args.limit]
 
-    print("=" * 72)
-    print("PROSPECTOR EXTERNO — MAPEO MASIVO HTTP/HTML BASELINE")
-    print("=" * 72)
+    print("=" * 76)
+    print("PROSPECTOR EXTERNO — MAPEO 52 FUENTES CON EVIDENCIA PERSISTIDA")
+    print("=" * 76)
     print(f"Fuentes lógicas a reportar: {len(sources)}")
-    print(f"Budget por entrypoint: max_requests={args.max_requests}, max_runtime={args.max_runtime}s")
+    print(
+        f"Budget por entrypoint: max_requests={args.max_requests}, "
+        f"max_runtime={args.max_runtime}s"
+    )
+    print("Outputs reales: .runtime/source_mapping/crawls/<source_id>/")
+    print("Logs reales:    .runtime/source_mapping/logs/<source_id>.log")
+    print("Configs probe:  .runtime/source_mapping/probe_configs/<source_id>.yaml")
     print("Sitemap/API/browser: NO en este baseline")
     print("Binarios: NO se descargan")
     print()
@@ -456,25 +592,32 @@ def main() -> int:
 
     for idx, source in enumerate(sources, 1):
         key = normalized_entrypoint(source["entrypoint"])
+
         if key in cache:
             base = dict(cache[key])
-            base.update({
-                "source_id": source["source_id"],
-                "logical_code": source["logical_code"],
-                "name": source["name"],
-                "entrypoint": source["entrypoint"],
-                "host_key": source.get("host_key") or canonical_host(source["entrypoint"]),
-                "reused_probe_from": cache[key]["logical_code"],
-            })
+            base.update(
+                {
+                    "source_id": source["source_id"],
+                    "logical_code": source["logical_code"],
+                    "name": source["name"],
+                    "entrypoint": source["entrypoint"],
+                    "host_key": source.get("host_key")
+                    or canonical_host(source["entrypoint"]),
+                    "reused_probe_from": cache[key]["logical_code"],
+                }
+            )
             row = base
             print(
-                f"[{idx:02d}/{len(sources):02d}] {source['logical_code']:<20} "
-                f"{row['status']:<25} reuse={row['reused_probe_from']}"
+                f"[{idx:02d}/{len(sources):02d}] "
+                f"{source['logical_code']:<20} "
+                f"{row['status']:<25} "
+                f"reuse={row['reused_probe_from']}"
             )
         else:
             row = probe_source(
                 source,
                 python_executable=sys.executable,
+                report_dir=report_dir,
                 max_requests=args.max_requests,
                 max_runtime_seconds=args.max_runtime,
                 rate_limit_seconds=args.rate_limit,
@@ -484,32 +627,43 @@ def main() -> int:
             )
             cache[key] = dict(row)
             physical_probes += 1
+
             print(
-                f"[{idx:02d}/{len(sources):02d}] {source['logical_code']:<20} "
-                f"{row['status']:<25} resources={row['resources_found']:<4} "
-                f"http={row['http_codes']} t={row['elapsed_seconds']}s"
+                f"[{idx:02d}/{len(sources):02d}] "
+                f"{source['logical_code']:<20} "
+                f"{row['status']:<25} "
+                f"resources={row['resources_found']:<4} "
+                f"robots={row['robots_http_codes']} "
+                f"site={row['site_http_codes']} "
+                f"t={row['elapsed_seconds']}s"
             )
+
             if args.inter_source_delay > 0 and idx < len(sources):
                 time.sleep(args.inter_source_delay)
 
         results.append(row)
 
-    report_dir = Path(args.report_dir)
     write_reports(results, report_dir, physical_probes=physical_probes)
 
     summary = Counter(r["status"] for r in results)
+
     print()
-    print("=" * 72)
-    print("MAPEO COMPLETADO")
-    print("=" * 72)
+    print("=" * 76)
+    print("MAPEO COMPLETADO — EVIDENCIA REAL CONSERVADA")
+    print("=" * 76)
     print(f"Fuentes lógicas:       {len(results)}")
     print(f"Entrypoints probados:  {physical_probes}")
     for key, count in sorted(summary.items()):
         print(f"{key:<28} {count}")
+
     print()
-    print(f"JSON: {report_dir / 'latest.json'}")
-    print(f"CSV:  {report_dir / 'latest.csv'}")
-    print(f"MD:   {report_dir / 'latest.md'}")
+    print(f"Resumen JSON: {report_dir / 'latest.json'}")
+    print(f"Resumen CSV:  {report_dir / 'latest.csv'}")
+    print(f"Resumen MD:   {report_dir / 'latest.md'}")
+    print(f"Crawls:       {report_dir / 'crawls'}")
+    print(f"Logs:         {report_dir / 'logs'}")
+    print(f"Configs:      {report_dir / 'probe_configs'}")
+    print(f"Lógicos:      {report_dir / 'logical_sources'}")
     return 0
 
 
