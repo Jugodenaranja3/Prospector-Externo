@@ -1,182 +1,158 @@
-"""
-Plugin de workflow para portales que ocultan enlaces en comentarios HTML (CommentedHtmlWorkflow).
-Especializado para portales como la Bolsa Boliviana de Valores (BBV).
-"""
+"""Workflow HTML que además inspecciona enlaces presentes en comentarios HTML."""
 
-import os
-import re
-import logging
-from typing import Set, List, Optional
-from collections import deque
+from typing import List, Set
 from bs4 import BeautifulSoup, Comment
-from urllib.parse import urlparse, urljoin
 
-from prospector_externo.workflows.base import BaseWorkflow
-from prospector_externo.domain.models import SourceConfig, DiscoveredUrl, DiscoveryType, ResourceCandidate, ChangeStatus
-from prospector_externo.domain.normalizer import UrlNormalizer
-from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.domain.discovery import DiscoveryFrontier, StopReason
+from prospector_externo.domain.models import DiscoveredUrl, DiscoveryType, ResourceCandidate, SourceConfig
 from prospector_externo.domain.observations import CoverageStats
-
-logger = logging.getLogger("prospector.workflows.commented_html")
+from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.workflows.base import BaseWorkflow, ResourceDetector
 
 
 class CommentedHtmlWorkflow(BaseWorkflow):
-    """Workflow especializado en extraer contenido del DOM y de bloques comentados HTML."""
-
-    def __init__(self, max_depth: int = 2, max_pages: int = 30):
-        super().__init__()
-        self.max_depth = max_depth
-        self.max_pages = max_pages
-
     def _extract_from_comments(
         self,
         html_content: str,
         current_url: str,
         config: SourceConfig,
-        seen_resource_keys: Optional[Set[str]] = None
+        seen_resource_keys: Set[str],
     ) -> List[ResourceCandidate]:
-        """Busca y parsea fragmentos HTML dentro de comentarios <!-- ... -->."""
         soup = BeautifulSoup(html_content, "html.parser")
+        resources: List[ResourceCandidate] = []
         comments = soup.find_all(string=lambda text: isinstance(text, Comment))
-        allowed_exts = set(ext.lower() for ext in config.allowed_extensions)
 
-        commented_resources: List[ResourceCandidate] = []
+        for comment in comments:
+            comment_soup = BeautifulSoup(str(comment), "html.parser")
+            for tag in comment_soup.find_all("a", href=True):
+                raw_href = tag["href"].strip()
+                if not raw_href or raw_href.startswith(("#", "javascript:", "mailto:", "tel:")):
+                    continue
+                from prospector_externo.domain.normalizer import UrlNormalizer
+                normalized = UrlNormalizer.normalize(raw_href, base_url=current_url)
+                if not ResourceDetector.is_resource(normalized):
+                    continue
+                title = tag.get_text(" ", strip=True)
+                resource = self._make_resource(
+                    config=config,
+                    raw_url=raw_href,
+                    current_url=current_url,
+                    title=title,
+                    discovery_type=DiscoveryType.COMMENTED_HTML,
+                    anchor_text=title,
+                )
+                if resource.resource_key in seen_resource_keys:
+                    continue
+                seen_resource_keys.add(resource.resource_key)
+                resources.append(resource)
+        return resources
 
-        for comment_text in comments:
-            # Si el comentario contiene posibles enlaces o extensiones
-            if any(ext in comment_text.lower() for ext in allowed_exts) or "href=" in comment_text:
-                comment_soup = BeautifulSoup(comment_text, "html.parser")
-                for a in comment_soup.find_all("a", href=True):
-                    raw_href = a["href"].strip()
-                    if not raw_href or raw_href.startswith(("#", "javascript:")):
-                        continue
-                    full_url = urljoin(current_url, raw_href)
-                    normalized = UrlNormalizer.normalize(full_url)
+    async def run(self, config: SourceConfig) -> ExtractionResult:
+        session = self._session()
+        frontier = DiscoveryFrontier(config)
+        frontier.seed(config.seeds or [config.entrypoint])
 
-                    # Omitir rutas excluidas por configuración
-                    if any(kw.lower() in normalized.lower() for kw in config.excluded_path_keywords):
-                        continue
-
-                    parsed = urlparse(normalized)
-                    file_ext = os.path.splitext(parsed.path)[1].lower()
-
-                    if file_ext in allowed_exts or self.archive_extractor.is_archive(normalized):
-                        resource_key = UrlNormalizer.compute_url_hash(normalized)
-                        if seen_resource_keys is not None:
-                            if resource_key in seen_resource_keys:
-                                continue
-                            seen_resource_keys.add(resource_key)
-
-                        title = a.get_text(strip=True) or os.path.basename(parsed.path)
-                        period = self._extract_period_from_text(f"{title} {parsed.path}")
-
-                        headers, _ = self.http_client.fetch_headers(
-                            normalized,
-                            rate_limit_delay=config.rate_limit_seconds
-                        )
-
-                        res = ResourceCandidate(
-                            resource_key=resource_key,
-                            url=normalized,
-                            source_id=config.source_id,
-                            title=title,
-                            file_extension=file_ext,
-                            content_type=headers.get("content_type"),
-                            content_length_bytes=headers.get("content_length_bytes"),
-                            last_modified_header=headers.get("last_modified"),
-                            etag=headers.get("etag"),
-                            discovered_from_url=current_url,
-                            period_label=period,
-                            change_status=ChangeStatus.NEW
-                        )
-                        commented_resources.append(res)
-
-                        if self.archive_extractor.is_archive(normalized):
-                            commented_resources.extend(
-                                self._process_archive(normalized, config.source_id, config)
-                            )
-
-        return commented_resources
-
-    def run(self, config: SourceConfig) -> ExtractionResult:
-        logger.info(f"Iniciando CommentedHtmlWorkflow para fuente: [{config.source_id}]")
         coverage = CoverageStats()
         discovered_urls: List[DiscoveredUrl] = []
-        all_resources = []
-
-        initial_seeds = config.seeds if config.seeds else [config.entrypoint]
-        queue = deque([(seed, 0, None) for seed in initial_seeds])
-        visited: Set[str] = set()
+        resources: List[ResourceCandidate] = []
         seen_resource_keys: Set[str] = set()
+        consecutive_errors = 0
+        successful_pages = 0
 
-        while queue and len(visited) < self.max_pages:
-            current_url, depth, parent_url = queue.popleft()
-            if current_url in visited:
-                continue
-            visited.add(current_url)
+        while True:
+            if session.budget.remaining <= 0:
+                frontier.stop_reason = StopReason.REQUEST_BUDGET
+                break
+            item = frontier.pop()
+            if item is None:
+                break
+
+            html, status, error = await session.fetch_html(item.normalized_url, conditional=False)
+            frontier.mark_visited(item)
             coverage.pages_visited += 1
 
-            html_text, status_code, err = self.http_client.fetch_html(
-                current_url,
-                rate_limit_delay=config.rate_limit_seconds,
-                ignore_robots_txt=config.ignore_robots_txt,
-                robots_override_reason=config.robots_override_reason
-            )
-
-            if err:
+            if error:
                 coverage.urls_failed += 1
-                if len(visited) == 1:
-                    return ExtractionResult(
-                        source_id=config.source_id,
-                        success=False,
-                        failure_code=err,
-                        error_message=f"Fallo en semilla inicial: {err}",
-                        coverage=coverage
-                    )
+                consecutive_errors += 1
+                if error == "TIMEOUT":
+                    coverage.timeouts += 1
+                elif error == "HTTP_403":
+                    coverage.http_403 += 1
+                elif error == "HTTP_429":
+                    coverage.http_429 += 1
+                elif error == "ROBOTS_DISALLOWED":
+                    coverage.robots_disallowed += 1
+                elif error == "REQUEST_BUDGET_EXCEEDED":
+                    frontier.stop_reason = StopReason.REQUEST_BUDGET
+                    break
+                if consecutive_errors >= config.max_consecutive_errors:
+                    frontier.stop_reason = StopReason.MAX_CONSECUTIVE_ERRORS
+                    break
                 continue
 
-            discovered_urls.append(DiscoveredUrl(
-                normalized_url=current_url,
-                raw_url=current_url,
-                source_id=config.source_id,
-                discovery_type=DiscoveryType.COMMENTED_HTML,
-                parent_url=parent_url,
-                http_status=status_code
-            ))
+            successful_pages += 1
+            consecutive_errors = 0
+            discovered_urls.append(
+                DiscoveredUrl(
+                    normalized_url=item.normalized_url,
+                    raw_url=item.raw_url,
+                    source_id=config.source_id,
+                    discovery_type=DiscoveryType.COMMENTED_HTML,
+                    parent_url=item.parent_url,
+                    depth=item.depth,
+                    http_status=status,
+                )
+            )
 
-            # 1. Extraer del DOM normal
-            dom_resources, next_urls = self._extract_resources_and_links(
-                html_text,
-                current_url,
+            dom_resources, links = self._extract_resources_and_links(
+                html or "",
+                item.normalized_url,
                 config,
                 discovery_type=DiscoveryType.COMMENTED_HTML,
-                seen_resource_keys=seen_resource_keys
+                seen_resource_keys=seen_resource_keys,
             )
-            # 2. Extraer de comentarios HTML
             comment_resources = self._extract_from_comments(
-                html_text,
-                current_url,
-                config,
-                seen_resource_keys=seen_resource_keys
+                html or "", item.normalized_url, config, seen_resource_keys
             )
+            for resource in [*dom_resources, *comment_resources]:
+                if frontier.register_resource(resource.url):
+                    resources.append(resource)
+                if frontier.stop_reason == StopReason.MAX_URLS:
+                    break
 
-            # Agregar recursos descubiertos (ya deduplicados contra seen_resource_keys)
-            for res in dom_resources + comment_resources:
-                all_resources.append(res)
-                coverage.resources_found += 1
+            if frontier.stop_reason == StopReason.MAX_URLS:
+                break
 
-            if depth < self.max_depth:
-                for nxt in next_urls:
-                    if nxt not in visited:
-                        queue.append((nxt, depth + 1, current_url))
+            if item.depth < config.max_depth:
+                for raw_href, _title in links:
+                    frontier.enqueue(
+                        raw_href,
+                        base_url=item.normalized_url,
+                        depth=item.depth + 1,
+                        parent_url=item.normalized_url,
+                    )
 
-        coverage.urls_discovered = len(discovered_urls) + len(all_resources)
-        logger.info(f"CommentedHtmlWorkflow finalizado para [{config.source_id}]: {len(all_resources)} recursos hallados.")
+        coverage.resources_found = len(resources)
+        coverage.urls_discovered = frontier.discovered_count
+        coverage.urls_rejected = frontier.rejected_count
+        coverage.urls_pending = frontier.pending_count
+        coverage.requests_total = session.requests_used
+        coverage.stop_reason = frontier.stop_reason.value if frontier.stop_reason else None
+
+        if successful_pages == 0 and coverage.urls_failed > 0:
+            return ExtractionResult(
+                source_id=config.source_id,
+                success=False,
+                resources=resources,
+                discovered_urls=discovered_urls,
+                coverage=coverage,
+                failure_code=coverage.stop_reason or "SOURCE_UNREACHABLE",
+            )
 
         return ExtractionResult(
             source_id=config.source_id,
             success=True,
-            resources=all_resources,
+            resources=resources,
             discovered_urls=discovered_urls,
-            coverage=coverage
+            coverage=coverage,
         )

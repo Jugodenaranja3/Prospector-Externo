@@ -1,11 +1,8 @@
-"""
-Modelos de observaciones y reportes de corrida para el Prospector Externo.
-Soporta trazabilidad estricta y consolidación de métricas de cobertura.
-"""
+"""Observaciones y reportes de corrida trazables."""
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from pydantic import BaseModel, Field
 import uuid
 
@@ -25,16 +22,23 @@ class ContentStatus(str, Enum):
 
 
 class CoverageStats(BaseModel):
-    """Métricas de cobertura y exhaustividad de la exploración."""
+    """Métricas técnicas de cobertura de una fuente durante una corrida."""
+
     pages_visited: int = 0
     urls_discovered: int = 0
     resources_found: int = 0
     urls_rejected: int = 0
     urls_failed: int = 0
+    urls_pending: int = 0
+    requests_total: int = 0
+    http_403: int = 0
+    http_429: int = 0
+    timeouts: int = 0
+    robots_disallowed: int = 0
+    stop_reason: Optional[str] = None
 
 
 class SourceRunObservation(BaseModel):
-    """Resultado operativo y de contenido de una fuente en una corrida."""
     observation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     source_id: str
     run_id: str
@@ -51,7 +55,6 @@ class SourceRunObservation(BaseModel):
 
 
 class RunReport(BaseModel):
-    """Reporte estructurado consolidado al finalizar una corrida oportuna."""
     run_id: str
     started_at: datetime
     finished_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

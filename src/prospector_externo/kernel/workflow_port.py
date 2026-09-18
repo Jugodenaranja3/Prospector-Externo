@@ -1,25 +1,16 @@
-"""
-Puerto abstracto para workflows de descubrimiento (Plugin Architecture).
-Cada plugin implementa esta interfaz para aislar sus particularidades de scraping.
-"""
+"""Puerto de workflows del microkernel."""
 
 from abc import ABC, abstractmethod
 from prospector_externo.domain.models import SourceConfig
 from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.infrastructure.http_runtime import SourceHttpSession
 
 
 class SourceWorkflow(ABC):
-    """Contrato base que todo plugin de workflow de descubrimiento debe implementar."""
+    def bind_http_session(self, session: SourceHttpSession) -> None:
+        """Inyección explícita de infraestructura por fuente."""
+        self.http_session = session
 
     @abstractmethod
-    def run(self, config: SourceConfig) -> ExtractionResult:
-        """
-        Ejecuta el descubrimiento y prospección sobre la fuente configurada.
-        
-        Args:
-            config: Configuración validada de la fuente.
-            
-        Returns:
-            ExtractionResult con inventario bruto, recursos, URLs y estadísticas de cobertura.
-        """
+    async def run(self, config: SourceConfig) -> ExtractionResult:
         pass

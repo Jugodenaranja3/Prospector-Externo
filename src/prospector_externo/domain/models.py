@@ -1,11 +1,8 @@
-"""
-Modelos de dominio principales del Prospector Externo.
-Entidades puras desacopladas de librerías externas y de persistencia.
-"""
+"""Modelos de dominio principales del Prospector Externo."""
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from pydantic import BaseModel, Field
 import uuid
 
@@ -29,32 +26,50 @@ class DiscoveryType(str, Enum):
 
 class SourceConfig(BaseModel):
     """Configuración declarativa de una fuente cargada desde sources.yaml."""
+
     source_id: str
     name: str = ""
     entrypoint: str
     workflow: str = "html"
     seeds: List[str] = Field(default_factory=list)
     update_category: str = "DAILY"
-    allowed_extensions: List[str] = Field(default_factory=lambda: [".pdf", ".xlsx", ".csv", ".zip"])
+
+    # Compatibilidad histórica. En el nuevo motor NO son gates destructivos del catálogo bruto.
+    allowed_extensions: List[str] = Field(
+        default_factory=lambda: [".pdf", ".xlsx", ".csv", ".zip"]
+    )
     excluded_path_keywords: List[str] = Field(default_factory=list)
+
     ignore_robots_txt: bool = False
     robots_override_reason: Optional[str] = None
     rate_limit_seconds: float = 1.0
 
+    # Límites seguros de discovery por fuente.
+    max_depth: int = 2
+    max_urls: int = 250
+    max_runtime_seconds: float = 900.0
+    max_requests: int = 250
+    max_query_variants: int = 25
+    max_consecutive_errors: int = 5
+    allowed_hosts: List[str] = Field(default_factory=list)
+
 
 class DiscoveredUrl(BaseModel):
     """Registro de una página o URL descubierta durante el recorrido."""
+
     normalized_url: str
     raw_url: str
     source_id: str
     discovery_type: DiscoveryType = DiscoveryType.HTML
     parent_url: Optional[str] = None
+    depth: int = 0
     discovered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     http_status: Optional[int] = None
 
 
 class ResourceCandidate(BaseModel):
-    """Recurso o documento público identificado (PDF, Excel, ZIP, etc.)."""
+    """Recurso público descubierto. No representa todavía FILE/REPORT/DATA_BASE de Analize."""
+
     resource_key: str
     url: str
     source_id: str
@@ -71,9 +86,15 @@ class ResourceCandidate(BaseModel):
     change_status: ChangeStatus = ChangeStatus.NEW
     discovered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    # Evidencia adicional del discovery bruto.
+    raw_url: Optional[str] = None
+    discovery_method: str = "html_link"
+    anchor_text: Optional[str] = None
+    context_text: Optional[str] = None
+    http_status: Optional[int] = None
+
 
 class Snapshot(BaseModel):
-    """Foto instantánea del inventario de una fuente en una corrida."""
     snapshot_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     source_id: str
     run_id: str
@@ -84,7 +105,6 @@ class Snapshot(BaseModel):
 
 
 class Source(BaseModel):
-    """Entidad representativa de una fuente en el catálogo maestro."""
     source_id: str
     name: str
     entrypoint: str

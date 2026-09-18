@@ -1,105 +1,130 @@
-"""
-Plugin de workflow para sitios HTML estáticos (HtmlWorkflow).
-Explora semillas focalizadas y enlaces alcanzables en HTML sin requerir motor JavaScript.
-"""
+"""Workflow HTML sobre DiscoveryFrontier y runtime HTTP async."""
 
 import logging
-from typing import Set, List
-from collections import deque
+from typing import List, Set
 
-from prospector_externo.workflows.base import BaseWorkflow
-from prospector_externo.domain.models import SourceConfig, DiscoveredUrl, DiscoveryType
-from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.domain.discovery import DiscoveryFrontier, StopReason
+from prospector_externo.domain.models import DiscoveredUrl, DiscoveryType, ResourceCandidate, SourceConfig
 from prospector_externo.domain.observations import CoverageStats
+from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.workflows.base import BaseWorkflow
 
 logger = logging.getLogger("prospector.workflows.html")
 
 
 class HtmlWorkflow(BaseWorkflow):
-    """Workflow de exploración para portales predominantemente HTML."""
+    async def run(self, config: SourceConfig) -> ExtractionResult:
+        logger.info("Iniciando HtmlWorkflow async para [%s]", config.source_id)
+        session = self._session()
+        frontier = DiscoveryFrontier(config)
+        frontier.seed(config.seeds or [config.entrypoint])
 
-    def __init__(self, max_depth: int = 2, max_pages: int = 30):
-        super().__init__()
-        self.max_depth = max_depth
-        self.max_pages = max_pages
-
-    def run(self, config: SourceConfig) -> ExtractionResult:
-        logger.info(f"Iniciando HtmlWorkflow para fuente: [{config.source_id}]")
         coverage = CoverageStats()
         discovered_urls: List[DiscoveredUrl] = []
-        all_resources = []
-
-        # Determinar semillas iniciales
-        initial_seeds = config.seeds if config.seeds else [config.entrypoint]
-        queue = deque([(seed, 0, None) for seed in initial_seeds])
-        visited: Set[str] = set()
+        resources: List[ResourceCandidate] = []
         seen_resource_keys: Set[str] = set()
+        consecutive_errors = 0
+        successful_pages = 0
 
-        while queue and len(visited) < self.max_pages:
-            current_url, depth, parent_url = queue.popleft()
-            if current_url in visited:
-                continue
-            visited.add(current_url)
+        while True:
+            if session.budget.remaining <= 0:
+                frontier.stop_reason = StopReason.REQUEST_BUDGET
+                break
+
+            item = frontier.pop()
+            if item is None:
+                break
+
+            html, status, error = await session.fetch_html(
+                item.normalized_url,
+                conditional=False,
+            )
+            frontier.mark_visited(item)
             coverage.pages_visited += 1
 
-            # Obtener HTML
-            html_text, status_code, err = self.http_client.fetch_html(
-                current_url,
-                rate_limit_delay=config.rate_limit_seconds,
-                ignore_robots_txt=config.ignore_robots_txt,
-                robots_override_reason=config.robots_override_reason
-            )
-
-            if err:
+            if error:
                 coverage.urls_failed += 1
-                logger.warning(f"Error accediendo a {current_url}: {err}")
-                if len(visited) == 1:
-                    # Falló la primera semilla
-                    return ExtractionResult(
-                        source_id=config.source_id,
-                        success=False,
-                        failure_code=err,
-                        error_message=f"Fallo de conexión o robots.txt en semilla inicial: {err}",
-                        coverage=coverage
-                    )
+                consecutive_errors += 1
+                if error == "TIMEOUT":
+                    coverage.timeouts += 1
+                elif error == "HTTP_403":
+                    coverage.http_403 += 1
+                elif error == "HTTP_429":
+                    coverage.http_429 += 1
+                elif error == "ROBOTS_DISALLOWED":
+                    coverage.robots_disallowed += 1
+                elif error == "REQUEST_BUDGET_EXCEEDED":
+                    frontier.stop_reason = StopReason.REQUEST_BUDGET
+                    break
+
+                if consecutive_errors >= config.max_consecutive_errors:
+                    frontier.stop_reason = StopReason.MAX_CONSECUTIVE_ERRORS
+                    break
                 continue
 
-            discovered_urls.append(DiscoveredUrl(
-                normalized_url=current_url,
-                raw_url=current_url,
-                source_id=config.source_id,
-                discovery_type=DiscoveryType.HTML,
-                parent_url=parent_url,
-                http_status=status_code
-            ))
-
-            # Extraer enlaces y recursos
-            resources, next_urls = self._extract_resources_and_links(
-                html_text,
-                current_url,
-                config,
-                discovery_type=DiscoveryType.HTML,
-                seen_resource_keys=seen_resource_keys
+            successful_pages += 1
+            consecutive_errors = 0
+            discovered_urls.append(
+                DiscoveredUrl(
+                    normalized_url=item.normalized_url,
+                    raw_url=item.raw_url,
+                    source_id=config.source_id,
+                    discovery_type=DiscoveryType.HTML,
+                    parent_url=item.parent_url,
+                    depth=item.depth,
+                    http_status=status,
+                )
             )
 
-            # Agregar recursos descubiertos (ya deduplicados contra seen_resource_keys)
-            for res in resources:
-                all_resources.append(res)
-                coverage.resources_found += 1
+            page_resources, links = self._extract_resources_and_links(
+                html or "",
+                item.normalized_url,
+                config,
+                discovery_type=DiscoveryType.HTML,
+                seen_resource_keys=seen_resource_keys,
+            )
+            for resource in page_resources:
+                if frontier.register_resource(resource.url):
+                    resources.append(resource)
+                if frontier.stop_reason == StopReason.MAX_URLS:
+                    break
 
-            # Encolar páginas hijas si no superan la profundidad máxima
-            if depth < self.max_depth:
-                for nxt in next_urls:
-                    if nxt not in visited:
-                        queue.append((nxt, depth + 1, current_url))
+            if frontier.stop_reason == StopReason.MAX_URLS:
+                break
 
-        coverage.urls_discovered = len(discovered_urls) + len(all_resources)
-        logger.info(f"HtmlWorkflow finalizado para [{config.source_id}]: {len(all_resources)} recursos hallados en {coverage.pages_visited} páginas.")
+            if item.depth < config.max_depth:
+                for raw_href, _title in links:
+                    frontier.enqueue(
+                        raw_href,
+                        base_url=item.normalized_url,
+                        depth=item.depth + 1,
+                        parent_url=item.normalized_url,
+                    )
+
+        coverage.resources_found = len(resources)
+        coverage.urls_discovered = frontier.discovered_count
+        coverage.urls_rejected = frontier.rejected_count
+        coverage.urls_pending = frontier.pending_count
+        coverage.requests_total = session.requests_used
+        coverage.stop_reason = (
+            frontier.stop_reason.value if frontier.stop_reason is not None else None
+        )
+
+        if successful_pages == 0 and coverage.urls_failed > 0:
+            return ExtractionResult(
+                source_id=config.source_id,
+                success=False,
+                resources=resources,
+                discovered_urls=discovered_urls,
+                coverage=coverage,
+                failure_code=coverage.stop_reason or "SOURCE_UNREACHABLE",
+                error_message="No se pudo obtener ninguna página navegable de la fuente",
+            )
 
         return ExtractionResult(
             source_id=config.source_id,
             success=True,
-            resources=all_resources,
+            resources=resources,
             discovered_urls=discovered_urls,
-            coverage=coverage
+            coverage=coverage,
         )

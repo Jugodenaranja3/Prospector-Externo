@@ -1,42 +1,62 @@
-"""
-Despachador de unidades de trabajo por fuente (SourceDispatcher).
-Resuelve el workflow especializado mediante el WorkflowRegistry y coordina su ejecución.
-"""
+"""Despachador async de workflows por fuente."""
 
+import inspect
 import logging
+from typing import Optional
+
 from prospector_externo.domain.models import SourceConfig
-from prospector_externo.kernel.registry import WorkflowRegistry
-from prospector_externo.kernel.workflow_port import SourceWorkflow
+from prospector_externo.infrastructure.http_runtime import AsyncHttpRuntime
 from prospector_externo.kernel.contracts import ExtractionResult
+from prospector_externo.kernel.registry import WorkflowRegistry
 
 logger = logging.getLogger("prospector.application.dispatcher")
 
 
 class SourceDispatcher:
-    """Resuelve y ejecuta el workflow especializado correspondiente a la configuración de la fuente."""
+    def __init__(self, http_runtime: Optional[AsyncHttpRuntime] = None) -> None:
+        self.http_runtime = http_runtime
 
-    def dispatch(self, config: SourceConfig) -> ExtractionResult:
-        """Obtiene el workflow del registro y lo ejecuta sobre la fuente."""
-        logger.info(f"Despachando fuente [{config.source_id}] con workflow [{config.workflow}]")
+    def set_http_runtime(self, runtime: AsyncHttpRuntime) -> None:
+        self.http_runtime = runtime
+
+    async def dispatch(self, config: SourceConfig) -> ExtractionResult:
+        if config.workflow.lower() == "javascript":
+            return ExtractionResult(
+                source_id=config.source_id,
+                success=False,
+                failure_code="WORKFLOW_DEFERRED",
+                error_message="JavascriptWorkflow se mantiene aislado hasta BATCH 7",
+            )
+
+        if self.http_runtime is None:
+            return ExtractionResult(
+                source_id=config.source_id,
+                success=False,
+                failure_code="HTTP_RUNTIME_NOT_CONFIGURED",
+            )
+
         try:
             workflow = WorkflowRegistry.resolve(config.workflow)
-        except ValueError as e:
-            logger.error(f"Error resolviendo workflow para [{config.source_id}]: {e}")
+        except ValueError as exc:
             return ExtractionResult(
                 source_id=config.source_id,
                 success=False,
                 failure_code="WORKFLOW_NOT_FOUND",
-                error_message=str(e)
+                error_message=str(exc),
             )
+
+        workflow.bind_http_session(self.http_runtime.session_for(config))
 
         try:
             result = workflow.run(config)
+            if inspect.isawaitable(result):
+                result = await result
             return result
-        except Exception as e:
-            logger.critical(f"Excepción no controlada ejecutando workflow [{config.workflow}] en [{config.source_id}]: {e}", exc_info=True)
+        except Exception as exc:
+            logger.exception("Fallo no controlado en workflow %s", config.workflow)
             return ExtractionResult(
                 source_id=config.source_id,
                 success=False,
                 failure_code="UNHANDLED_WORKFLOW_EXCEPTION",
-                error_message=str(e)
+                error_message=str(exc),
             )

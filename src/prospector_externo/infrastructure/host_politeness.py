@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -10,6 +9,7 @@ from typing import AsyncIterator, Awaitable, Callable, Dict, Optional
 MonotonicClock = Callable[[], float]
 AsyncSleeper = Callable[[float], Awaitable[None]]
 
+
 @dataclass(frozen=True)
 class HostPolitenessSnapshot:
     host: str
@@ -18,6 +18,7 @@ class HostPolitenessSnapshot:
     concurrency_limit: int
     min_interval_seconds: float
     not_before_at: float
+
 
 @dataclass
 class _HostState:
@@ -28,6 +29,7 @@ class _HostState:
     requests_started: int = 0
     last_request_started_at: Optional[float] = None
     not_before_at: float = 0.0
+
 
 class HostPolitenessController:
     def __init__(
@@ -70,13 +72,9 @@ class HostPolitenessController:
     async def defer(self, host: str, seconds: float) -> None:
         if seconds < 0:
             raise ValueError("seconds no puede ser negativo")
-        normalized_host = self._normalize_host(host)
-        state = self._get_or_create_state(normalized_host)
+        state = self._get_or_create_state(host)
         async with state.timing_lock:
-            state.not_before_at = max(
-                state.not_before_at,
-                self._monotonic() + seconds,
-            )
+            state.not_before_at = max(state.not_before_at, self._monotonic() + seconds)
 
     @asynccontextmanager
     async def slot(
@@ -86,13 +84,20 @@ class HostPolitenessController:
     ) -> AsyncIterator[None]:
         normalized_host = self._normalize_host(host)
         state = self._get_or_create_state(normalized_host)
-        interval = (
+        requested_interval = (
             state.default_min_interval_seconds
             if min_interval_seconds is None
             else min_interval_seconds
         )
-        if interval < 0:
+        if requested_interval < 0:
             raise ValueError("min_interval_seconds no puede ser negativo")
+
+        # Un source_id del mismo host nunca puede relajar una política más conservadora ya registrada.
+        state.default_min_interval_seconds = max(
+            state.default_min_interval_seconds,
+            requested_interval,
+        )
+
         await state.semaphore.acquire()
         try:
             async with state.timing_lock:
@@ -100,7 +105,10 @@ class HostPolitenessController:
                 interval_remaining = 0.0
                 if state.last_request_started_at is not None:
                     elapsed = now - state.last_request_started_at
-                    interval_remaining = max(0.0, interval - elapsed)
+                    interval_remaining = max(
+                        0.0,
+                        state.default_min_interval_seconds - elapsed,
+                    )
                 defer_remaining = max(0.0, state.not_before_at - now)
                 remaining = max(interval_remaining, defer_remaining)
                 if remaining > 0:

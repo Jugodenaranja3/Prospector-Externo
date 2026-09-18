@@ -1,11 +1,12 @@
-
 from __future__ import annotations
 
 import asyncio
+import random
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
 from typing import Dict, Optional
+
 
 @dataclass(frozen=True)
 class HttpTimeoutConfig:
@@ -24,11 +25,13 @@ class HttpTimeoutConfig:
             if value <= 0:
                 raise ValueError(f"{name} timeout debe ser mayor que cero")
 
+
 @dataclass(frozen=True)
 class RetryPolicy:
     max_attempts: int = 3
     base_backoff_seconds: float = 1.0
     max_retry_after_seconds: float = 120.0
+    jitter_ratio: float = 0.0
 
     def __post_init__(self) -> None:
         if self.max_attempts < 1:
@@ -37,11 +40,17 @@ class RetryPolicy:
             raise ValueError("base_backoff_seconds no puede ser negativo")
         if self.max_retry_after_seconds < 0:
             raise ValueError("max_retry_after_seconds no puede ser negativo")
+        if not 0 <= self.jitter_ratio <= 1:
+            raise ValueError("jitter_ratio debe estar entre 0 y 1")
 
     def backoff_for_attempt(self, attempt_number: int) -> float:
         if attempt_number < 1:
             raise ValueError("attempt_number debe ser mayor o igual a 1")
-        return self.base_backoff_seconds * (2 ** (attempt_number - 1))
+        base = self.base_backoff_seconds * (2 ** (attempt_number - 1))
+        if base == 0 or self.jitter_ratio == 0:
+            return base
+        factor = 1.0 + random.uniform(-self.jitter_ratio, self.jitter_ratio)
+        return max(0.0, base * factor)
 
     def parse_retry_after(self, value: Optional[str]) -> Optional[float]:
         if value is None:
@@ -49,7 +58,6 @@ class RetryPolicy:
         raw = value.strip()
         if not raw:
             return None
-
         try:
             seconds = float(raw)
             if seconds < 0:
@@ -57,7 +65,6 @@ class RetryPolicy:
             return min(seconds, self.max_retry_after_seconds)
         except ValueError:
             pass
-
         try:
             target = parsedate_to_datetime(raw)
             if target.tzinfo is None:
@@ -67,6 +74,7 @@ class RetryPolicy:
             return min(seconds, self.max_retry_after_seconds)
         except (TypeError, ValueError, OverflowError):
             return None
+
 
 class RequestBudget:
     def __init__(self, max_requests: int) -> None:
@@ -95,10 +103,12 @@ class RequestBudget:
             self._used += 1
             return True
 
+
 @dataclass(frozen=True)
 class ConditionalMetadata:
     etag: Optional[str] = None
     last_modified: Optional[str] = None
+
 
 class ConditionalRequestCache:
     def __init__(self) -> None:
@@ -121,10 +131,7 @@ class ConditionalRequestCache:
         last_modified = normalized.get("last-modified")
         if etag is None and last_modified is None:
             return
-        self._items[url] = ConditionalMetadata(
-            etag=etag,
-            last_modified=last_modified,
-        )
+        self._items[url] = ConditionalMetadata(etag=etag, last_modified=last_modified)
 
     def get(self, url: str) -> Optional[ConditionalMetadata]:
         return self._items.get(url)
