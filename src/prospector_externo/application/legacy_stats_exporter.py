@@ -68,7 +68,9 @@ class LegacyExportResult(BaseModel):
 class LegacyStatsContractValidator:
     """Valida el contrato observado en los JSON históricos de DATAX."""
 
-    _slot = re.compile(r"^Descargar(?:_[2-9]\d*)?\.csv$")
+    # La secuencia histórica es Descargar.csv, Descargar_2.csv, ..., Descargar_10.csv, ...
+    # Sin ceros a la izquierda y sin Descargar_1.csv.
+    _slot = re.compile(r"^Descargar(?:_(?:[2-9]|[1-9]\d+))?\.csv$")
 
     @classmethod
     def validate(cls, document: Mapping[str, Any], *, root_key: str = LEGACY_ROOT_KEY) -> int:

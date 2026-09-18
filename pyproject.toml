@@ -33,6 +33,7 @@ mongo = [
 [project.scripts]
 prospector-batch = "apps.crawler_batch.main:main"
 prospector-api = "apps.catalog_api.main:main"
+prospector-project = "apps.datax_projection.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
