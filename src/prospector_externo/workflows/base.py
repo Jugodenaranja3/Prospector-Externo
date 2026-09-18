@@ -95,6 +95,46 @@ class BaseWorkflow(SourceWorkflow):
         return year_only.group(1) if year_only else None
 
     @staticmethod
+    def _period_precision(period: Optional[str]) -> int:
+        """Prioriza evidencia temporal más específica sin mezclar campos.
+
+        Día > mes/trimestre > año. Esto evita construir periodos híbridos como
+        `enero` tomado del contexto con `2016` tomado de un título que solo
+        menciona "Base 2016 = 100".
+        """
+        if not period:
+            return 0
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", period):
+            return 3
+        if re.fullmatch(r"\d{4}-(?:\d{2}|Q[1-4])", period):
+            return 2
+        if re.fullmatch(r"\d{4}", period):
+            return 1
+        return 0
+
+    def _extract_period_from_evidence(
+        self,
+        *evidence: Optional[str],
+    ) -> Optional[str]:
+        """Resuelve periodo por campo y conserva la evidencia más precisa.
+
+        Cada pieza se analiza por separado. En empate gana la primera, por lo
+        que el título explícito conserva prioridad frente al contexto y la URL.
+        Una evidencia más precisa sí puede superar una anterior más genérica.
+        """
+        best: Optional[str] = None
+        best_precision = 0
+        for text in evidence:
+            if not text:
+                continue
+            candidate = self._extract_period_from_text(text)
+            precision = self._period_precision(candidate)
+            if precision > best_precision:
+                best = candidate
+                best_precision = precision
+        return best
+
+    @staticmethod
     def _discovery_method(discovery_type: DiscoveryType) -> str:
         if discovery_type == DiscoveryType.COMMENTED_HTML:
             return "commented_html_link"
@@ -119,8 +159,10 @@ class BaseWorkflow(SourceWorkflow):
         ext = ResourceDetector.extension_for(normalized)
         parsed = urlparse(normalized)
         effective_title = title.strip() or os.path.basename(parsed.path) or normalized
-        period = self._extract_period_from_text(
-            f"{effective_title} {context_text or ''} {unquote(normalized)}"
+        period = self._extract_period_from_evidence(
+            effective_title,
+            context_text,
+            unquote(normalized),
         )
         return ResourceCandidate(
             resource_key=UrlNormalizer.compute_resource_key(config.source_id, normalized),

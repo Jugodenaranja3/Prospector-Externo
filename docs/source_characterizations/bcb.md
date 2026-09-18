@@ -87,3 +87,30 @@ mes. El raw permanece intacto; el falso positivo solo queda fuera de downstream.
 
 Resultado downstream esperado del histórico completo: `raw=404`,
 `selected=391`, `families=1`, `periods=163`, `legacy=391`.
+
+## Smoke Boletín Mensual actual y hardening BATCH 5D (2026-09-18)
+
+El smoke controlado de `?q=pub_boletin-mensual` usó únicamente robots + una
+página HTML y produjo 70 recursos raw. De ellos, 61 son cuadros XLSX del Boletín
+Mensual N° 373 (Enero 2026) y 9 pertenecen a navegación/publicaciones globales.
+La numeración visible termina en 60, pero existen dos cuadros independientes
+`3A` y `3B`; por ello el número real de series/cuadros XLSX es 61, no 60.
+
+El contrato `bcb_boletin_mensual_cuadro` ya separa correctamente cada código y
+título en su propia familia (`3A` y `3B` no colapsan). Sin embargo, el cuadro 43,
+`Índice de Precios al Consumidor - IPC (Base 2016 = 100)`, reveló un defecto
+genérico de extracción temporal: al concatenar título, contexto y URL antes de
+extraer el periodo, `enero` del contexto podía combinarse con `2016` del título,
+produciendo el periodo híbrido incorrecto `2016-01` en vez de `2026-01`.
+
+BATCH 5D resuelve cada campo temporal por separado y escoge la evidencia más
+precisa: día > mes/trimestre > año; en empate se conserva el orden título >
+contexto > URL. Así un periodo explícito en el título sigue teniendo prioridad,
+pero un simple año-base del título no puede contaminar un mes/año explícito del
+contexto. El cambio es genérico y no introduce lógica BCB dentro del modelo de
+dominio ni del grouping contract.
+
+Después de re-crawlear este smoke, el resultado esperado es: 70 raw, 61 cuadros
+caracterizados, 61 familias y los 61 con periodo `2026-01`. Los 9 recursos
+globales permanecen raw y fuera de downstream por `unmatched_policy: exclude`.
+
