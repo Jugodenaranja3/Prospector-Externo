@@ -42,6 +42,12 @@ class CoverageStats(BaseModel):
     query_variants_blocked: int = 0
     pagination_pages: int = 0
     pagination_families_stopped: int = 0
+    api_endpoints: int = 0
+    api_documentation_found: int = 0
+    openapi_documents: int = 0
+    api_non_get_operations_skipped: int = 0
+    api_auth_required: int = 0
+    api_unresolved_operations: int = 0
     stop_reason: Optional[str] = None
 
 

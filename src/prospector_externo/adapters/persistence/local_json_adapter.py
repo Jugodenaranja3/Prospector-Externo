@@ -84,7 +84,9 @@ class LocalJsonRepositoryAdapter(CatalogRepositoryPort, RunReportRepositoryPort)
                     "title": r.title,
                     "ext": r.file_extension,
                     "status": r.change_status,
-                    "extracted_from": r.extracted_from_archive
+                    "extracted_from": r.extracted_from_archive,
+                    "resource_type": r.resource_type,
+                    "api": r.api.model_dump(mode="json") if r.api is not None else None,
                 }
                 for r in snapshot.resources
             ]
@@ -102,7 +104,9 @@ class LocalJsonRepositoryAdapter(CatalogRepositoryPort, RunReportRepositoryPort)
                     "type": "resource",
                     "url": r.url,
                     "extension": r.file_extension,
-                    "status": r.change_status
+                    "status": r.change_status,
+                    "resource_type": r.resource_type,
+                    "api": r.api.model_dump(mode="json") if r.api is not None else None,
                 }
                 for r in snapshot.resources
             ]

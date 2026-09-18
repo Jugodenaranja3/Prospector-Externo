@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from pydantic import BaseModel, Field
 import uuid
 
@@ -23,6 +23,28 @@ class DiscoveryType(str, Enum):
     ARCHIVE_INTERNAL = "archive_internal"
     CUSTOM = "custom"
     SITEMAP = "sitemap"
+
+
+class ResourceType(str, Enum):
+    FILE = "file"
+    API = "api"
+
+
+class ApiMetadata(BaseModel):
+    """Metadata específica de una referencia/endpoint API público."""
+
+    identity: str
+    format: Optional[str] = None
+    method: str = "GET"
+    documentation_url: Optional[str] = None
+    is_openapi: bool = False
+    is_geojson: bool = False
+    has_pagination: bool = False
+    records_detected: Optional[int] = None
+    operation_id: Optional[str] = None
+    auth_required: bool = False
+    unresolved_required_params: Tuple[str, ...] = ()
+    callable_by_policy: bool = False
 
 
 class SourceConfig(BaseModel):
@@ -69,6 +91,11 @@ class SourceConfig(BaseModel):
     max_sitemap_urls: int = 500
     max_sitemap_bytes: int = 1_000_000
 
+    # API discovery bounded. BATCH 3A descubre/describe, no ejecuta operaciones arbitrarias.
+    discover_apis: bool = True
+    max_api_endpoints: int = 200
+    max_api_response_bytes: int = 2_000_000
+
 
 class DiscoveredUrl(BaseModel):
     """Registro de una página o URL descubierta durante el recorrido."""
@@ -108,6 +135,10 @@ class ResourceCandidate(BaseModel):
     anchor_text: Optional[str] = None
     context_text: Optional[str] = None
     http_status: Optional[int] = None
+
+    # API es metadata de discovery, no un modelo FILE/REPORT de Analize.
+    resource_type: ResourceType = ResourceType.FILE
+    api: Optional[ApiMetadata] = None
 
 
 class Snapshot(BaseModel):

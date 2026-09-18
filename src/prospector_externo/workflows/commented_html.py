@@ -76,7 +76,9 @@ class CommentedHtmlWorkflow(BaseWorkflow):
             if item is None:
                 break
 
-            html, status, error = await session.fetch_html(item.normalized_url, conditional=False)
+            html, status, error, response_headers = await session.fetch_document(
+                item.normalized_url, conditional=False
+            )
             frontier.mark_visited(item)
             coverage.pages_visited += 1
 
@@ -123,9 +125,18 @@ class CommentedHtmlWorkflow(BaseWorkflow):
             comment_resources = self._extract_from_comments(
                 html or "", item.normalized_url, config, seen_resource_keys
             )
+            current_api_count = sum(1 for r in resources if r.resource_type.value == "api")
+            api_resources = self._extract_api_candidates(
+                html_content=html or "",
+                current_url=item.normalized_url,
+                config=config,
+                headers=response_headers,
+                seen_resource_keys=seen_resource_keys,
+                remaining_api_slots=config.max_api_endpoints - current_api_count,
+            )
 
             accepted_resources = 0
-            for resource in [*dom_resources, *comment_resources]:
+            for resource in [*dom_resources, *comment_resources, *api_resources]:
                 if frontier.register_resource(resource.url):
                     resources.append(resource)
                     accepted_resources += 1

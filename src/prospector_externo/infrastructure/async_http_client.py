@@ -414,6 +414,38 @@ class AsyncResilientHttpClient:
             self._active_rate_limit.reset(rate_token)
             self._active_budget.reset(budget_token)
 
+    async def fetch_document(
+        self,
+        url: str,
+        *,
+        rate_limit_delay: Optional[float] = None,
+        check_robots: bool = True,
+        ignore_robots_txt: bool = False,
+        robots_override_reason: Optional[str] = None,
+        conditional: bool = True,
+        request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
+        accept: Optional[str] = None,
+    ) -> Tuple[Optional[str], Optional[int], Optional[str], Dict[str, str]]:
+        headers = {"Accept": accept} if accept else None
+        response, status_code, error = await self._request(
+            "GET",
+            url,
+            rate_limit_delay=rate_limit_delay,
+            check_robots=check_robots,
+            ignore_robots_txt=ignore_robots_txt,
+            robots_override_reason=robots_override_reason,
+            headers=headers,
+            conditional=conditional,
+            request_budget=request_budget,
+            allowed_redirect_hosts=allowed_redirect_hosts,
+            max_redirects=max_redirects,
+        )
+        if response is None:
+            return None, status_code, error, {}
+        return response.text, status_code, None, self._normalize_headers(response.headers)
+
     async def fetch_html(
         self,
         url: str,
@@ -427,8 +459,7 @@ class AsyncResilientHttpClient:
         allowed_redirect_hosts: Optional[Iterable[str]] = None,
         max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
-        response, status_code, error = await self._request(
-            "GET",
+        text, status_code, error, _headers = await self.fetch_document(
             url,
             rate_limit_delay=rate_limit_delay,
             check_robots=check_robots,
@@ -439,9 +470,7 @@ class AsyncResilientHttpClient:
             allowed_redirect_hosts=allowed_redirect_hosts,
             max_redirects=max_redirects,
         )
-        if response is None:
-            return None, status_code, error
-        return response.text, status_code, None
+        return text, status_code, error
 
     async def fetch_headers(
         self,
@@ -541,6 +570,7 @@ class AsyncResilientHttpClient:
         request_budget: Optional[RequestBudget] = None,
         allowed_redirect_hosts: Optional[Iterable[str]] = None,
         max_redirects: int = DEFAULT_MAX_REDIRECTS,
+        accept: Optional[str] = None,
     ) -> Tuple[Optional[bytes], Optional[int], Optional[str], Dict[str, str]]:
         if max_bytes <= 0:
             raise ValueError("max_bytes debe ser mayor que cero")
@@ -552,6 +582,7 @@ class AsyncResilientHttpClient:
             check_robots=check_robots,
             ignore_robots_txt=ignore_robots_txt,
             robots_override_reason=robots_override_reason,
+            headers={"Accept": accept} if accept else None,
             stream=True,
             conditional=False,
             request_budget=request_budget,

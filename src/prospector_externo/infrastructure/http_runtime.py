@@ -49,6 +49,25 @@ class SourceHttpSession:
     def requests_used(self) -> int:
         return self.budget.used
 
+    async def fetch_document(
+        self,
+        url: str,
+        *,
+        conditional: bool = False,
+        accept: Optional[str] = None,
+    ):
+        return await self.client.fetch_document(
+            url,
+            rate_limit_delay=self.config.rate_limit_seconds,
+            ignore_robots_txt=self.config.ignore_robots_txt,
+            robots_override_reason=self.config.robots_override_reason,
+            conditional=conditional,
+            request_budget=self.budget,
+            allowed_redirect_hosts=self.allowed_redirect_hosts,
+            max_redirects=self.config.max_redirects,
+            accept=accept,
+        )
+
     async def fetch_html(self, url: str, *, conditional: bool = False):
         return await self.client.fetch_html(
             url,
@@ -84,10 +103,13 @@ class SourceHttpSession:
             max_redirects=self.config.max_redirects,
         )
 
-    async def fetch_bytes_limited(self, url: str, *, max_bytes: int):
+    async def fetch_bytes_limited(
+        self, url: str, *, max_bytes: int, accept: Optional[str] = None
+    ):
         return await self.client.fetch_bytes_limited(
             url,
             max_bytes=max_bytes,
+            accept=accept,
             rate_limit_delay=self.config.rate_limit_seconds,
             ignore_robots_txt=self.config.ignore_robots_txt,
             robots_override_reason=self.config.robots_override_reason,

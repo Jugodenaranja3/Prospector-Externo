@@ -11,10 +11,13 @@ from bs4 import BeautifulSoup
 
 from prospector_externo.domain.discovery import DiscoveryFrontier, StopReason
 from prospector_externo.domain.discovery_intelligence import PaginationYieldPolicy
+from prospector_externo.domain.api_discovery import ApiAccessPolicy, ApiDetector, ApiIdentity, ApiReference
 from prospector_externo.domain.models import (
+    ApiMetadata,
     ChangeStatus,
     DiscoveryType,
     ResourceCandidate,
+    ResourceType,
     SourceConfig,
 )
 from prospector_externo.domain.normalizer import UrlNormalizer
@@ -126,6 +129,80 @@ class BaseWorkflow(SourceWorkflow):
             context_text=context_text,
         )
 
+    def _make_api_resource(
+        self,
+        *,
+        config: SourceConfig,
+        reference: ApiReference,
+        current_url: str,
+    ) -> ResourceCandidate:
+        normalized = UrlNormalizer.normalize(reference.url, base_url=current_url)
+        identity = ApiIdentity.value(reference.method, normalized)
+        api_metadata = ApiMetadata(
+            identity=identity,
+            format=reference.api_format,
+            method=reference.method.upper(),
+            documentation_url=reference.documentation_url,
+            is_openapi=reference.is_openapi,
+            is_geojson=reference.is_geojson,
+            has_pagination=reference.has_pagination,
+            records_detected=reference.records_detected,
+            operation_id=reference.operation_id,
+            auth_required=reference.auth_required,
+            unresolved_required_params=reference.unresolved_required_params,
+            callable_by_policy=ApiAccessPolicy.operation_callable(
+                method=reference.method,
+                auth_required=reference.auth_required,
+                unresolved_required_params=reference.unresolved_required_params,
+            ),
+        )
+        title = (reference.title or "").strip() or f"API {reference.method.upper()} {urlparse(normalized).path or '/'}"
+        return ResourceCandidate(
+            resource_key=UrlNormalizer.compute_resource_key(
+                config.source_id, f"api|{identity}"
+            ),
+            url=normalized,
+            raw_url=reference.url,
+            source_id=config.source_id,
+            title=title,
+            file_extension=ResourceDetector.extension_for(normalized),
+            discovered_from_url=current_url,
+            change_status=ChangeStatus.NEW,
+            discovery_method=reference.detection_method,
+            anchor_text=reference.title,
+            resource_type=ResourceType.API,
+            api=api_metadata,
+        )
+
+    def _extract_api_candidates(
+        self,
+        *,
+        html_content: str,
+        current_url: str,
+        config: SourceConfig,
+        headers: Optional[dict] = None,
+        seen_resource_keys: Optional[Set[str]] = None,
+        remaining_api_slots: Optional[int] = None,
+    ) -> List[ResourceCandidate]:
+        if not config.discover_apis or config.max_api_endpoints <= 0:
+            return []
+        resources: List[ResourceCandidate] = []
+        limit = config.max_api_endpoints if remaining_api_slots is None else max(0, remaining_api_slots)
+        for ref in ApiDetector.extract_references(
+            html_content, base_url=current_url, headers=headers
+        ):
+            if len(resources) >= limit:
+                break
+            resource = self._make_api_resource(
+                config=config, reference=ref, current_url=current_url
+            )
+            if seen_resource_keys is not None:
+                if resource.resource_key in seen_resource_keys:
+                    continue
+                seen_resource_keys.add(resource.resource_key)
+            resources.append(resource)
+        return resources
+
     @staticmethod
     def _context_for_anchor(tag) -> Optional[str]:
         """Recupera contexto humano cercano sin copiar bloques enormes de la página."""
@@ -167,6 +244,10 @@ class BaseWorkflow(SourceWorkflow):
 
             title = tag.get_text(" ", strip=True)
             context_text = self._context_for_anchor(tag)
+            # Las referencias API fuertes se catalogan como API y no se navegan
+            # como páginas HTML. Un .json estático sin señal API sigue siendo recurso.
+            if config.discover_apis and ApiDetector.is_api_url(normalized):
+                continue
             if ResourceDetector.is_resource(normalized):
                 resource = self._make_resource(
                     config=config,
@@ -276,6 +357,13 @@ class BaseWorkflow(SourceWorkflow):
         coverage.query_variants_blocked = frontier.query_variants_blocked
         coverage.pagination_pages = pagination.pages_observed
         coverage.pagination_families_stopped = pagination.families_stopped
+        api_resources = [r for r in resources if r.resource_type == ResourceType.API]
+        coverage.api_endpoints = len(api_resources)
+        coverage.api_documentation_found = len({
+            r.api.documentation_url
+            for r in api_resources
+            if r.api is not None and r.api.documentation_url
+        })
         coverage.stop_reason = (
             frontier.stop_reason.value if frontier.stop_reason is not None else None
         )
