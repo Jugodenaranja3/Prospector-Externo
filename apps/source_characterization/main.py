@@ -172,10 +172,8 @@ def _walk(value: Any):
 
 
 def inspect_resource_evidence(output_root: Path) -> dict[str, Any]:
-    urls: set[str] = set()
-    methods: Counter[str] = Counter()
-    types: Counter[str] = Counter()
-    api_resources = 0
+    """Recolecta evidencia por URL única, deduplicando artefactos repetidos."""
+    evidence_by_url: dict[str, dict[str, Any]] = {}
 
     if not output_root.exists():
         return {
@@ -183,6 +181,7 @@ def inspect_resource_evidence(output_root: Path) -> dict[str, Any]:
             "resource_methods": {},
             "resource_types": {},
             "api_resources": 0,
+            "api_resource_urls": [],
         }
 
     for path in output_root.rglob("*.json"):
@@ -201,22 +200,28 @@ def inspect_resource_evidence(output_root: Path) -> dict[str, Any]:
             for item in resources:
                 if not isinstance(item, dict):
                     continue
+
                 url = None
                 for key in RESOURCE_URL_KEYS:
                     value = item.get(key)
                     if isinstance(value, str) and value.strip():
                         url = value.strip()
                         break
-                if url:
-                    urls.add(url)
+                if not url:
+                    continue
+
+                record = evidence_by_url.setdefault(
+                    url,
+                    {"methods": set(), "types": set(), "is_api": False},
+                )
 
                 method = item.get("discovery_method")
                 if isinstance(method, str) and method:
-                    methods[method] += 1
+                    record["methods"].add(method)
 
                 rtype = item.get("resource_type")
                 if isinstance(rtype, str) and rtype:
-                    types[rtype] += 1
+                    record["types"].add(rtype)
 
                 api_value = item.get("api")
                 if (
@@ -224,13 +229,30 @@ def inspect_resource_evidence(output_root: Path) -> dict[str, Any]:
                     or (isinstance(method, str) and "api" in method.lower())
                     or (isinstance(rtype, str) and "api" in rtype.lower())
                 ):
-                    api_resources += 1
+                    record["is_api"] = True
+
+    method_urls: defaultdict[str, set[str]] = defaultdict(set)
+    type_urls: defaultdict[str, set[str]] = defaultdict(set)
+    api_urls: set[str] = set()
+
+    for url, record in evidence_by_url.items():
+        for method in record["methods"]:
+            method_urls[method].add(url)
+        for rtype in record["types"]:
+            type_urls[rtype].add(url)
+        if record["is_api"]:
+            api_urls.add(url)
 
     return {
-        "resource_urls": sorted(urls),
-        "resource_methods": dict(sorted(methods.items())),
-        "resource_types": dict(sorted(types.items())),
-        "api_resources": api_resources,
+        "resource_urls": sorted(evidence_by_url),
+        "resource_methods": {
+            method: len(urls) for method, urls in sorted(method_urls.items())
+        },
+        "resource_types": {
+            rtype: len(urls) for rtype, urls in sorted(type_urls.items())
+        },
+        "api_resources": len(api_urls),
+        "api_resource_urls": sorted(api_urls),
     }
 
 
@@ -275,28 +297,129 @@ def classify_stage(
 ) -> tuple[str, str | None]:
     robots_codes, site_codes = split_http_codes(trace)
     reason = diagnostic_reason(log_text, trace)
+    failed = (
+        returncode != 0
+        or (execution_status or "").upper() in {"FAILED", "ERROR"}
+    )
 
     if resources_found > 0:
         return "SUCCESS_RESOURCES", reason
     if timed_out:
         return "TIMEOUT", "SUBPROCESS_TIMEOUT"
-    if site_codes and any(200 <= code < 400 for code in site_codes):
-        if returncode == 0 and (execution_status or "").upper() not in {"FAILED", "ERROR"}:
-            return "REACHABLE_NO_RESOURCES", reason
-        return "EXECUTION_ERROR", reason
-    if site_codes and 403 in site_codes:
+
+    if failed and 403 in site_codes:
         return "ACCESS_RESTRICTED", "SITE_HTTP_403"
+    if failed and 401 in site_codes:
+        return "ACCESS_RESTRICTED", "SITE_HTTP_401"
+
     if not site_codes and any(code in {401, 403} for code in robots_codes):
         return "ROBOTS_REVIEW", "ROBOTS_ACCESS_RESTRICTED"
-    if reason in {"DNS_OR_NAME_RESOLUTION", "CONNECTION_REFUSED", "CONNECT_TIMEOUT", "SSL_ERROR"}:
+
+    if reason in {
+        "DNS_OR_NAME_RESOLUTION",
+        "CONNECTION_REFUSED",
+        "CONNECT_TIMEOUT",
+        "SSL_ERROR",
+    }:
         return "UNAVAILABLE", reason
-    if returncode != 0 or (execution_status or "").upper() in {"FAILED", "ERROR"}:
+
+    if any(200 <= code < 400 for code in site_codes):
+        if not failed:
+            return "REACHABLE_NO_RESOURCES", reason
         return "EXECUTION_ERROR", reason
+
+    if site_codes and 403 in site_codes:
+        return "ACCESS_RESTRICTED", "SITE_HTTP_403"
+    if site_codes and 401 in site_codes:
+        return "ACCESS_RESTRICTED", "SITE_HTTP_401"
+
+    if failed:
+        return "EXECUTION_ERROR", reason
+
     return "NO_EVIDENCE", reason
 
 
 def stage_result_path(stage_dir: Path) -> Path:
     return stage_dir / "stage_result.json"
+
+
+def reindex_existing_stage(stage_dir: Path, stage: str) -> dict[str, Any]:
+    """Recalcula métricas usando únicamente artefactos existentes; no hace red."""
+    result_file = stage_result_path(stage_dir)
+    if not result_file.exists():
+        raise FileNotFoundError(result_file)
+
+    previous = json.loads(result_file.read_text(encoding="utf-8"))
+    crawl_dir = stage_dir / "crawl"
+    log_path = stage_dir / "crawl.log"
+    config_path = stage_dir / "probe.yaml"
+
+    log_text = (
+        log_path.read_text(encoding="utf-8", errors="replace")
+        if log_path.exists()
+        else ""
+    )
+
+    inspected = inspect_probe_output(crawl_dir)
+    checkpoint_count = parse_checkpoint_resources(log_text) or 0
+    evidence = inspect_resource_evidence(crawl_dir)
+
+    resources_found = max(
+        inspected.get("resources_found") or 0,
+        checkpoint_count,
+        len(evidence["resource_urls"]),
+    )
+
+    trace = parse_request_trace(log_text)
+    robots_codes, site_codes = split_http_codes(trace)
+    returncode = int(previous.get("returncode", 0))
+    timed_out = bool(previous.get("timed_out", False))
+
+    stage_status, reason = classify_stage(
+        returncode=returncode,
+        execution_status=inspected.get("execution_status")
+        or previous.get("execution_status"),
+        resources_found=resources_found,
+        trace=trace,
+        log_text=log_text,
+        timed_out=timed_out,
+    )
+
+    result = {
+        "stage": stage,
+        "status": stage_status,
+        "diagnostic_reason": reason,
+        "resources_found": resources_found,
+        "api_resources": evidence["api_resources"],
+        "api_resource_urls": evidence["api_resource_urls"],
+        "resource_methods": evidence["resource_methods"],
+        "resource_types": evidence["resource_types"],
+        "robots_http_codes": robots_codes,
+        "site_http_codes": site_codes,
+        "requests_reported": (
+            inspected.get("requests_reported")
+            if inspected.get("requests_reported") is not None
+            else previous.get("requests_reported")
+        ),
+        "execution_status": inspected.get("execution_status")
+        or previous.get("execution_status"),
+        "stop_reason": inspected.get("stop_reason")
+        or previous.get("stop_reason"),
+        "elapsed_seconds": previous.get("elapsed_seconds"),
+        "returncode": returncode,
+        "timed_out": timed_out,
+        "config_file": str(config_path),
+        "crawl_output_dir": str(crawl_dir),
+        "log_file": str(log_path),
+        "resumed": True,
+        "reindexed_offline": True,
+    }
+
+    result_file.write_text(
+        json.dumps(result, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return result
 
 
 def run_stage(
@@ -312,15 +435,20 @@ def run_stage(
     max_urls: int,
     subprocess_timeout: int,
     force: bool,
+    offline_reindex: bool,
 ) -> dict[str, Any]:
     source_root = report_dir / "physical_sources" / source["source_id"]
     stage_dir = source_root / stage
     result_file = stage_result_path(stage_dir)
 
     if result_file.exists() and not force:
-        result = json.loads(result_file.read_text(encoding="utf-8"))
-        result["resumed"] = True
-        return result
+        return reindex_existing_stage(stage_dir, stage)
+
+    if offline_reindex:
+        raise RuntimeError(
+            f"Falta evidencia existente para {source['source_id']} / {stage}; "
+            "offline-reindex no permite red."
+        )
 
     if stage_dir.exists():
         shutil.rmtree(stage_dir)
@@ -542,6 +670,7 @@ def stages_for_source(
         max_urls=args.max_urls,
         subprocess_timeout=args.subprocess_timeout,
         force=args.force,
+        offline_reindex=args.offline_reindex,
     )
     stages.append(first_result)
 
@@ -561,6 +690,7 @@ def stages_for_source(
             max_urls=args.max_urls,
             subprocess_timeout=args.subprocess_timeout,
             force=args.force,
+            offline_reindex=args.offline_reindex,
         )
         stages.append(html_result)
         if html_result["resources_found"] > 0:
@@ -584,6 +714,7 @@ def stages_for_source(
         max_urls=args.max_urls,
         subprocess_timeout=args.subprocess_timeout,
         force=args.force,
+        offline_reindex=args.offline_reindex,
     )
     stages.append(api_result)
     return stages
@@ -761,6 +892,11 @@ def main() -> int:
         action="store_true",
         help="Reejecuta stages aunque exista stage_result.json.",
     )
+    parser.add_argument(
+        "--offline-reindex",
+        action="store_true",
+        help="Reindexa únicamente artefactos existentes y prohíbe red.",
+    )
     args = parser.parse_args()
 
     inventory = load_inventory(Path(args.inventory))
@@ -789,6 +925,7 @@ def main() -> int:
     print("Browser/JavaScript: NO")
     print("Binarios: NO")
     print("Resume por defecto: SÍ")
+    print(f"Offline reindex: {'SÍ' if args.offline_reindex else 'NO'}")
     print()
 
     physical_results: dict[str, dict[str, Any]] = {}
