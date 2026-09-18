@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import time
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 from dataclasses import dataclass
 from enum import Enum
 from typing import Deque, Dict, Iterable, Optional, Set, Tuple
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlparse
 
+from prospector_externo.domain.discovery_intelligence import SpiderTrapDetector
 from prospector_externo.domain.models import SourceConfig
 from prospector_externo.domain.normalizer import UrlNormalizer
 
@@ -40,7 +41,13 @@ class DiscoveryFrontier:
         self._seen: Set[str] = set()
         self._visited: Set[str] = set()
         self._rejected = 0
-        self._query_variants: Dict[Tuple[str, str], Set[str]] = defaultdict(set)
+        self._rejection_reasons: Counter[str] = Counter()
+        self._query_variants: Dict[Tuple[str, str, Tuple[str, ...]], Set[str]] = defaultdict(set)
+        self._spider_detector = SpiderTrapDetector(
+            max_calendar_variants=config.max_calendar_variants,
+            max_url_length=config.max_url_length,
+            max_query_keys=config.max_query_keys,
+        )
         self.stop_reason: Optional[StopReason] = None
 
         hosts = set()
@@ -70,12 +77,37 @@ class DiscoveryFrontier:
     def visited_count(self) -> int:
         return len(self._visited)
 
+    @property
+    def spider_traps_blocked(self) -> int:
+        return sum(
+            count
+            for reason, count in self._rejection_reasons.items()
+            if reason.startswith("SPIDER_TRAP:")
+        )
+
+    @property
+    def query_variants_blocked(self) -> int:
+        return self._rejection_reasons["QUERY_VARIANT_LIMIT"]
+
+    def rejection_count(self, reason: str) -> int:
+        return self._rejection_reasons[reason]
+
     def _runtime_exceeded(self) -> bool:
         return (self._monotonic() - self._started_at) >= self.config.max_runtime_seconds
 
-    def _reject(self) -> bool:
+    def reject(self, reason: str) -> bool:
         self._rejected += 1
+        self._rejection_reasons[reason] += 1
         return False
+
+    def _query_family(self, parsed) -> Tuple[str, str, Tuple[str, ...]]:
+        query = parse_qsl(parsed.query, keep_blank_values=True)
+        keys = tuple(sorted({key.lower() for key, _ in query}))
+        return (
+            parsed.hostname.lower().rstrip("."),
+            parsed.path or "/",
+            keys,
+        )
 
     def enqueue(
         self,
@@ -86,21 +118,25 @@ class DiscoveryFrontier:
         parent_url: Optional[str] = None,
     ) -> bool:
         if depth > self.config.max_depth:
-            return self._reject()
+            return self.reject("MAX_DEPTH")
 
         if self._runtime_exceeded():
             self.stop_reason = StopReason.MAX_RUNTIME
-            return self._reject()
+            return self.reject("MAX_RUNTIME")
 
         normalized = UrlNormalizer.normalize(raw_url, base_url=base_url)
         parsed = urlparse(normalized)
 
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-            return self._reject()
+            return self.reject("INVALID_OR_UNSUPPORTED_URL")
 
         host = parsed.hostname.lower().rstrip(".")
         if self._allowed_hosts and host not in self._allowed_hosts:
-            return self._reject()
+            return self.reject("OUT_OF_SCOPE_HOST")
+
+        trap_reason = self._spider_detector.inspect(normalized)
+        if trap_reason:
+            return self.reject(f"SPIDER_TRAP:{trap_reason}")
 
         identity = f"{self.config.source_id}|{normalized}"
         if identity in self._seen:
@@ -108,13 +144,13 @@ class DiscoveryFrontier:
 
         if len(self._seen) >= self.config.max_urls:
             self.stop_reason = StopReason.MAX_URLS
-            return self._reject()
+            return self.reject("MAX_URLS")
 
-        family = (host, parsed.path or "/")
         query_value = parsed.query or ""
+        family = self._query_family(parsed)
         variants = self._query_variants[family]
         if query_value not in variants and len(variants) >= self.config.max_query_variants:
-            return self._reject()
+            return self.reject("QUERY_VARIANT_LIMIT")
         variants.add(query_value)
 
         self._seen.add(identity)
@@ -128,15 +164,14 @@ class DiscoveryFrontier:
         )
         return True
 
-
     def register_resource(self, normalized_url: str) -> bool:
-        """Cuenta una URL de recurso dentro del mismo max_urls sin encolarla para navegación."""
+        """Cuenta una URL de recurso en max_urls sin encolarla para navegación."""
         identity = f"{self.config.source_id}|{normalized_url}"
         if identity in self._seen:
             return False
         if len(self._seen) >= self.config.max_urls:
             self.stop_reason = StopReason.MAX_URLS
-            return self._reject()
+            return self.reject("MAX_URLS")
         self._seen.add(identity)
         return True
 

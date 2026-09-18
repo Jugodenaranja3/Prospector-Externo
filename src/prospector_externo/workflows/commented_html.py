@@ -56,8 +56,17 @@ class CommentedHtmlWorkflow(BaseWorkflow):
         discovered_urls: List[DiscoveredUrl] = []
         resources: List[ResourceCandidate] = []
         seen_resource_keys: Set[str] = set()
+        pagination = self._pagination_policy(config)
         consecutive_errors = 0
         successful_pages = 0
+
+        await self._seed_from_sitemaps(
+            config=config,
+            frontier=frontier,
+            resources=resources,
+            seen_resource_keys=seen_resource_keys,
+            coverage=coverage,
+        )
 
         while True:
             if session.budget.remaining <= 0:
@@ -114,30 +123,39 @@ class CommentedHtmlWorkflow(BaseWorkflow):
             comment_resources = self._extract_from_comments(
                 html or "", item.normalized_url, config, seen_resource_keys
             )
+
+            accepted_resources = 0
             for resource in [*dom_resources, *comment_resources]:
                 if frontier.register_resource(resource.url):
                     resources.append(resource)
+                    accepted_resources += 1
                 if frontier.stop_reason == StopReason.MAX_URLS:
                     break
+
+            pagination.observe(
+                item.normalized_url,
+                new_resources=accepted_resources,
+            )
 
             if frontier.stop_reason == StopReason.MAX_URLS:
                 break
 
             if item.depth < config.max_depth:
-                for raw_href, _title in links:
-                    frontier.enqueue(
-                        raw_href,
-                        base_url=item.normalized_url,
-                        depth=item.depth + 1,
-                        parent_url=item.normalized_url,
-                    )
+                self._enqueue_links(
+                    links=links,
+                    current_url=item.normalized_url,
+                    next_depth=item.depth + 1,
+                    frontier=frontier,
+                    pagination=pagination,
+                )
 
-        coverage.resources_found = len(resources)
-        coverage.urls_discovered = frontier.discovered_count
-        coverage.urls_rejected = frontier.rejected_count
-        coverage.urls_pending = frontier.pending_count
-        coverage.requests_total = session.requests_used
-        coverage.stop_reason = frontier.stop_reason.value if frontier.stop_reason else None
+        self._finish_coverage(
+            coverage=coverage,
+            frontier=frontier,
+            pagination=pagination,
+            resources=resources,
+            session=session,
+        )
 
         if successful_pages == 0 and coverage.urls_failed > 0:
             return ExtractionResult(

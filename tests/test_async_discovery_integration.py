@@ -21,6 +21,8 @@ def test_end_to_end_async_html_discovery_without_mass_head():
 
             if request.url.path == "/robots.txt":
                 return httpx.Response(200, text="User-agent: *\nAllow: /\n", request=request)
+            if request.url.path == "/sitemap.xml":
+                return httpx.Response(404, request=request)
             if request.url.path == "/":
                 return httpx.Response(
                     200,
@@ -77,7 +79,9 @@ def test_end_to_end_async_html_discovery_without_mass_head():
             obs = report.source_results[0]
             assert obs.coverage.pages_visited == 2
             assert obs.coverage.resources_found == 2
-            assert obs.coverage.requests_total == 3  # robots + 2 HTML
+            assert obs.coverage.requests_total == 4  # robots + sitemap probe + 2 HTML
+            assert obs.coverage.sitemap_documents == 1
+            assert obs.coverage.sitemap_errors == 1
             assert obs.coverage.stop_reason == "QUEUE_EXHAUSTED"
 
             snapshot = repo.get_latest_snapshot("smoke")

@@ -35,6 +35,13 @@ class CoverageStats(BaseModel):
     http_429: int = 0
     timeouts: int = 0
     robots_disallowed: int = 0
+    sitemap_documents: int = 0
+    sitemap_urls: int = 0
+    sitemap_errors: int = 0
+    spider_traps_blocked: int = 0
+    query_variants_blocked: int = 0
+    pagination_pages: int = 0
+    pagination_families_stopped: int = 0
     stop_reason: Optional[str] = None
 
 

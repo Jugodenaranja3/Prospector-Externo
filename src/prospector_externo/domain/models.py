@@ -22,6 +22,7 @@ class DiscoveryType(str, Enum):
     API = "api"
     ARCHIVE_INTERNAL = "archive_internal"
     CUSTOM = "custom"
+    SITEMAP = "sitemap"
 
 
 class SourceConfig(BaseModel):
@@ -52,6 +53,20 @@ class SourceConfig(BaseModel):
     max_query_variants: int = 25
     max_consecutive_errors: int = 5
     allowed_hosts: List[str] = Field(default_factory=list)
+
+    # Inteligencia de cobertura / anti-spider-trap.
+    max_calendar_variants: int = 36
+    max_url_length: int = 2048
+    max_query_keys: int = 12
+    pagination_min_pages: int = 2
+    pagination_empty_streak: int = 2
+    pagination_window: int = 3
+
+    # Sitemap discovery bounded.
+    discover_sitemaps: bool = True
+    max_sitemap_documents: int = 8
+    max_sitemap_urls: int = 500
+    max_sitemap_bytes: int = 1_000_000
 
 
 class DiscoveredUrl(BaseModel):

@@ -8,6 +8,7 @@ from prospector_externo.domain.models import SourceConfig
 from prospector_externo.infrastructure.http_runtime import AsyncHttpRuntime
 from prospector_externo.kernel.contracts import ExtractionResult
 from prospector_externo.kernel.registry import WorkflowRegistry
+import prospector_externo.workflows  # noqa: F401  # garantiza autoregistro sin depender del orden de imports
 
 logger = logging.getLogger("prospector.application.dispatcher")
 

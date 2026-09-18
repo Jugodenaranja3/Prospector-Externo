@@ -53,6 +53,24 @@ class SourceHttpSession:
             request_budget=self.budget,
         )
 
+    async def robots_sitemaps(self, url: str):
+        return await self.client.robots_sitemaps(
+            url,
+            ignore_robots_txt=self.config.ignore_robots_txt,
+            robots_override_reason=self.config.robots_override_reason,
+            request_budget=self.budget,
+        )
+
+    async def fetch_bytes_limited(self, url: str, *, max_bytes: int):
+        return await self.client.fetch_bytes_limited(
+            url,
+            max_bytes=max_bytes,
+            rate_limit_delay=self.config.rate_limit_seconds,
+            ignore_robots_txt=self.config.ignore_robots_txt,
+            robots_override_reason=self.config.robots_override_reason,
+            request_budget=self.budget,
+        )
+
 
 class AsyncHttpRuntime:
     """Infraestructura HTTP única por corrida: pool, politeness, robots y cache compartidos."""

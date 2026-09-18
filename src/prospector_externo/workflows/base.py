@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import os
 import re
-import calendar
 from typing import List, Optional, Set, Tuple
-from urllib.parse import unquote, urlparse, urljoin
+from urllib.parse import unquote, urlparse
 
 from bs4 import BeautifulSoup
 
+from prospector_externo.domain.discovery import DiscoveryFrontier, StopReason
+from prospector_externo.domain.discovery_intelligence import PaginationYieldPolicy
 from prospector_externo.domain.models import (
     ChangeStatus,
     DiscoveryType,
@@ -17,7 +18,9 @@ from prospector_externo.domain.models import (
     SourceConfig,
 )
 from prospector_externo.domain.normalizer import UrlNormalizer
+from prospector_externo.domain.observations import CoverageStats
 from prospector_externo.infrastructure.http_runtime import SourceHttpSession
+from prospector_externo.infrastructure.sitemap_discovery import SitemapDiscovery
 from prospector_externo.kernel.workflow_port import SourceWorkflow
 
 
@@ -41,7 +44,6 @@ class ResourceDetector:
         decoded = unquote(url).lower()
         for candidate in sorted(cls.RESOURCE_EXTENSIONS, key=len, reverse=True):
             if candidate in decoded:
-                # Útil para download managers: ?path=archivo.pdf
                 return candidate
         return ""
 
@@ -81,6 +83,16 @@ class BaseWorkflow(SourceWorkflow):
         year_only = re.search(r"\b(20\d{2})\b", low)
         return year_only.group(1) if year_only else None
 
+    @staticmethod
+    def _discovery_method(discovery_type: DiscoveryType) -> str:
+        if discovery_type == DiscoveryType.COMMENTED_HTML:
+            return "commented_html_link"
+        if discovery_type == DiscoveryType.SITEMAP:
+            return "sitemap"
+        if discovery_type == DiscoveryType.API:
+            return "api_response"
+        return "html_link"
+
     def _make_resource(
         self,
         *,
@@ -106,11 +118,7 @@ class BaseWorkflow(SourceWorkflow):
             discovered_from_url=current_url,
             period_label=period,
             change_status=ChangeStatus.NEW,
-            discovery_method=(
-                "commented_html_link"
-                if discovery_type == DiscoveryType.COMMENTED_HTML
-                else "html_link"
-            ),
+            discovery_method=self._discovery_method(discovery_type),
             anchor_text=anchor_text or title.strip() or None,
         )
 
@@ -123,7 +131,7 @@ class BaseWorkflow(SourceWorkflow):
         discovery_type: DiscoveryType,
         seen_resource_keys: Optional[Set[str]] = None,
     ) -> Tuple[List[ResourceCandidate], List[Tuple[str, str]]]:
-        """Retorna recursos y enlaces navegables. No hace requests extra ni descarga archives."""
+        """Retorna recursos y enlaces navegables sin requests extra."""
 
         soup = BeautifulSoup(html_content, "html.parser")
         resources: List[ResourceCandidate] = []
@@ -158,3 +166,96 @@ class BaseWorkflow(SourceWorkflow):
                 next_urls.append((raw_href, title))
 
         return resources, next_urls
+
+    @staticmethod
+    def _pagination_policy(config: SourceConfig) -> PaginationYieldPolicy:
+        return PaginationYieldPolicy(
+            min_pages_before_cutoff=config.pagination_min_pages,
+            max_consecutive_empty=config.pagination_empty_streak,
+            recent_window=config.pagination_window,
+        )
+
+    async def _seed_from_sitemaps(
+        self,
+        *,
+        config: SourceConfig,
+        frontier: DiscoveryFrontier,
+        resources: List[ResourceCandidate],
+        seen_resource_keys: Set[str],
+        coverage: CoverageStats,
+    ) -> None:
+        result = await SitemapDiscovery(
+            session=self._session(),
+            config=config,
+        ).discover(config.entrypoint)
+
+        coverage.sitemap_documents += result.documents_checked
+        coverage.sitemap_urls += len(result.entries)
+        coverage.sitemap_errors += result.errors
+
+        for entry in result.entries:
+            if frontier.stop_reason == StopReason.MAX_URLS:
+                break
+            if ResourceDetector.is_resource(entry.url):
+                resource = self._make_resource(
+                    config=config,
+                    raw_url=entry.url,
+                    current_url=entry.sitemap_url,
+                    title=os.path.basename(urlparse(entry.url).path),
+                    discovery_type=DiscoveryType.SITEMAP,
+                )
+                if resource.resource_key in seen_resource_keys:
+                    continue
+                seen_resource_keys.add(resource.resource_key)
+                if frontier.register_resource(resource.url):
+                    resources.append(resource)
+            else:
+                frontier.enqueue(
+                    entry.url,
+                    depth=0,
+                    parent_url=entry.sitemap_url,
+                )
+
+    def _enqueue_links(
+        self,
+        *,
+        links: List[Tuple[str, str]],
+        current_url: str,
+        next_depth: int,
+        frontier: DiscoveryFrontier,
+        pagination: PaginationYieldPolicy,
+    ) -> None:
+        for raw_href, _title in links:
+            normalized = UrlNormalizer.normalize(raw_href, base_url=current_url)
+            if PaginationYieldPolicy.is_pagination_url(normalized):
+                if not pagination.should_enqueue(normalized):
+                    frontier.reject("PAGINATION_LOW_YIELD")
+                    continue
+            frontier.enqueue(
+                raw_href,
+                base_url=current_url,
+                depth=next_depth,
+                parent_url=current_url,
+            )
+
+    @staticmethod
+    def _finish_coverage(
+        *,
+        coverage: CoverageStats,
+        frontier: DiscoveryFrontier,
+        pagination: PaginationYieldPolicy,
+        resources: List[ResourceCandidate],
+        session: SourceHttpSession,
+    ) -> None:
+        coverage.resources_found = len(resources)
+        coverage.urls_discovered = frontier.discovered_count
+        coverage.urls_rejected = frontier.rejected_count
+        coverage.urls_pending = frontier.pending_count
+        coverage.requests_total = session.requests_used
+        coverage.spider_traps_blocked = frontier.spider_traps_blocked
+        coverage.query_variants_blocked = frontier.query_variants_blocked
+        coverage.pagination_pages = pagination.pages_observed
+        coverage.pagination_families_stopped = pagination.families_stopped
+        coverage.stop_reason = (
+            frontier.stop_reason.value if frontier.stop_reason is not None else None
+        )

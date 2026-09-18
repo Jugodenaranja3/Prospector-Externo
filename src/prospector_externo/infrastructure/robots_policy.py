@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import Awaitable, Callable, Dict, Optional
-from urllib.parse import urlsplit
+from typing import Awaitable, Callable, Dict, Optional, Tuple
+from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
 
@@ -28,13 +28,14 @@ class _CachedRobots:
     kind: str
     robots_url: str
     parser: Optional[RobotFileParser] = None
+    sitemap_urls: Tuple[str, ...] = ()
 
 
 RobotsFetcher = Callable[[str], Awaitable[RobotsFetchResult]]
 
 
 class RobotsPolicy:
-    """Política robots.txt compartida y cacheada por origen."""
+    """Política robots.txt compartida, cacheada y con hints de sitemap."""
 
     def __init__(self, *, fetcher: RobotsFetcher) -> None:
         self._fetcher = fetcher
@@ -48,6 +49,41 @@ class RobotsPolicy:
             raise ValueError("URL HTTP/HTTPS inválida")
         origin = f"{parsed.scheme.lower()}://{parsed.netloc.lower()}"
         return origin, f"{origin}/robots.txt"
+
+    @staticmethod
+    def _extract_sitemaps(text: str, robots_url: str) -> Tuple[str, ...]:
+        seen = set()
+        result = []
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped or ":" not in stripped:
+                continue
+            key, value = stripped.split(":", 1)
+            if key.strip().lower() != "sitemap":
+                continue
+            candidate = urljoin(robots_url, value.strip())
+            parsed = urlsplit(candidate)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                continue
+            if candidate not in seen:
+                seen.add(candidate)
+                result.append(candidate)
+        return tuple(result)
+
+    async def _ensure_cached(self, origin: str, robots_url: str) -> _CachedRobots:
+        cached = self._cache.get(origin)
+        if cached is not None:
+            return cached
+
+        lock = self._locks.setdefault(origin, asyncio.Lock())
+        async with lock:
+            cached = self._cache.get(origin)
+            if cached is not None:
+                return cached
+            result = await self._fetcher(robots_url)
+            cached = self._classify(result, robots_url=robots_url)
+            self._cache[origin] = cached
+            return cached
 
     async def check(
         self,
@@ -77,20 +113,51 @@ class RobotsPolicy:
                 override_reason=reason,
             )
 
-        cached = self._cache.get(origin)
-        if cached is not None:
-            return self._decision(cached, url=url, user_agent=user_agent, from_cache=True)
+        was_cached = origin in self._cache
+        cached = await self._ensure_cached(origin, robots_url)
+        return self._decision(
+            cached,
+            url=url,
+            user_agent=user_agent,
+            from_cache=was_cached,
+        )
 
-        lock = self._locks.setdefault(origin, asyncio.Lock())
-        async with lock:
-            cached = self._cache.get(origin)
-            if cached is not None:
-                return self._decision(cached, url=url, user_agent=user_agent, from_cache=True)
+    async def sitemap_urls_for(
+        self,
+        url: str,
+        *,
+        user_agent: str,
+        ignore_robots_txt: bool = False,
+        robots_override_reason: Optional[str] = None,
+    ) -> tuple[RobotsDecision, Tuple[str, ...]]:
+        """Obtiene hints `Sitemap:` usando el mismo cache de robots.
 
-            result = await self._fetcher(robots_url)
-            cached = self._classify(result, robots_url=robots_url)
-            self._cache[origin] = cached
-            return self._decision(cached, url=url, user_agent=user_agent, from_cache=False)
+        Un override explícito permite crawling pero no inventa sitemap hints: si
+        robots se omite por autorización, el caller puede probar /sitemap.xml.
+        """
+        try:
+            origin, robots_url = self._origin_and_robots_url(url)
+        except ValueError:
+            return RobotsDecision(False, "INVALID_URL"), ()
+
+        if ignore_robots_txt:
+            decision = await self.check(
+                url,
+                user_agent=user_agent,
+                ignore_robots_txt=True,
+                robots_override_reason=robots_override_reason,
+            )
+            return decision, ()
+
+        was_cached = origin in self._cache
+        cached = await self._ensure_cached(origin, robots_url)
+        decision = self._decision(
+            cached,
+            url=url,
+            user_agent=user_agent,
+            from_cache=was_cached,
+        )
+        return decision, cached.sitemap_urls
 
     @staticmethod
     def _classify(result: RobotsFetchResult, *, robots_url: str) -> _CachedRobots:
@@ -100,10 +167,16 @@ class RobotsPolicy:
             return _CachedRobots("unreachable", robots_url)
 
         if 200 <= status < 300:
+            text = result.text or ""
             parser = RobotFileParser()
             parser.set_url(robots_url)
-            parser.parse((result.text or "").splitlines())
-            return _CachedRobots("rules", robots_url, parser)
+            parser.parse(text.splitlines())
+            return _CachedRobots(
+                "rules",
+                robots_url,
+                parser,
+                RobotsPolicy._extract_sitemaps(text, robots_url),
+            )
 
         if status == 429:
             return _CachedRobots("unreachable", robots_url)

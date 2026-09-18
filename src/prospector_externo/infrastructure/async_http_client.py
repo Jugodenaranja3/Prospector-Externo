@@ -321,6 +321,72 @@ class AsyncResilientHttpClient:
         finally:
             await fallback_response.aclose()
 
+    async def robots_sitemaps(
+        self,
+        url: str,
+        *,
+        ignore_robots_txt: bool = False,
+        robots_override_reason: Optional[str] = None,
+        request_budget: Optional[RequestBudget] = None,
+    ):
+        token = self._active_budget.set(request_budget or self._request_budget)
+        try:
+            return await self._robots_policy.sitemap_urls_for(
+                url,
+                user_agent=self.ROBOTS_USER_AGENT,
+                ignore_robots_txt=ignore_robots_txt,
+                robots_override_reason=robots_override_reason,
+            )
+        finally:
+            self._active_budget.reset(token)
+
+    async def fetch_bytes_limited(
+        self,
+        url: str,
+        *,
+        max_bytes: int,
+        rate_limit_delay: Optional[float] = None,
+        check_robots: bool = True,
+        ignore_robots_txt: bool = False,
+        robots_override_reason: Optional[str] = None,
+        request_budget: Optional[RequestBudget] = None,
+    ) -> Tuple[Optional[bytes], Optional[int], Optional[str], Dict[str, str]]:
+        if max_bytes <= 0:
+            raise ValueError("max_bytes debe ser mayor que cero")
+
+        response, status_code, error = await self._request(
+            "GET",
+            url,
+            rate_limit_delay=rate_limit_delay,
+            check_robots=check_robots,
+            ignore_robots_txt=ignore_robots_txt,
+            robots_override_reason=robots_override_reason,
+            stream=True,
+            conditional=False,
+            request_budget=request_budget,
+        )
+        if response is None:
+            return None, status_code, error, {}
+
+        headers = self._normalize_headers(response.headers)
+        try:
+            content_length = headers.get("content-length")
+            if content_length:
+                try:
+                    if int(content_length) > max_bytes:
+                        return None, status_code, "RESPONSE_TOO_LARGE", headers
+                except ValueError:
+                    pass
+
+            data = bytearray()
+            async for chunk in response.aiter_bytes():
+                data.extend(chunk)
+                if len(data) > max_bytes:
+                    return None, status_code, "RESPONSE_TOO_LARGE", headers
+            return bytes(data), status_code, None, headers
+        finally:
+            await response.aclose()
+
     @staticmethod
     def _normalize_headers(headers: httpx.Headers) -> Dict[str, str]:
         return {key.lower(): value for key, value in headers.items()}
