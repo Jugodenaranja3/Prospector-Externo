@@ -1,5 +1,6 @@
-schema_version: grouping-contract-1.0
+schema_version: grouping-contract-1.1
 source_id: bcb
+unmatched_policy: exclude
 rules:
   - rule_id: bcb_sistema_pagos_reporte_estadistico
     match:

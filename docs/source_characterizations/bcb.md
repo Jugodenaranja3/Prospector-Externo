@@ -44,3 +44,18 @@ La evidencia humana publica fechas como `AL 11 DE SEPTIEMBRE DE 2026`. Para no c
 ## Política de primera corrida
 
 La configuración principal queda conservadora (`depth=1`, 120 requests/URLs, 1.5 s por host). Antes de utilizar esos máximos se hará un smoke más pequeño (aprox. 20–30 requests) con config temporal, igual que se hizo con FINRURAL.
+
+
+## Hallazgo del primer smoke real (2026-09-18)
+
+La página `?q=reporte-estadistico` expuso 39 recursos en el catálogo bruto con solo
+2 requests HTTP (robots + HTML). De ellos, 27 coincidieron explícitamente con la
+serie objetivo `OPERACIONES DEL SISTEMA DE PAGOS NACIONAL`: 9 periodos, cada uno
+con PDF/XLSX/ODS. Los 12 restantes provinieron de navegación/globales del sitio
+(manuales, normativa, publicaciones, reservas, formularios, etc.).
+
+Por ello el contrato BCB usa `unmatched_policy: exclude`: los 39 recursos se
+conservan como evidencia raw, pero solo los que coinciden con una regla BCB
+caracterizada pueden entrar a la proyección DATAX. Esto evita que un XLSX global
+como Reservas Internacionales sea seleccionado solo por ser un formato
+estructurado cuando el crawl se originó en otra familia estadística.

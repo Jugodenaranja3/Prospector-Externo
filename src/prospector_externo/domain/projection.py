@@ -17,7 +17,11 @@ from urllib.parse import unquote, urlparse
 
 from pydantic import BaseModel, Field
 
-from prospector_externo.domain.grouping import GroupingContract, GroupingContractResolver
+from prospector_externo.domain.grouping import (
+    GroupingContract,
+    GroupingContractResolver,
+    GroupingUnmatchedPolicy,
+)
 from prospector_externo.domain.models import ApiMetadata, ResourceCandidate, ResourceType
 
 
@@ -577,6 +581,13 @@ class ProjectionBuilder:
             else:
                 family_key = ResourceFamilyKeyBuilder.build(resource)
                 grouping_rule_id = None
+                if (
+                    grouping_contract is not None
+                    and grouping_contract.unmatched_policy == GroupingUnmatchedPolicy.EXCLUDE
+                ):
+                    selected = False
+                    priority = ProjectionPriority.LOW
+                    reasons = tuple(dict.fromkeys((*reasons, "grouping_contract_unmatched")))
             decisions.append(
                 ProjectionDecision(
                     resource_key=resource.resource_key,

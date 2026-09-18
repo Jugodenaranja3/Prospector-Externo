@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from enum import Enum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, model_validator
@@ -52,11 +53,24 @@ class GroupingRule(BaseModel):
     family_title_template: Optional[str] = None
 
 
-class GroupingContract(BaseModel):
-    """Contrato por ``source_id``. La primera regla que coincide gana."""
+class GroupingUnmatchedPolicy(str, Enum):
+    """Qué hacer en downstream cuando ninguna regla del contrato coincide."""
 
-    schema_version: str = "grouping-contract-1.0"
+    FALLBACK = "fallback"
+    EXCLUDE = "exclude"
+
+
+class GroupingContract(BaseModel):
+    """Contrato por ``source_id``. La primera regla que coincide gana.
+
+    ``unmatched_policy=exclude`` convierte el contrato en un scope downstream
+    deny-by-default: el catálogo bruto permanece intacto, pero recursos no
+    caracterizados explícitamente no se proyectan por heurística global.
+    """
+
+    schema_version: str = "grouping-contract-1.1"
     source_id: str
+    unmatched_policy: GroupingUnmatchedPolicy = GroupingUnmatchedPolicy.FALLBACK
     rules: List[GroupingRule] = Field(default_factory=list)
 
 
