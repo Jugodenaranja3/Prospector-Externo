@@ -111,7 +111,7 @@ def test_api_workflow_html_docs_catalogs_refs_without_following_them():
             raise AssertionError('las referencias no deben seguirse automáticamente')
         runtime = AsyncHttpRuntime(transport=httpx.MockTransport(handler))
         try:
-            config = SourceConfig(source_id='docs', entrypoint='https://example.test/docs', workflow='api', rate_limit_seconds=0)
+            config = SourceConfig(source_id='docs', entrypoint='https://example.test/docs', workflow='api', rate_limit_seconds=0, probe_api_documentation=False)
             result = await ApiWorkflow(runtime.session_for(config)).run(config)
         finally:
             await runtime.aclose()

@@ -46,6 +46,14 @@ class ApiMetadata(BaseModel):
     unresolved_required_params: Tuple[str, ...] = ()
     callable_by_policy: bool = False
 
+    # Enriquecimiento BATCH 3B. Describe la inspección; no convierte al Prospector
+    # en consumidor de negocio de la API.
+    pages_sampled: int = 0
+    records_sampled: int = 0
+    pagination_strategy: Optional[str] = None
+    documentation_probed: bool = False
+    spec_version: Optional[str] = None
+
 
 class SourceConfig(BaseModel):
     """Configuración declarativa de una fuente cargada desde sources.yaml."""
@@ -91,10 +99,18 @@ class SourceConfig(BaseModel):
     max_sitemap_urls: int = 500
     max_sitemap_bytes: int = 1_000_000
 
-    # API discovery bounded. BATCH 3A descubre/describe, no ejecuta operaciones arbitrarias.
+    # API discovery bounded. Solo operaciones públicas GET y evidencia explícita.
     discover_apis: bool = True
     max_api_endpoints: int = 200
     max_api_response_bytes: int = 2_000_000
+    follow_api_pagination: bool = True
+    max_api_pages: int = 5
+    max_api_records_sampled: int = 5_000
+    max_api_stagnant_pages: int = 2
+    probe_api_documentation: bool = True
+    max_api_documents: int = 8
+    max_api_document_depth: int = 1
+    max_api_document_bytes: int = 2_000_000
 
 
 class DiscoveredUrl(BaseModel):

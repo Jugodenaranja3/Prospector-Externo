@@ -88,6 +88,9 @@ class OpenApiDiscoveryResult:
     auth_required_operations: int = 0
     unresolved_operations: int = 0
     parse_error: Optional[str] = None
+    spec_version: Optional[str] = None
+    title: Optional[str] = None
+    external_docs_url: Optional[str] = None
 
 
 class ApiAccessPolicy:
@@ -166,12 +169,18 @@ class ApiDetector:
         content_type = cls._content_type(headers)
         if "geo+json" in content_type or "geojson" in content_type:
             return "geojson"
+        if "topo+json" in content_type or "topojson" in content_type:
+            return "topojson"
+        if "ndjson" in content_type or "x-ndjson" in content_type or "json-seq" in content_type:
+            return "ndjson"
         if "json" in content_type:
             if url and cls.is_openapi_url(url):
                 return "openapi"
             return "json"
         if "xml" in content_type:
             return "xml"
+        if "tab-separated-values" in content_type or "text/tsv" in content_type:
+            return "tsv"
         if "text/csv" in content_type or "application/csv" in content_type:
             return "csv"
         if "yaml" in content_type and url and cls.is_openapi_url(url):
@@ -209,9 +218,28 @@ class ApiDetector:
                     or isinstance(parsed_json.get("features"), list)
                 ):
                     return "geojson"
+                if parsed_json.get("type") == "Topology" and isinstance(parsed_json.get("objects"), dict):
+                    return "topojson"
+                if (
+                    str(parsed_json.get("class", "")).lower() == "dataset"
+                    and isinstance(parsed_json.get("dimension"), dict)
+                    and "value" in parsed_json
+                ):
+                    return "jsonstat"
             return "json"
 
         lowered = stripped[:200].lower()
+        if "ndjson" in content_type or "x-ndjson" in content_type or "json-seq" in content_type:
+            lines = [line for line in (body or "").splitlines() if line.strip()]
+            if lines:
+                try:
+                    for line in lines[:50]:
+                        json.loads(line)
+                    return "ndjson"
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    return None
+        if "tab-separated-values" in content_type or "text/tsv" in content_type:
+            return "tsv"
         if (
             "application/xml" in content_type
             or "text/xml" in content_type
@@ -244,7 +272,12 @@ class ApiDetector:
 
     @staticmethod
     def records_detected(body: str, api_format: Optional[str]) -> Optional[int]:
-        if api_format not in {"json", "geojson", "openapi"}:
+        if api_format == "ndjson":
+            return len([line for line in (body or "").splitlines() if line.strip()])
+        if api_format in {"csv", "tsv"}:
+            lines = [line for line in (body or "").splitlines() if line.strip()]
+            return max(0, len(lines) - 1) if lines else 0
+        if api_format not in {"json", "geojson", "openapi", "jsonstat", "topojson"}:
             return None
         try:
             data = json.loads(body)
@@ -255,6 +288,19 @@ class ApiDetector:
             return len(data)
         if not isinstance(data, dict):
             return None
+        if api_format == "jsonstat":
+            value = data.get("value")
+            if isinstance(value, list):
+                return len(value)
+            size = data.get("size")
+            if isinstance(size, list) and all(isinstance(item, int) and item >= 0 for item in size):
+                total = 1
+                for item in size:
+                    total *= item
+                return total
+        if api_format == "topojson":
+            objects = data.get("objects")
+            return len(objects) if isinstance(objects, dict) else None
         for key in ("features", "items", "data", "results", "records"):
             value = data.get(key)
             if isinstance(value, list):
@@ -563,7 +609,17 @@ class OpenApiDiscovery:
         if document is None:
             return OpenApiDiscoveryResult(parse_error="INVALID_OPENAPI_DOCUMENT")
 
-        result = OpenApiDiscoveryResult()
+        info = document.get("info") if isinstance(document.get("info"), dict) else {}
+        external_docs = document.get("externalDocs") if isinstance(document.get("externalDocs"), dict) else {}
+        result = OpenApiDiscoveryResult(
+            spec_version=str(document.get("openapi") or document.get("swagger") or "") or None,
+            title=str(info.get("title") or "") or None,
+            external_docs_url=(
+                urljoin(document_url, str(external_docs.get("url")))
+                if external_docs.get("url")
+                else None
+            ),
+        )
         base, unresolved_server = cls._server_base(document, document_url)
         paths = document.get("paths")
         if not isinstance(paths, dict):
@@ -627,3 +683,207 @@ class OpenApiDiscovery:
                 )
 
         return result
+
+@dataclass(frozen=True)
+class ApiPaginationDecision:
+    """Siguiente página explícita y segura de una misma identidad API."""
+
+    next_url: Optional[str]
+    strategy: Optional[str] = None
+    reason: Optional[str] = None
+
+
+class ApiPagination:
+    """Paginación conservadora basada en evidencia explícita.
+
+    Nunca inventa un endpoint nuevo. La URL siguiente debe conservar la misma
+    identidad API una vez eliminados únicamente controles de paginación conocidos.
+    """
+
+    DIRECT_KEYS = ("next", "next_url", "nexturl", "next_page_url", "nextpageurl")
+    CONTAINER_KEYS = ("links", "pagination", "meta")
+    PAGE_KEYS = ("page", "page_number", "pagenumber")
+    TOTAL_PAGE_KEYS = ("total_pages", "totalpages", "pages", "page_count", "pagecount")
+    CURSOR_VALUE_KEYS = ("next_cursor", "nextcursor", "continuation_token", "continuation")
+    CURSOR_QUERY_KEYS = ("cursor", "continuation", "continuation_token")
+
+    @staticmethod
+    def _link_next(headers: Optional[Mapping[str, str]], current_url: str) -> Optional[str]:
+        if not headers:
+            return None
+        value = headers.get("link") or headers.get("Link") or ""
+        for match in re.finditer(r"<([^>]+)>\s*((?:;\s*[^,<]+)*)", value):
+            params = match.group(2).lower()
+            if re.search(r"rel\s*=\s*[\"']?next[\"']?", params):
+                return UrlNormalizer.normalize(match.group(1), base_url=current_url)
+        return None
+
+    @staticmethod
+    def _string_url(value: Any, current_url: str) -> Optional[str]:
+        if isinstance(value, str) and value.strip():
+            return UrlNormalizer.normalize(value.strip(), base_url=current_url)
+        if isinstance(value, dict):
+            for key in ("url", "href"):
+                raw = value.get(key)
+                if isinstance(raw, str) and raw.strip():
+                    return UrlNormalizer.normalize(raw.strip(), base_url=current_url)
+        return None
+
+    @classmethod
+    def _json_next(cls, body: str, current_url: str) -> Tuple[Optional[str], Optional[str]]:
+        try:
+            data = json.loads(body)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return None, None
+        if not isinstance(data, dict):
+            return None, None
+
+        lower_map = {str(k).lower(): v for k, v in data.items()}
+        for key in cls.DIRECT_KEYS:
+            candidate = cls._string_url(lower_map.get(key), current_url)
+            if candidate:
+                return candidate, "json_next"
+
+        for container_key in cls.CONTAINER_KEYS:
+            container = lower_map.get(container_key)
+            if not isinstance(container, dict):
+                continue
+            nested = {str(k).lower(): v for k, v in container.items()}
+            for key in cls.DIRECT_KEYS:
+                candidate = cls._string_url(nested.get(key), current_url)
+                if candidate:
+                    return candidate, f"json_{container_key}_next"
+
+        parsed = urlparse(current_url)
+        query_pairs = parse_qsl(parsed.query, keep_blank_values=True)
+        query_keys = {key.lower(): key for key, _ in query_pairs}
+
+        current_page: Optional[int] = None
+        total_pages: Optional[int] = None
+        for key in ("current_page", "currentpage", "page"):
+            value = lower_map.get(key)
+            if isinstance(value, int):
+                current_page = value
+                break
+        for key in cls.TOTAL_PAGE_KEYS:
+            value = lower_map.get(key)
+            if isinstance(value, int):
+                total_pages = value
+                break
+        if current_page is not None and total_pages is not None and current_page < total_pages:
+            for normalized_key in cls.PAGE_KEYS:
+                original_key = query_keys.get(normalized_key)
+                if original_key:
+                    updated = [
+                        (key, str(current_page + 1) if key == original_key else value)
+                        for key, value in query_pairs
+                    ]
+                    return urlunparse(parsed._replace(query=urlencode(updated, doseq=True))), "numeric_page"
+
+        cursor_value: Optional[str] = None
+        for key in cls.CURSOR_VALUE_KEYS:
+            value = lower_map.get(key)
+            if isinstance(value, (str, int)) and str(value).strip():
+                cursor_value = str(value).strip()
+                break
+        if cursor_value is not None:
+            for normalized_key in cls.CURSOR_QUERY_KEYS:
+                original_key = query_keys.get(normalized_key)
+                if original_key:
+                    updated = [
+                        (key, cursor_value if key == original_key else value)
+                        for key, value in query_pairs
+                    ]
+                    return urlunparse(parsed._replace(query=urlencode(updated, doseq=True))), "cursor"
+        return None, None
+
+    @classmethod
+    def next_page(
+        cls,
+        *,
+        body: str,
+        headers: Optional[Mapping[str, str]],
+        current_url: str,
+    ) -> ApiPaginationDecision:
+        candidate = cls._link_next(headers, current_url)
+        strategy = "http_link_next" if candidate else None
+        if not candidate:
+            candidate, strategy = cls._json_next(body, current_url)
+        if not candidate:
+            return ApiPaginationDecision(None, reason="NO_EXPLICIT_NEXT")
+
+        current = UrlNormalizer.normalize(current_url)
+        candidate = UrlNormalizer.normalize(candidate, base_url=current_url)
+        if candidate == current:
+            return ApiPaginationDecision(None, reason="SAME_PAGE")
+        current_parsed = urlparse(current)
+        candidate_parsed = urlparse(candidate)
+        if candidate_parsed.scheme not in {"http", "https"} or not candidate_parsed.hostname:
+            return ApiPaginationDecision(None, reason="INVALID_NEXT")
+        if (current_parsed.hostname or "").lower() != (candidate_parsed.hostname or "").lower():
+            return ApiPaginationDecision(None, reason="NEXT_HOST_CHANGED")
+        if ApiIdentity.canonical_url(candidate) != ApiIdentity.canonical_url(current):
+            return ApiPaginationDecision(None, reason="NEXT_IDENTITY_CHANGED")
+        return ApiPaginationDecision(candidate, strategy=strategy)
+
+
+class ApiDocumentationDiscovery:
+    """Extrae specs OpenAPI/Swagger explícitamente publicadas por una página.
+
+    No prueba rutas comunes a ciegas. Solo usa links/headers/atributos/scripts que
+    la propia documentación expone.
+    """
+
+    SCRIPT_URL_RE = re.compile(
+        r"(?:url|specUrl|spec_url|openapiUrl|swaggerUrl)\s*[:=]\s*[\"']([^\"']+)[\"']",
+        flags=re.I,
+    )
+
+    @classmethod
+    def extract_openapi_references(
+        cls,
+        html: str,
+        *,
+        base_url: str,
+        headers: Optional[Mapping[str, str]] = None,
+    ) -> List[ApiReference]:
+        refs: List[ApiReference] = []
+        for ref in ApiDetector.extract_references(html, base_url=base_url, headers=headers):
+            if ref.is_openapi or ApiDetector.is_openapi_url(ref.url):
+                refs.append(
+                    ApiReference(
+                        url=ref.url,
+                        method="GET",
+                        detection_method="api_documentation_reference",
+                        api_format="openapi",
+                        documentation_url=base_url,
+                        is_openapi=True,
+                        title=ref.title,
+                    )
+                )
+
+        soup = BeautifulSoup(html or "", "html.parser")
+        for script in soup.find_all("script"):
+            text = script.string or script.get_text(" ", strip=False) or ""
+            for match in cls.SCRIPT_URL_RE.finditer(text):
+                absolute = UrlNormalizer.normalize(match.group(1), base_url=base_url)
+                if not ApiDetector.is_openapi_url(absolute):
+                    continue
+                refs.append(
+                    ApiReference(
+                        url=absolute,
+                        method="GET",
+                        detection_method="swagger_ui_spec_reference",
+                        api_format="openapi",
+                        documentation_url=base_url,
+                        is_openapi=True,
+                    )
+                )
+
+        deduped: Dict[str, ApiReference] = {}
+        for ref in refs:
+            if not ref.url.startswith(("http://", "https://")):
+                continue
+            deduped.setdefault(ApiIdentity.value("GET", ref.url), ref)
+        return list(deduped.values())
+

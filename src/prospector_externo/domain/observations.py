@@ -48,6 +48,11 @@ class CoverageStats(BaseModel):
     api_non_get_operations_skipped: int = 0
     api_auth_required: int = 0
     api_unresolved_operations: int = 0
+    api_pages_visited: int = 0
+    api_records_sampled: int = 0
+    api_pagination_stopped: int = 0
+    api_documents_probed: int = 0
+    api_document_errors: int = 0
     stop_reason: Optional[str] = None
 
 
