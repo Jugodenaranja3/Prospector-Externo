@@ -59,3 +59,31 @@ conservan como evidencia raw, pero solo los que coinciden con una regla BCB
 caracterizada pueden entrar a la proyección DATAX. Esto evita que un XLSX global
 como Reservas Internacionales sea seleccionado solo por ser un formato
 estructurado cuando el crawl se originó en otra familia estadística.
+
+
+## Hallazgo histórico completo y hardening BATCH 5C (2026-09-18)
+
+La caracterización controlada de las 17 páginas de `?q=reporte-estadistico`
+(`page=0..16`) produjo 404 recursos raw con 18 requests HTTP (robots + 17 HTML),
+sin errores, timeouts ni bloqueos de robots. El rango mensual del reporte es
+continuo desde 2013-01 hasta 2026-07: 163 periodos sin huecos.
+
+La disponibilidad histórica cambia por era y debe conservarse como evidencia,
+no rellenarse artificialmente:
+
+- 2013-01 a 2015-02: solo PDF (26 periodos).
+- 2015-03 a 2018-12: PDF + XLSX (46 periodos).
+- 2019-01 a 2026-07: PDF + XLSX + ODS (91 periodos).
+
+Eso equivale a 391 representaciones estadísticas reales: 163 PDF, 137 XLSX y
+91 ODS. El crawl raw contiene además 13 recursos fuera de este slice.
+
+Durante la auditoría apareció un falso positivo: `operactiponumero.pdf`, un
+recurso general de Sistema de Pagos sin periodo mensual propio, heredaba el
+contexto visual de Enero 2013 y entraba erróneamente en la familia mensual. La
+regla `bcb_sistema_pagos_reporte_estadistico` se endureció para exigir también
+una ruta `webdocs/sistema_pagos` con evidencia nominal de reporte/estadística o
+mes. El raw permanece intacto; el falso positivo solo queda fuera de downstream.
+
+Resultado downstream esperado del histórico completo: `raw=404`,
+`selected=391`, `families=1`, `periods=163`, `legacy=391`.

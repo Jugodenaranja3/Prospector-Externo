@@ -5,6 +5,7 @@ rules:
   - rule_id: bcb_sistema_pagos_reporte_estadistico
     match:
       origin_url_regex: '[?&]q=reporte-estadistico(?:&|$)'
+      url_regex: '/webdocs/sistema_pagos/.*(?:reporte|estadistic|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)'
       context_regex: 'operaciones\s+del\s+sistema\s+de\s+pagos\s+nacional'
     family_key_template: sistema-pagos-reporte-estadistico
     family_title_template: Reporte Estadístico de Operaciones del Sistema de Pagos Nacional
