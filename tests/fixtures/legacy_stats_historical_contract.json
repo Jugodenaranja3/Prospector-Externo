@@ -1,0 +1,218 @@
+{
+    "ESTADISTICAS": {
+        "OTROS": {
+            "DOCUMENTOS_GENERALES": {
+                "VARIOS": {
+                    "Descargar.csv": {
+                        "descripcion": "ESTADISTICAS DE GASTOS FUNERALES AL 31 DE MAYO DE 2022.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=DP%252FRenta%252FESTADISTICAS%2BDE%2BGASTOS%2BFUNERALES%2BAL%2B31%2BDE%2BMAYO%2BDE%2B2022.pdf",
+                        "fecha_actualizacion": "2022-05",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=DP%2FRenta",
+                        "metodo_deteccion": "url_pattern"
+                    },
+                    "Descargar_2.csv": {
+                        "descripcion": "ESTADISTICAS DE GASTOS FUNERALES AL 31 DE MARZO DE 2022.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=DP%252FRenta%252FESTADISTICAS%2BDE%2BGASTOS%2BFUNERALES%2BAL%2B31%2BDE%2BMARZO%2BDE%2B2022.pdf",
+                        "fecha_actualizacion": "2022-03",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=DP%2FRenta",
+                        "metodo_deteccion": "url_pattern"
+                    },
+                    "Descargar_3.csv": {
+                        "descripcion": "ESTADISTICAS DE GASTOS FUNERALES AL 31 DE MARZO DE 2021.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=DP%252FRenta%252FESTADISTICAS%2BDE%2BGASTOS%2BFUNERALES%2BAL%2B31%2BDE%2BMARZO%2BDE%2B2021.pdf",
+                        "fecha_actualizacion": "2021-03",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=DP%2FRenta",
+                        "metodo_deteccion": "url_pattern"
+                    },
+                    "Descargar_4.csv": {
+                        "descripcion": "ESTADISTICAS DE GASTOS FUNERALES AL 31 DE JULIO DE 2022.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=DP%252FRenta%252FESTADISTICAS%2BDE%2BGASTOS%2BFUNERALES%2BAL%2B31%2BDE%2BJULIO%2BDE%2B2022.pdf",
+                        "fecha_actualizacion": "2022-07",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=DP%2FRenta",
+                        "metodo_deteccion": "url_pattern"
+                    },
+                    "Descargar_5.csv": {
+                        "descripcion": "ESTADISTICAS DE GASTOS FUNERALES AL 31 DE JULIO DE 2021.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=DP%252FRenta%252FESTADISTICAS%2BDE%2BGASTOS%2BFUNERALES%2BAL%2B31%2BDE%2BJULIO%2BDE%2B2021.pdf",
+                        "fecha_actualizacion": "2021-07",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=DP%2FRenta",
+                        "metodo_deteccion": "url_pattern"
+                    }
+                }
+            }
+        },
+        "2026": {
+            "Descargar.csv": {
+                "descripcion": "Mayo 2026.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026%252FMayo%2B2026.pdf",
+                "fecha_actualizacion": "2026-05",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_2.csv": {
+                "descripcion": "Marzo 2026.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026%252FMarzo%2B2026.pdf",
+                "fecha_actualizacion": "2026-03",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_3.csv": {
+                "descripcion": "Junio 2026.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026%252FJunio%2B2026.pdf",
+                "fecha_actualizacion": "2026-06",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_4.csv": {
+                "descripcion": "Febrero 2026.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026%252FFebrero%2B2026.pdf",
+                "fecha_actualizacion": "2026-02",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_5.csv": {
+                "descripcion": "Enero 2026.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026%252FEnero%2B2026.pdf",
+                "fecha_actualizacion": "2026-01",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2026",
+                "metodo_deteccion": "url_pattern"
+            }
+        },
+        "2025": {
+            "Descargar.csv": {
+                "descripcion": "Septiembre 2025.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025%252FSeptiembre%2B2025.pdf",
+                "fecha_actualizacion": "2025-09",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_2.csv": {
+                "descripcion": "Octubre 2025.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025%252FOctubre%2B2025.pdf",
+                "fecha_actualizacion": "2025-10",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_3.csv": {
+                "descripcion": "Noviembre 2025.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025%252FNoviembre%2B2025.pdf",
+                "fecha_actualizacion": "2025-11",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_4.csv": {
+                "descripcion": "Mayo 2025.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025%252FMayo%2B2025.pdf",
+                "fecha_actualizacion": "2025-05",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_5.csv": {
+                "descripcion": "Marzo 2025.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025%252FMarzo%2B2025.pdf",
+                "fecha_actualizacion": "2025-03",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2025",
+                "metodo_deteccion": "url_pattern"
+            }
+        },
+        "2024": {
+            "Descargar.csv": {
+                "descripcion": "Septiembre.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024%252FSeptiembre.pdf",
+                "fecha_actualizacion": "2024",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_2.csv": {
+                "descripcion": "Octubre.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024%252FOctubre.pdf",
+                "fecha_actualizacion": "2024",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_3.csv": {
+                "descripcion": "Noviembre.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024%252FNoviembre.pdf",
+                "fecha_actualizacion": "2024",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_4.csv": {
+                "descripcion": "Mayo.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024%252FMayo.pdf",
+                "fecha_actualizacion": "2024",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_5.csv": {
+                "descripcion": "Marzo.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024%252FMarzo.pdf",
+                "fecha_actualizacion": "2024",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2024",
+                "metodo_deteccion": "url_pattern"
+            }
+        },
+        "2023": {
+            "Descargar.csv": {
+                "descripcion": "Diciembre.pdf",
+                "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2023%252FDiciembre.pdf",
+                "fecha_actualizacion": "2023",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BEstadistico%2BMensual%2Bdel%2BSistema%2BIntegral%2Bde%2BPensiones%252F2023",
+                "metodo_deteccion": "url_pattern"
+            }
+        },
+        "files": {
+            "Boletin_Trimestral_Estadistico_de_Pensiones": {
+                "2026": {
+                    "Descargar.csv": {
+                        "descripcion": "Boletin del 1er Trim 2026.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2026%252FBoletin%2Bdel%2B1er%2BTrim%2B2026.pdf",
+                        "fecha_actualizacion": "2026",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2026",
+                        "metodo_deteccion": "url_pattern"
+                    }
+                },
+                "2025": {
+                    "Descargar.csv": {
+                        "descripcion": "Boletin del 4to Trim 2025.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2025%252FBoletin%2Bdel%2B4to%2BTrim%2B2025.pdf",
+                        "fecha_actualizacion": "2025",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2025",
+                        "metodo_deteccion": "url_pattern"
+                    },
+                    "Descargar_2.csv": {
+                        "descripcion": "Boletin del 3er Trim 2025.pdf",
+                        "url_descarga": "https://www.aps.gob.bo/index.php/component/rsfiles/Descargar?Itemid=437&path=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2025%252FBoletin%2Bdel%2B3er%2BTrim%2B2025.pdf",
+                        "fecha_actualizacion": "2025",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://www.aps.gob.bo/index.php/component/rsfiles/files?Itemid=437&folder=UNE%252FDP%252FEstadisticas%252FBoletin%2BTrimestral%2BEstadistico%2Bde%2BPensiones%252F2025",
+                        "metodo_deteccion": "url_pattern"
+                    }
+                }
+            }
+        }
+    }
+}

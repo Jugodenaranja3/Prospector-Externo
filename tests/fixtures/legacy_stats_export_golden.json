@@ -1,0 +1,36 @@
+{
+    "ESTADISTICAS": {
+        "2026": {
+            "Descargar.csv": {
+                "descripcion": "Boletín Mensual Pensiones Mayo 2026.pdf",
+                "url_descarga": "https://example.test/boletin_mensual_pensiones_05_2026.pdf?token=abc",
+                "fecha_actualizacion": "2026-05",
+                "tipo_archivo": "PDF",
+                "url_origen": "https://example.test/estadisticas/2026",
+                "metodo_deteccion": "url_pattern"
+            },
+            "Descargar_2.csv": {
+                "descripcion": "Boletín Mensual Pensiones Marzo 2026.xlsx",
+                "url_descarga": "https://example.test/boletin_mensual_pensiones_03_2026.xlsx",
+                "fecha_actualizacion": "2026-03",
+                "tipo_archivo": "XLSX",
+                "url_origen": "https://example.test/estadisticas/2026",
+                "metodo_deteccion": "html_link"
+            }
+        },
+        "files": {
+            "Boletin_Trimestral_Estadistico_de_Pensiones": {
+                "2026": {
+                    "Descargar.csv": {
+                        "descripcion": "Boletín Trimestral de Pensiones T1 2026.pdf",
+                        "url_descarga": "https://example.test/boletin_trimestral_pensiones_t1_2026.pdf",
+                        "fecha_actualizacion": "2026-Q1",
+                        "tipo_archivo": "PDF",
+                        "url_origen": "https://example.test/trimestral/2026",
+                        "metodo_deteccion": "url_pattern"
+                    }
+                }
+            }
+        }
+    }
+}
