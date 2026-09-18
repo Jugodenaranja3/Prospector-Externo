@@ -1,0 +1,345 @@
+schema_version: source-inventory-1.0
+purpose: Inventario lógico histórico para BATCH 6A; no sustituye config/sources.yaml.
+logical_sources: 52
+unique_hosts: 46
+unique_entrypoints: 46
+sources:
+- source_id: anapo
+  logical_code: ANAPO
+  name: Asociación de Productores de Oleaginosas y Trigo
+  entrypoint: https://www.anapobolivia.org
+  host_key: anapobolivia.org
+  mapping_status: UNMAPPED
+- source_id: aps
+  logical_code: APS
+  name: Autoridad de Fiscalización y Control de Pensiones y Seguros
+  entrypoint: https://www.aps.gob.bo
+  host_key: aps.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - aps_soat
+- source_id: asfi_valores
+  logical_code: ASFI-Valores
+  name: Autoridad de Supervisión del Sistema Financiero
+  entrypoint: https://www.asfi.gob.bo
+  host_key: asfi.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - asfi
+  - asfi_finrural
+- source_id: bcb
+  logical_code: BCB
+  name: Banco Central de Bolivia
+  entrypoint: https://www.bcb.gob.bo
+  host_key: bcb.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - asfi_bcb
+- source_id: bm
+  logical_code: BM
+  name: Banco Mundial
+  entrypoint: https://www.worldbank.org
+  host_key: worldbank.org
+  mapping_status: UNMAPPED
+- source_id: cepal
+  logical_code: CEPAL
+  name: Comisión Económica para América Latina y el Caribe
+  entrypoint: https://www.cepal.org
+  host_key: cepal.org
+  mapping_status: UNMAPPED
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  entrypoint: https://www.fegasacruz.org.bo
+  host_key: fegasacruz.org.bo
+  mapping_status: UNMAPPED
+- source_id: finrural
+  logical_code: FINRURAL
+  name: Finrural Bolivia
+  entrypoint: https://www.finrural.org.bo
+  host_key: finrural.org.bo
+  mapping_status: UNMAPPED
+- source_id: fmi
+  logical_code: FMI
+  name: Fondo Monetario Internacional
+  entrypoint: https://www.imf.org
+  host_key: imf.org
+  mapping_status: UNMAPPED
+- source_id: mefp
+  logical_code: MEFP
+  name: Ministerio de Economía y Finanzas Públicas
+  entrypoint: https://www.economiayfinanzas.gob.bo
+  host_key: economiayfinanzas.gob.bo
+  mapping_status: UNMAPPED
+- source_id: mmym
+  logical_code: MMYM
+  name: Ministerio de Minería y Metalurgia
+  entrypoint: https://www.mineria.gob.bo
+  host_key: mineria.gob.bo
+  mapping_status: UNMAPPED
+- source_id: omc
+  logical_code: OMC
+  name: Organización Mundial del Comercio
+  entrypoint: https://www.wto.org
+  host_key: wto.org
+  mapping_status: UNMAPPED
+- source_id: statistics_denmark
+  logical_code: Statistics Denmark
+  name: Danmarks Statistik
+  entrypoint: https://www.dst.dk
+  host_key: dst.dk
+  mapping_status: UNMAPPED
+- source_id: vipfe
+  logical_code: VIPFE
+  name: Viceministerio de Inversión Pública y Financiamiento Externo
+  entrypoint: https://www.vipfe.gob.bo
+  host_key: vipfe.gob.bo
+  mapping_status: UNMAPPED
+- source_id: ada
+  logical_code: ADA
+  name: ADA Bolivia
+  entrypoint: https://www.adascz.com.bo
+  host_key: adascz.com.bo
+  mapping_status: UNMAPPED
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  entrypoint: https://www.redenlace.com.bo
+  host_key: redenlace.com.bo
+  mapping_status: UNMAPPED
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  entrypoint: https://www.cadexco.org.bo
+  host_key: cadexco.org.bo
+  mapping_status: UNMAPPED
+- source_id: cndc
+  logical_code: CNDC
+  name: Comisión Nacional de Defensa de la Competencia
+  entrypoint: https://www.cndc.bo
+  host_key: cndc.bo
+  mapping_status: UNMAPPED
+- source_id: dgac
+  logical_code: DGAC
+  name: Dirección General de Aeronáutica Civil
+  entrypoint: https://www.dgac.gob.bo
+  host_key: dgac.gob.bo
+  mapping_status: UNMAPPED
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  entrypoint: https://www.fam.bo
+  host_key: fam.bo
+  mapping_status: UNMAPPED
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  entrypoint: https://www.fifa.com
+  host_key: fifa.com
+  mapping_status: UNMAPPED
+- source_id: fundempresa
+  logical_code: FUNDEMPRESA
+  name: Registro de Comercio de Bolivia
+  entrypoint: https://www.fundempresa.org.bo
+  host_key: fundempresa.org.bo
+  mapping_status: UNMAPPED
+- source_id: icco
+  logical_code: ICCO
+  name: International Cocoa Organization
+  entrypoint: https://www.icco.org
+  host_key: icco.org
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - fdta_valles
+- source_id: itu
+  logical_code: ITU
+  name: International Telecommunication Union
+  entrypoint: https://www.itu.int
+  host_key: itu.int
+  mapping_status: UNMAPPED
+- source_id: mdryt_oap
+  logical_code: MDRyT/OAP
+  name: Ministerio de Desarrollo Rural y Tierras - OAP
+  entrypoint: https://www.ruralytierras.gob.bo
+  host_key: ruralytierras.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - mdryt
+- source_id: otros_historicos
+  logical_code: OTROS HISTORICOS
+  name: Doing Business (Banco Mundial)
+  entrypoint: https://www.doingbusiness.org
+  host_key: doingbusiness.org
+  mapping_status: UNMAPPED
+  inventory_note: Fuente histórica; disponibilidad actual debe revisarse.
+- source_id: sabsa
+  logical_code: SABSA
+  name: Servicios de Aeropuertos Bolivianos S.A.
+  entrypoint: https://www.sabsa.aero
+  host_key: sabsa.aero
+  mapping_status: UNMAPPED
+- source_id: sicoes
+  logical_code: SICOES
+  name: Sistema de Contrataciones Estatales
+  entrypoint: https://www.sicoes.gob.bo
+  host_key: sicoes.gob.bo
+  mapping_status: UNMAPPED
+- source_id: aps_soat
+  logical_code: APS/SOAT
+  name: APS - Seguros SOAT
+  entrypoint: https://www.aps.gob.bo
+  host_key: aps.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - aps
+- source_id: asfi
+  logical_code: ASFI
+  name: Autoridad de Supervisión del Sistema Financiero
+  entrypoint: https://www.asfi.gob.bo
+  host_key: asfi.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - asfi_valores
+  - asfi_finrural
+- source_id: asfi_finrural
+  logical_code: ASFI - FINRURAL
+  name: ASFI / Finrural
+  entrypoint: https://www.asfi.gob.bo
+  host_key: asfi.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - asfi_valores
+  - asfi
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  entrypoint: https://www.bolsadecereales.org.bo
+  host_key: bolsadecereales.org.bo
+  mapping_status: UNMAPPED
+- source_id: ceprobol
+  logical_code: CEPROBOL
+  name: Centro Promoción Bolivia
+  entrypoint: https://www.ceprobol.gob.bo
+  host_key: ceprobol.gob.bo
+  mapping_status: UNMAPPED
+- source_id: fdta_valles
+  logical_code: FDTA-Valles
+  name: Fundación para el Desarrollo Tecnológico Agropecuario de los Valles
+  entrypoint: https://www.icco.org
+  host_key: icco.org
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - icco
+  inventory_note: Inventario histórico apunta a icco.org; conservar para revisión.
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  entrypoint: https://www.ibch.org.bo
+  host_key: ibch.org.bo
+  mapping_status: UNMAPPED
+- source_id: ine
+  logical_code: INE
+  name: Instituto Nacional de Estadística
+  entrypoint: https://www.ine.gob.bo
+  host_key: ine.gob.bo
+  mapping_status: UNMAPPED
+- source_id: mhe
+  logical_code: MHE
+  name: Ministerio de Hidrocarburos y Energías
+  entrypoint: https://www.hidrocarburos.gob.bo
+  host_key: hidrocarburos.gob.bo
+  mapping_status: UNMAPPED
+- source_id: seprec
+  logical_code: SEPREC
+  name: Servicio Plurinacional de Registro de Comercio
+  entrypoint: https://www.seprec.gob.bo
+  host_key: seprec.gob.bo
+  mapping_status: UNMAPPED
+- source_id: undata
+  logical_code: UNDATA
+  name: United Nations Data
+  entrypoint: https://data.un.org
+  host_key: data.un.org
+  mapping_status: UNMAPPED
+- source_id: ae
+  logical_code: AE
+  name: Autoridad de Fiscalizacion de Electricidad dey Tecnologia Nuclear
+  entrypoint: https://aetn.gob.bo
+  host_key: aetn.gob.bo
+  mapping_status: UNMAPPED
+- source_id: asfi_bcb
+  logical_code: ASFI - BCB
+  name: ASFI / Banco Central de Bolivia
+  entrypoint: https://www.bcb.gob.bo
+  host_key: bcb.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - bcb
+- source_id: asofin
+  logical_code: ASOFIN
+  name: Asociación de Instituciones Financieras de Microfinanzas de Bolivia
+  entrypoint: https://www.asofinbolivia.com
+  host_key: asofinbolivia.com
+  mapping_status: UNMAPPED
+- source_id: att
+  logical_code: ATT
+  name: Autoridad de Regulación y Fiscalización de Telecomunicaciones y Transportes
+  entrypoint: https://www.att.gob.bo
+  host_key: att.gob.bo
+  mapping_status: UNMAPPED
+- source_id: bbv
+  logical_code: BBV
+  name: Bolsa Boliviana de Valores
+  entrypoint: https://www.bbv.com.bo
+  host_key: bbv.com.bo
+  mapping_status: UNMAPPED
+- source_id: data_gov
+  logical_code: Data.Gov
+  name: Portal de Datos Abiertos USA
+  entrypoint: https://www.data.gov
+  host_key: data.gov
+  mapping_status: UNMAPPED
+- source_id: ibce_cao
+  logical_code: IBCE - CAO
+  name: Instituto Boliviano de Comercio Exterior / Cámara Agropecuaria del Oriente
+  entrypoint: https://www.ibce.org.bo
+  host_key: ibce.org.bo
+  mapping_status: UNMAPPED
+- source_id: mdryt
+  logical_code: MDRyT
+  name: Ministerio de Desarrollo Rural y Tierras
+  entrypoint: https://www.ruralytierras.gob.bo
+  host_key: ruralytierras.gob.bo
+  mapping_status: UNMAPPED
+  shared_entrypoint_with:
+  - mdryt_oap
+- source_id: min_educacion
+  logical_code: Min. Educacion
+  name: Ministerio de Educación
+  entrypoint: https://www.minedu.gob.bo
+  host_key: minedu.gob.bo
+  mapping_status: UNMAPPED
+- source_id: senamhi
+  logical_code: SENAMHI
+  name: Servicio Nacional de Meteorología e Hidrología
+  entrypoint: https://www.senamhi.gob.bo
+  host_key: senamhi.gob.bo
+  mapping_status: UNMAPPED
+- source_id: sigma
+  logical_code: SIGMA
+  name: Industria Farmacéutica Sigma
+  entrypoint: https://www.sigmacorp.com.bo
+  host_key: sigmacorp.com.bo
+  mapping_status: UNMAPPED
+- source_id: snis
+  logical_code: SNIS
+  name: Sistema Nacional de Información en Salud
+  entrypoint: https://snis.minsalud.gob.bo
+  host_key: snis.minsalud.gob.bo
+  mapping_status: UNMAPPED
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  entrypoint: https://www.transtats.bts.gov
+  host_key: transtats.bts.gov
+  mapping_status: UNMAPPED

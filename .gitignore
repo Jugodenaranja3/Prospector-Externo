@@ -80,3 +80,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Prospector runtime / batch helpers
+/.runtime/
+/output*/
+/crawler_*.log
+/smoke_*.yaml
+/apply_batch_*.py
