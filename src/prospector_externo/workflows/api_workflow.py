@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from collections import deque
 from typing import Any, Deque, Dict, List, Optional, Set, Tuple
 
+from prospector_externo.domain.api_fingerprint import ApiContentFingerprint
 from prospector_externo.domain.api_discovery import (
     ApiDetector,
     ApiDocumentationDiscovery,
@@ -209,6 +209,9 @@ class ApiWorkflow(BaseWorkflow):
             return
 
         first_records = ApiDetector.records_detected(first_body, first_format) or 0
+        first_page_hash = ApiContentFingerprint.page_hash(first_body, first_format)
+        page_hashes = [first_page_hash]
+        api_resource.content_hash = ApiContentFingerprint.aggregate_hash(page_hashes, first_format)
         api_resource.api.pages_sampled = 1
         api_resource.api.records_sampled = first_records
         coverage.api_pages_visited += 1
@@ -224,7 +227,7 @@ class ApiWorkflow(BaseWorkflow):
         current_body = first_body
         current_headers = first_headers
         seen_page_urls = {UrlNormalizer.normalize(first_url)}
-        seen_payload_hashes = {hashlib.sha256(first_body.encode("utf-8", errors="replace")).hexdigest()}
+        seen_payload_hashes = {first_page_hash}
         pages_sampled = 1
         records_sampled = first_records
         stagnant_pages = 0
@@ -270,11 +273,12 @@ class ApiWorkflow(BaseWorkflow):
                 coverage.api_pagination_stopped += 1
                 break
 
-            payload_hash = hashlib.sha256(body.encode("utf-8", errors="replace")).hexdigest()
+            payload_hash = ApiContentFingerprint.page_hash(body, api_format)
             if payload_hash in seen_payload_hashes:
                 coverage.api_pagination_stopped += 1
                 break
             seen_payload_hashes.add(payload_hash)
+            page_hashes.append(payload_hash)
 
             page_records = ApiDetector.records_detected(body, api_format) or 0
             pages_sampled += 1
@@ -316,6 +320,7 @@ class ApiWorkflow(BaseWorkflow):
         api_resource.api.records_sampled = records_sampled
         api_resource.api.pagination_strategy = strategy
         api_resource.api.records_detected = records_sampled
+        api_resource.content_hash = ApiContentFingerprint.aggregate_hash(page_hashes, first_format)
 
     async def _probe_documentation(
         self,
@@ -553,6 +558,12 @@ class ApiWorkflow(BaseWorkflow):
                 )
                 resource.http_status = status
                 resource.content_type = content_type
+                resource.etag = headers.get("etag")
+                resource.last_modified_header = headers.get("last-modified")
+                try:
+                    resource.content_length_bytes = int(headers.get("content-length", ""))
+                except (TypeError, ValueError):
+                    resource.content_length_bytes = None
                 resource = self._add_resource(
                     resources=resources,
                     seen_resource_keys=seen_resource_keys,

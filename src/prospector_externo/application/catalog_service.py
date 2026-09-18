@@ -22,10 +22,26 @@ class CatalogApplicationService:
     def __init__(self, catalog_repo: CatalogRepositoryPort):
         self.catalog_repo = catalog_repo
 
+    @staticmethod
+    def _resource_evidence(resource: ResourceCandidate) -> str:
+        """Evidencia estable de contenido sin depender de metadata volátil de discovery."""
+        if resource.content_hash:
+            return f"sha256:{resource.content_hash}"
+        if resource.etag:
+            return f"etag:{resource.etag}"
+        if resource.last_modified_header:
+            return f"last-modified:{resource.last_modified_header}"
+        return ""
+
     def compute_resources_hash(self, resources: List[ResourceCandidate]) -> str:
-        """Calcula hash SHA-256 consolidado y determinista sobre las claves de recursos ordenadas."""
-        sorted_keys = sorted(r.resource_key for r in resources)
-        combined = "|".join(sorted_keys)
+        """Hash consolidado por identidad de recurso + evidencia de contenido disponible."""
+        signatures = []
+        for resource in resources:
+            evidence = self._resource_evidence(resource)
+            signatures.append(
+                f"{resource.resource_key}|{evidence}" if evidence else resource.resource_key
+            )
+        combined = "|".join(sorted(signatures))
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
     def reconcile_and_checkpoint(
@@ -61,13 +77,23 @@ class CatalogApplicationService:
         current_hash = self.compute_resources_hash(extraction_result.resources)
 
         historical_keys: Dict[str, ResourceCandidate] = {}
+        historical_hash = None
         if latest_snapshot:
             historical_keys = {r.resource_key: r for r in latest_snapshot.resources}
+            # Recalcular desde los recursos permite migrar snapshots antiguos cuyo
+            # resources_hash solo consideraba resource_key.
+            historical_hash = self.compute_resources_hash(latest_snapshot.resources)
 
-        # Clasificar cambios en recursos
+        # Clasificar cambios por identidad y, cuando existe, evidencia de contenido.
         for r in extraction_result.resources:
-            if r.resource_key not in historical_keys:
+            historical = historical_keys.get(r.resource_key)
+            if historical is None:
                 r.change_status = ChangeStatus.NEW
+                continue
+            previous_evidence = self._resource_evidence(historical)
+            current_evidence = self._resource_evidence(r)
+            if previous_evidence != current_evidence and (previous_evidence or current_evidence):
+                r.change_status = ChangeStatus.MODIFIED
             else:
                 r.change_status = ChangeStatus.UNCHANGED
 
@@ -76,7 +102,7 @@ class CatalogApplicationService:
             content_status = ContentStatus.EMPTY_RESULT
         elif latest_snapshot is None:
             content_status = ContentStatus.CHANGED
-        elif latest_snapshot.resources_hash != current_hash:
+        elif historical_hash != current_hash:
             content_status = ContentStatus.CHANGED
         else:
             content_status = ContentStatus.NO_CHANGE
