@@ -1,0 +1,36 @@
+schema_version: grouping-contract-1.0
+source_id: bcb
+rules:
+  - rule_id: bcb_sistema_pagos_reporte_estadistico
+    match:
+      origin_url_regex: '[?&]q=reporte-estadistico(?:&|$)'
+      context_regex: 'operaciones\s+del\s+sistema\s+de\s+pagos\s+nacional'
+    family_key_template: sistema-pagos-reporte-estadistico
+    family_title_template: Reporte Estadístico de Operaciones del Sistema de Pagos Nacional
+
+  - rule_id: bcb_estadisticas_semanales
+    match:
+      origin_url_regex: '[?&]q=estad-sticas-semanales(?:&|$)'
+    family_key_template: informacion-estadistica-semanal
+    family_title_template: Información Estadística Semanal
+
+  - rule_id: bcb_boletin_mensual_cuadro
+    match:
+      origin_url_regex: '[?&]q=(?:pub_)?boletin-mensual(?:&|$)'
+      anchor_regex: '^\s*(?P<code>\d+[A-Za-z]?)\.\s*(?P<label>.+?)\s*$'
+    family_key_template: 'boletin-mensual-cuadro-{code}-{label}'
+    family_title_template: 'Boletín Mensual — Cuadro {code}: {label}'
+
+  - rule_id: bcb_boletin_estadistico_cuadro
+    match:
+      origin_url_regex: '[?&]q=(?:pub_)?boletin-estadistico(?:&|$)'
+      anchor_regex: '^\s*(?P<code>\d+(?:\.\d+)?[A-Za-z]?)\s+(?P<label>.+?)\s*$'
+    family_key_template: 'boletin-estadistico-cuadro-{code}-{label}'
+    family_title_template: 'Boletín Estadístico — Cuadro {code}: {label}'
+
+  - rule_id: bcb_sector_externo_cuadro
+    match:
+      origin_url_regex: '[?&]q=(?:pub_)?boletin-sector-externo(?:&|$)'
+      anchor_regex: '^\s*(?P<code>\d+(?:\.\d+)?[A-Za-z]?)\s*[.\-]?\s*(?P<label>.+?)\s*$'
+    family_key_template: 'sector-externo-cuadro-{code}-{label}'
+    family_title_template: 'Boletín del Sector Externo — Cuadro {code}: {label}'

@@ -17,6 +17,7 @@ sys.path.insert(0, str(project_root))
 from prospector_externo.adapters.persistence.local_json_adapter import LocalJsonRepositoryAdapter
 from prospector_externo.application.legacy_stats_exporter import LegacyExportPlan
 from prospector_externo.application.projection_export_pipeline import DataxProjectionExportPipeline
+from prospector_externo.domain.grouping import GroupingContract
 
 
 def _load_plan(path: Path | None) -> LegacyExportPlan | None:
@@ -30,6 +31,19 @@ def _load_plan(path: Path | None) -> LegacyExportPlan | None:
     else:
         data = json.loads(text)
     return LegacyExportPlan.model_validate(data or {})
+
+
+def _load_grouping_contract(path: Path | None) -> GroupingContract | None:
+    if path is None:
+        return None
+    if not path.exists():
+        raise FileNotFoundError(f"Grouping contract no encontrado: {path}")
+    text = path.read_text(encoding="utf-8")
+    if path.suffix.lower() in {".yaml", ".yml"}:
+        data = yaml.safe_load(text)
+    else:
+        data = json.loads(text)
+    return GroupingContract.model_validate(data or {})
 
 
 def main() -> None:
@@ -47,6 +61,11 @@ def main() -> None:
         default=None,
         help="JSON/YAML opcional con LegacyExportPlan para reproducir rutas históricas.",
     )
+    parser.add_argument(
+        "--grouping-contract",
+        default=None,
+        help="JSON/YAML opcional con contrato de agrupamiento por fuente.",
+    )
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -60,11 +79,15 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     try:
         plan = _load_plan(Path(args.legacy_plan) if args.legacy_plan else None)
+        grouping_contract = _load_grouping_contract(
+            Path(args.grouping_contract) if args.grouping_contract else None
+        )
         repo = LocalJsonRepositoryAdapter(output_dir)
         manifest = DataxProjectionExportPipeline(repo).export(
             args.source,
             output_dir,
             legacy_plan=plan,
+            grouping_contract=grouping_contract,
         )
     except Exception as exc:
         logger.error("Falló proyección DATAX: %s", exc)

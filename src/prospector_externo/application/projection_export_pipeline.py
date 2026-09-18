@@ -21,6 +21,7 @@ from prospector_externo.application.legacy_stats_exporter import (
     LegacyStatsJsonExporter,
 )
 from prospector_externo.application.projection_service import DataxProjectionService
+from prospector_externo.domain.grouping import GroupingContract
 from prospector_externo.domain.projection import DataxProjection
 from prospector_externo.ports.catalog_repository import CatalogRepositoryPort
 
@@ -82,14 +83,19 @@ class DataxProjectionExportPipeline:
                 digest.update(chunk)
         return digest.hexdigest()
 
-    def build_projection(self, source_id: str) -> DataxProjection:
+    def build_projection(
+        self,
+        source_id: str,
+        *,
+        grouping_contract: Optional[GroupingContract] = None,
+    ) -> DataxProjection:
         source = self.catalog_repo.get_source(source_id)
         if source is None:
             raise ValueError(f"Fuente no encontrada en catálogo: {source_id!r}")
         snapshot = self.catalog_repo.get_latest_snapshot(source_id)
         if snapshot is None:
             raise ValueError(f"No existe snapshot para la fuente: {source_id!r}")
-        return self.projection_service.project(source, snapshot)
+        return self.projection_service.project(source, snapshot, grouping_contract)
 
     def export(
         self,
@@ -97,8 +103,12 @@ class DataxProjectionExportPipeline:
         base_output_dir: str | Path,
         *,
         legacy_plan: Optional[LegacyExportPlan] = None,
+        grouping_contract: Optional[GroupingContract] = None,
     ) -> ProjectionExportManifest:
-        projection = self.build_projection(source_id)
+        projection = self.build_projection(
+            source_id,
+            grouping_contract=grouping_contract,
+        )
         base = Path(base_output_dir)
         downstream_dir = base / source_id / "downstream"
         projection_path = downstream_dir / "datax_projection.json"

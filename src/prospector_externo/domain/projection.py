@@ -17,6 +17,7 @@ from urllib.parse import unquote, urlparse
 
 from pydantic import BaseModel, Field
 
+from prospector_externo.domain.grouping import GroupingContract, GroupingContractResolver
 from prospector_externo.domain.models import ApiMetadata, ResourceCandidate, ResourceType
 
 
@@ -36,6 +37,7 @@ class ProjectionDecision(BaseModel):
     family_key: str
     period_label: Optional[str] = None
     reason_codes: Tuple[str, ...] = ()
+    grouping_rule_id: Optional[str] = None
 
 
 class ProjectedRepresentation(BaseModel):
@@ -147,22 +149,32 @@ class ProjectionPeriodNormalizer:
         ).lower()
 
     @classmethod
-    def extract(cls, resource: ResourceCandidate) -> Optional[str]:
-        if resource.period_label:
-            return resource.period_label.strip() or None
+    def extract_text(cls, raw_text: str) -> Optional[str]:
+        text = cls._ascii(raw_text)
 
-        text = cls._ascii(
-            " ".join(
-                part
-                for part in (
-                    resource.title,
-                    resource.anchor_text,
-                    resource.context_text,
-                    unquote(resource.url),
-                )
-                if part
-            )
+        # Fecha diaria ISO o numérica. Es necesaria para series semanales como BCB.
+        match = re.search(
+            r"(?<!\d)(19\d{2}|20\d{2})[-_/](0?[1-9]|1[0-2])[-_/](0?[1-9]|[12]\d|3[01])(?!\d)",
+            text,
         )
+        if match:
+            return f"{int(match.group(1)):04d}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
+
+        match = re.search(
+            r"(?<!\d)(0?[1-9]|[12]\d|3[01])[-_/](0?[1-9]|1[0-2])[-_/](19\d{2}|20\d{2})(?!\d)",
+            text,
+        )
+        if match:
+            return f"{int(match.group(3)):04d}-{int(match.group(2)):02d}-{int(match.group(1)):02d}"
+
+        # Día + nombre de mes + año, por ejemplo '11 de septiembre de 2026'.
+        for name, month in sorted(cls.MONTHS.items(), key=lambda item: len(item[0]), reverse=True):
+            day_match = re.search(
+                rf"\b(0?[1-9]|[12]\d|3[01])(?:\s+de)?\s+{re.escape(name)}(?:\s+de)?\s+(19\d{{2}}|20\d{{2}})\b",
+                text,
+            )
+            if day_match:
+                return f"{int(day_match.group(2)):04d}-{month:02d}-{int(day_match.group(1)):02d}"
 
         # Quarter variants have priority over numeric month/year detection so
         # strings such as "T2 2026" are never mistaken for February 2026.
@@ -202,13 +214,30 @@ class ProjectionPeriodNormalizer:
         year_only = re.search(r"\b(19\d{2}|20\d{2})\b", text)
         return year_only.group(1) if year_only else None
 
+    @classmethod
+    def extract(cls, resource: ResourceCandidate) -> Optional[str]:
+        if resource.period_label:
+            return resource.period_label.strip() or None
+        return cls.extract_text(
+            " ".join(
+                part
+                for part in (
+                    resource.title,
+                    resource.anchor_text,
+                    resource.context_text,
+                    unquote(resource.url),
+                )
+                if part
+            )
+        )
+
 
 class ResourceFamilyKeyBuilder:
     """Construye una familia estable eliminando solo ruido de representación/periodo."""
 
     GENERIC_LINK_TEXT = {
         "descargar", "download", "ver", "archivo", "documento", "file", "link",
-        "aqui", "aquí", "pdf", "xlsx", "xls", "ods", "csv", "json", "xml", "get",
+        "aqui", "aquí", "pdf", "excel", "xlsx", "xls", "ods", "csv", "json", "xml", "get",
     }
     FORMAT_TOKENS = {
         "pdf", "doc", "docx", "xls", "xlsx", "ods", "csv", "tsv", "json", "xml",
@@ -465,6 +494,9 @@ class ProjectionBuilder:
     def _period_sort_key(period: Optional[str]) -> Tuple[int, int, int, str]:
         if not period:
             return (0, 0, 0, "")
+        day = re.fullmatch(r"(19\d{2}|20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])", period)
+        if day:
+            return (4, int(day.group(1)), int(day.group(2)) * 100 + int(day.group(3)), period)
         month = re.fullmatch(r"(19\d{2}|20\d{2})-(0[1-9]|1[0-2])", period)
         if month:
             return (3, int(month.group(1)), int(month.group(2)), period)
@@ -522,16 +554,29 @@ class ProjectionBuilder:
         run_id: str,
         resources_hash: str,
         resources: Iterable[ResourceCandidate],
+        grouping_contract: Optional[GroupingContract] = None,
     ) -> DataxProjection:
         raw = list(resources)
+        if grouping_contract is not None and grouping_contract.source_id != source_id:
+            raise ValueError(
+                f"Grouping contract de {grouping_contract.source_id!r} no corresponde a source_id={source_id!r}."
+            )
         decisions: List[ProjectionDecision] = []
         grouped: dict[str, dict[Optional[str], dict[str, ProjectedRepresentation]]] = {}
+        family_titles: dict[str, str] = {}
 
         for resource in raw:
             selected, priority, reasons = ResourceProjectionPolicy.classify(resource)
             fmt = ResourceProjectionPolicy.detect_format(resource)
             period = ProjectionPeriodNormalizer.extract(resource)
-            family_key = ResourceFamilyKeyBuilder.build(resource)
+            resolution = GroupingContractResolver.resolve(grouping_contract, resource)
+            if resolution is not None:
+                family_key = resolution.family_key
+                family_titles.setdefault(family_key, resolution.family_title)
+                grouping_rule_id = resolution.rule_id
+            else:
+                family_key = ResourceFamilyKeyBuilder.build(resource)
+                grouping_rule_id = None
             decisions.append(
                 ProjectionDecision(
                     resource_key=resource.resource_key,
@@ -541,6 +586,7 @@ class ProjectionBuilder:
                     family_key=family_key,
                     period_label=period,
                     reason_codes=reasons,
+                    grouping_rule_id=grouping_rule_id,
                 )
             )
             if not selected:
@@ -585,7 +631,7 @@ class ProjectionBuilder:
                 ProjectedFamily(
                     family_id=cls.family_id(source_id, family_key),
                     family_key=family_key,
-                    title=cls._family_title(family_key),
+                    title=family_titles.get(family_key, cls._family_title(family_key)),
                     latest_period=latest,
                     available_formats=formats_sorted,
                     periods=period_groups,

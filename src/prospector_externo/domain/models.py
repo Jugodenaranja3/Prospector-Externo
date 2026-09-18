@@ -112,6 +112,10 @@ class SourceConfig(BaseModel):
     max_api_document_depth: int = 1
     max_api_document_bytes: int = 2_000_000
 
+    # Contrato opcional de agrupamiento downstream. El crawler no lo ejecuta;
+    # se aplica en la etapa offline de proyección DATAX.
+    grouping_contract: Optional[str] = None
+
 
 class DiscoveredUrl(BaseModel):
     """Registro de una página o URL descubierta durante el recorrido."""

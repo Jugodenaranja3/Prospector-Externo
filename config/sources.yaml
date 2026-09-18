@@ -52,3 +52,58 @@ sources:
       - "/contacto/"
       - "/aula-bursatil/"
     rate_limit_seconds: 1.0
+
+  - source_id: bcb
+    name: "Banco Central de Bolivia (BCB)"
+    entrypoint: https://www.bcb.gob.bo
+    workflow: html
+    seeds:
+      - https://www.bcb.gob.bo/?q=estad-sticas-semanales
+      - https://www.bcb.gob.bo/?q=pub_boletin-mensual
+      - https://www.bcb.gob.bo/?q=pub_boletin-estadistico
+      - https://www.bcb.gob.bo/?q=pub_boletin-sector-externo
+      - https://www.bcb.gob.bo/?q=reporte-estadistico
+    update_category: WEEKLY
+    allowed_extensions:
+      - .xlsx
+      - .xls
+      - .ods
+      - .csv
+      - .pdf
+      - .zip
+    excluded_path_keywords: []
+    ignore_robots_txt: false
+    robots_override_reason: null
+    rate_limit_seconds: 1.5
+    allowed_hosts:
+      - bcb.gob.bo
+      - www.bcb.gob.bo
+    max_depth: 1
+    max_urls: 120
+    max_runtime_seconds: 300
+    max_requests: 120
+    max_query_variants: 12
+    max_consecutive_errors: 4
+    max_redirects: 4
+    max_calendar_variants: 18
+    max_url_length: 2048
+    max_query_keys: 10
+    pagination_min_pages: 2
+    pagination_empty_streak: 2
+    pagination_window: 3
+    discover_sitemaps: true
+    max_sitemap_documents: 4
+    max_sitemap_urls: 120
+    max_sitemap_bytes: 500000
+    discover_apis: true
+    max_api_endpoints: 30
+    max_api_response_bytes: 1000000
+    follow_api_pagination: true
+    max_api_pages: 3
+    max_api_records_sampled: 500
+    max_api_stagnant_pages: 2
+    probe_api_documentation: false
+    max_api_documents: 2
+    max_api_document_depth: 1
+    max_api_document_bytes: 500000
+    grouping_contract: config/grouping/bcb.yaml

@@ -75,6 +75,14 @@ class BaseWorkflow(SourceWorkflow):
 
     def _extract_period_from_text(self, text: str) -> Optional[str]:
         low = text.lower()
+        # Series semanales: conservar el día cuando la publicación lo expresa.
+        for name, num in self.MONTHS_ES.items():
+            daily = re.search(
+                rf"\b(0?[1-9]|[12]\d|3[01])(?:\s+de)?\s+{re.escape(name)}(?:\s+de)?\s+(20\d{{2}})\b",
+                low,
+            )
+            if daily:
+                return f"{int(daily.group(2)):04d}-{num:02d}-{int(daily.group(1)):02d}"
         for name, num in self.MONTHS_ES.items():
             if name in low:
                 year_m = re.search(r"\b(20\d{2})\b", low)
@@ -203,19 +211,62 @@ class BaseWorkflow(SourceWorkflow):
             resources.append(resource)
         return resources
 
-    @staticmethod
-    def _context_for_anchor(tag) -> Optional[str]:
-        """Recupera contexto humano cercano sin copiar bloques enormes de la página."""
+    @classmethod
+    def _context_for_anchor(cls, tag) -> Optional[str]:
+        """Recupera contexto humano cercano y el encabezado de periodo de la sección.
+
+        Muchos portales (BCB incluido) publican un enlace genérico como "Ver archivo
+        Excel" y ponen el periodo en un ``h2/h3`` anterior. Se conserva esa evidencia
+        sin copiar bloques completos de la página.
+        """
         anchor = tag.get_text(" ", strip=True)
+        parts: List[str] = []
+
         parent = tag.parent
         for _ in range(5):
             if parent is None or getattr(parent, "name", None) in {"body", "html"}:
                 break
             text = parent.get_text(" ", strip=True)
             if text and text != anchor and 3 <= len(text) <= 280:
-                return text
+                parts.append(text)
+                break
             parent = getattr(parent, "parent", None)
-        return None
+
+        month_pattern = "|".join(sorted(cls.MONTHS_ES, key=len, reverse=True))
+        period_heading_re = re.compile(
+            rf"(?:{month_pattern}).*\b20\d{{2}}\b|\b20\d{{2}}\b.*(?:{month_pattern})",
+            flags=re.IGNORECASE,
+        )
+        headings: List[str] = []
+        for heading in tag.find_all_previous(["h1", "h2", "h3", "h4", "h5", "h6"], limit=8):
+            text = heading.get_text(" ", strip=True)
+            if text and len(text) <= 180 and period_heading_re.search(text):
+                headings.append(text)
+                if len(headings) >= 2:
+                    break
+        parts.extend(headings)
+
+        # Si no hubo encabezado temporal, buscar únicamente marcadores fuertes de
+        # series semanales o del reporte estadístico; evitamos confundir la fecha de
+        # publicación con el periodo de datos de un boletín mensual.
+        if not headings:
+            strong_period_re = re.compile(
+                rf"(?:\bAL\s+\d{{1,2}}\s+DE\s+(?:{month_pattern})\s+DE\s+20\d{{2}}\b|"
+                rf"OPERACIONES\s+DEL\s+SISTEMA\s+DE\s+PAGOS\s+NACIONAL.*(?:{month_pattern}).*20\d{{2}})",
+                flags=re.IGNORECASE,
+            )
+            for node in tag.find_all_previous(string=True, limit=80):
+                text = re.sub(r"\s+", " ", str(node)).strip()
+                if 4 <= len(text) <= 180 and strong_period_re.search(text):
+                    parts.append(text)
+                    break
+
+        unique: List[str] = []
+        for part in parts:
+            normalized = re.sub(r"\s+", " ", part).strip()
+            if normalized and normalized not in unique:
+                unique.append(normalized)
+        return " | ".join(unique) if unique else None
 
     def _extract_resources_and_links(
         self,
