@@ -103,14 +103,16 @@ class SitemapDiscovery:
             return result
 
         queue: Deque[str] = deque()
-        queued: Set[str] = set()
+        scheduled: Set[str] = set()
         checked: Set[str] = set()
 
         candidates = [*robot_hints, self._default_sitemap(entrypoint)]
         for candidate in candidates:
+            if len(scheduled) >= self.config.max_sitemap_documents:
+                break
             normalized = UrlNormalizer.normalize(candidate, base_url=entrypoint)
-            if normalized and self._in_scope(normalized) and normalized not in queued:
-                queued.add(normalized)
+            if normalized and self._in_scope(normalized) and normalized not in scheduled:
+                scheduled.add(normalized)
                 queue.append(normalized)
 
         seen_urls: Set[str] = set()
@@ -151,11 +153,11 @@ class SitemapDiscovery:
                     normalized = UrlNormalizer.normalize(loc, base_url=sitemap_url)
                     if not normalized or not self._in_scope(normalized):
                         continue
-                    if normalized in queued or normalized in checked:
+                    if normalized in scheduled:
                         continue
-                    if len(queued) + len(checked) >= self.config.max_sitemap_documents:
+                    if len(scheduled) >= self.config.max_sitemap_documents:
                         break
-                    queued.add(normalized)
+                    scheduled.add(normalized)
                     queue.append(normalized)
                 continue
 

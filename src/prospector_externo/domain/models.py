@@ -53,6 +53,7 @@ class SourceConfig(BaseModel):
     max_query_variants: int = 25
     max_consecutive_errors: int = 5
     allowed_hosts: List[str] = Field(default_factory=list)
+    max_redirects: int = 5
 
     # Inteligencia de cobertura / anti-spider-trap.
     max_calendar_variants: int = 36

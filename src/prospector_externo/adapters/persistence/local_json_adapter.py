@@ -41,12 +41,15 @@ class LocalJsonRepositoryAdapter(CatalogRepositoryPort, RunReportRepositoryPort)
         source_dir.mkdir(parents=True, exist_ok=True)
 
         # 2.1 Contrato Estándar
+        source_state = self.get_source(snapshot.source_id)
+        source_name = source_state.name if source_state else snapshot.source_id.upper()
+        source_entrypoint = source_state.entrypoint if source_state else ""
         standard_contract = {
             "version": "1.0.0",
             "source": {
                 "id": snapshot.source_id,
-                "name": snapshot.source_id.upper(),
-                "entrypoint": ""
+                "name": source_name,
+                "entrypoint": source_entrypoint
             },
             "run": {
                 "run_id": snapshot.run_id,

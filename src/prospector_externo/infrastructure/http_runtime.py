@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Set
+from urllib.parse import urlparse
+
 import httpx
 
 from prospector_externo.domain.models import SourceConfig
@@ -28,6 +30,20 @@ class SourceHttpSession:
         self.config = config
         self.client = client
         self.budget = RequestBudget(config.max_requests)
+        self.allowed_redirect_hosts = self._build_allowed_redirect_hosts(config)
+
+    @staticmethod
+    def _build_allowed_redirect_hosts(config: SourceConfig) -> Set[str]:
+        hosts: Set[str] = set()
+        for candidate in [config.entrypoint, *config.seeds]:
+            host = (urlparse(candidate).hostname or "").lower().rstrip(".")
+            if host:
+                hosts.add(host)
+        for host in config.allowed_hosts:
+            clean = host.strip().lower().rstrip(".")
+            if clean:
+                hosts.add(clean)
+        return hosts
 
     @property
     def requests_used(self) -> int:
@@ -41,6 +57,8 @@ class SourceHttpSession:
             robots_override_reason=self.config.robots_override_reason,
             conditional=conditional,
             request_budget=self.budget,
+            allowed_redirect_hosts=self.allowed_redirect_hosts,
+            max_redirects=self.config.max_redirects,
         )
 
     async def fetch_headers(self, url: str, *, conditional: bool = True):
@@ -51,14 +69,19 @@ class SourceHttpSession:
             robots_override_reason=self.config.robots_override_reason,
             conditional=conditional,
             request_budget=self.budget,
+            allowed_redirect_hosts=self.allowed_redirect_hosts,
+            max_redirects=self.config.max_redirects,
         )
 
     async def robots_sitemaps(self, url: str):
         return await self.client.robots_sitemaps(
             url,
+            rate_limit_delay=self.config.rate_limit_seconds,
             ignore_robots_txt=self.config.ignore_robots_txt,
             robots_override_reason=self.config.robots_override_reason,
             request_budget=self.budget,
+            allowed_redirect_hosts=self.allowed_redirect_hosts,
+            max_redirects=self.config.max_redirects,
         )
 
     async def fetch_bytes_limited(self, url: str, *, max_bytes: int):
@@ -69,6 +92,8 @@ class SourceHttpSession:
             ignore_robots_txt=self.config.ignore_robots_txt,
             robots_override_reason=self.config.robots_override_reason,
             request_budget=self.budget,
+            allowed_redirect_hosts=self.allowed_redirect_hosts,
+            max_redirects=self.config.max_redirects,
         )
 
 

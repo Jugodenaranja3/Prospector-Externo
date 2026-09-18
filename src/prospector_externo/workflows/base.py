@@ -102,12 +102,15 @@ class BaseWorkflow(SourceWorkflow):
         title: str,
         discovery_type: DiscoveryType,
         anchor_text: Optional[str] = None,
+        context_text: Optional[str] = None,
     ) -> ResourceCandidate:
         normalized = UrlNormalizer.normalize(raw_url, base_url=current_url)
         ext = ResourceDetector.extension_for(normalized)
         parsed = urlparse(normalized)
         effective_title = title.strip() or os.path.basename(parsed.path) or normalized
-        period = self._extract_period_from_text(f"{effective_title} {unquote(normalized)}")
+        period = self._extract_period_from_text(
+            f"{effective_title} {context_text or ''} {unquote(normalized)}"
+        )
         return ResourceCandidate(
             resource_key=UrlNormalizer.compute_resource_key(config.source_id, normalized),
             url=normalized,
@@ -120,7 +123,22 @@ class BaseWorkflow(SourceWorkflow):
             change_status=ChangeStatus.NEW,
             discovery_method=self._discovery_method(discovery_type),
             anchor_text=anchor_text or title.strip() or None,
+            context_text=context_text,
         )
+
+    @staticmethod
+    def _context_for_anchor(tag) -> Optional[str]:
+        """Recupera contexto humano cercano sin copiar bloques enormes de la página."""
+        anchor = tag.get_text(" ", strip=True)
+        parent = tag.parent
+        for _ in range(5):
+            if parent is None or getattr(parent, "name", None) in {"body", "html"}:
+                break
+            text = parent.get_text(" ", strip=True)
+            if text and text != anchor and 3 <= len(text) <= 280:
+                return text
+            parent = getattr(parent, "parent", None)
+        return None
 
     def _extract_resources_and_links(
         self,
@@ -148,6 +166,7 @@ class BaseWorkflow(SourceWorkflow):
                 continue
 
             title = tag.get_text(" ", strip=True)
+            context_text = self._context_for_anchor(tag)
             if ResourceDetector.is_resource(normalized):
                 resource = self._make_resource(
                     config=config,
@@ -156,6 +175,7 @@ class BaseWorkflow(SourceWorkflow):
                     title=title,
                     discovery_type=discovery_type,
                     anchor_text=title,
+                    context_text=context_text,
                 )
                 if seen_resource_keys is not None:
                     if resource.resource_key in seen_resource_keys:

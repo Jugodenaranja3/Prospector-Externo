@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import contextvars
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, Optional, Set, Tuple
+from urllib.parse import urljoin
+
 import httpx
 
 from prospector_externo.infrastructure.host_politeness import HostPolitenessController
@@ -19,6 +21,8 @@ HttpRequestResult = Tuple[Optional[httpx.Response], Optional[int], Optional[str]
 class AsyncResilientHttpClient:
     DEFAULT_USER_AGENT = "DATAX-Prospector/1.0"
     ROBOTS_USER_AGENT = "DATAX-Prospector"
+    REDIRECT_STATUSES = {301, 302, 303, 307, 308}
+    DEFAULT_MAX_REDIRECTS = 5
 
     def __init__(
         self,
@@ -46,8 +50,22 @@ class AsyncResilientHttpClient:
         self._retry_policy = retry_policy or RetryPolicy()
         self._request_budget = request_budget
         self._conditional_cache = conditional_cache or ConditionalRequestCache()
+
         self._active_budget: contextvars.ContextVar[Optional[RequestBudget]] = (
             contextvars.ContextVar("prospector_active_request_budget", default=None)
+        )
+        self._active_rate_limit: contextvars.ContextVar[Optional[float]] = (
+            contextvars.ContextVar("prospector_active_rate_limit", default=None)
+        )
+        self._active_allowed_redirect_hosts: contextvars.ContextVar[
+            Optional[frozenset[str]]
+        ] = contextvars.ContextVar(
+            "prospector_active_allowed_redirect_hosts",
+            default=None,
+        )
+        self._active_max_redirects: contextvars.ContextVar[int] = contextvars.ContextVar(
+            "prospector_active_max_redirects",
+            default=self.DEFAULT_MAX_REDIRECTS,
         )
 
         self._client = httpx.AsyncClient(
@@ -59,7 +77,8 @@ class AsyncResilientHttpClient:
                 pool=cfg.pool,
             ),
             transport=transport,
-            follow_redirects=True,
+            # Redirecciones manuales: cada hop debe pasar budget/politeness/robots.
+            follow_redirects=False,
         )
         self._closed = False
         self._robots_policy = robots_policy or RobotsPolicy(fetcher=self._fetch_robots_txt)
@@ -71,6 +90,41 @@ class AsyncResilientHttpClient:
             if part:
                 merged.update(part)
         return merged
+
+    @staticmethod
+    def _normalize_allowed_hosts(
+        hosts: Optional[Iterable[str]],
+    ) -> Optional[frozenset[str]]:
+        if hosts is None:
+            return None
+        normalized = frozenset(
+            host.strip().lower().rstrip(".")
+            for host in hosts
+            if host and host.strip()
+        )
+        return normalized
+
+    @staticmethod
+    def _parsed_host(url: str) -> Optional[str]:
+        try:
+            parsed = httpx.URL(url)
+        except Exception:
+            return None
+        host = parsed.host
+        return host.lower().rstrip(".") if host else None
+
+    @classmethod
+    def _redirect_allowed(
+        cls,
+        url: str,
+        allowed_hosts: Optional[frozenset[str]],
+    ) -> bool:
+        host = cls._parsed_host(url)
+        if host is None:
+            return False
+        if allowed_hosts is None:
+            return True
+        return host in allowed_hosts
 
     async def _consume_budget(self, budget: Optional[RequestBudget]) -> bool:
         active = budget or self._active_budget.get() or self._request_budget
@@ -94,7 +148,7 @@ class AsyncResilientHttpClient:
                 return await self._client.send(request, stream=True)
             return await self._client.request(method, url, headers=headers)
 
-    async def _send_request(
+    async def _send_single(
         self,
         method: str,
         url: str,
@@ -105,6 +159,8 @@ class AsyncResilientHttpClient:
         conditional: bool = False,
         request_budget: Optional[RequestBudget] = None,
     ) -> HttpRequestResult:
+        """Envía un único URL físico. Retries consumen budget individualmente."""
+
         if self._closed:
             raise RuntimeError("AsyncResilientHttpClient ya fue cerrado")
 
@@ -195,13 +251,122 @@ class AsyncResilientHttpClient:
 
         return None, last_status, last_error or "REQUEST_ERROR"
 
+    async def _send_request(
+        self,
+        method: str,
+        url: str,
+        *,
+        rate_limit_delay: Optional[float] = None,
+        check_robots: bool = True,
+        ignore_robots_txt: bool = False,
+        robots_override_reason: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        stream: bool = False,
+        conditional: bool = False,
+        request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
+    ) -> HttpRequestResult:
+        """Ejecuta redirects manuales y auditables.
+
+        Cada hop:
+        - consume request budget;
+        - pasa por HostPolitenessController;
+        - vuelve a consultar robots para el destino (salvo fetch interno de robots);
+        - respeta la lista de hosts permitidos.
+        """
+
+        if max_redirects < 0:
+            raise ValueError("max_redirects no puede ser negativo")
+
+        allowed_hosts = self._normalize_allowed_hosts(allowed_redirect_hosts)
+        current_url = url
+        current_method = method.strip().upper()
+        visited_urls: Set[str] = set()
+        redirects_followed = 0
+
+        while True:
+            if current_url in visited_urls:
+                return None, None, "REDIRECT_LOOP"
+            visited_urls.add(current_url)
+
+            if not self._redirect_allowed(current_url, allowed_hosts):
+                return None, None, "REDIRECT_OUT_OF_SCOPE"
+
+            if check_robots:
+                decision = await self._robots_policy.check(
+                    current_url,
+                    user_agent=self.ROBOTS_USER_AGENT,
+                    ignore_robots_txt=ignore_robots_txt,
+                    robots_override_reason=robots_override_reason,
+                )
+                if not decision.allowed:
+                    return None, None, decision.code
+
+            response, status_code, error = await self._send_single(
+                current_method,
+                current_url,
+                rate_limit_delay=rate_limit_delay,
+                headers=headers,
+                stream=stream,
+                conditional=conditional,
+                request_budget=request_budget,
+            )
+            if response is None:
+                return None, status_code, error
+
+            if response.status_code not in self.REDIRECT_STATUSES:
+                return response, status_code, None
+
+            location = response.headers.get("Location")
+            if not location:
+                if stream:
+                    await response.aclose()
+                return None, response.status_code, "REDIRECT_LOCATION_MISSING"
+
+            if redirects_followed >= max_redirects:
+                if stream:
+                    await response.aclose()
+                return None, response.status_code, "TOO_MANY_REDIRECTS"
+
+            target = urljoin(current_url, location)
+            try:
+                parsed_target = httpx.URL(target)
+            except Exception:
+                if stream:
+                    await response.aclose()
+                return None, response.status_code, "INVALID_REDIRECT_URL"
+
+            if parsed_target.scheme not in {"http", "https"} or not parsed_target.host:
+                if stream:
+                    await response.aclose()
+                return None, response.status_code, "INVALID_REDIRECT_URL"
+
+            if not self._redirect_allowed(target, allowed_hosts):
+                if stream:
+                    await response.aclose()
+                return None, response.status_code, "REDIRECT_OUT_OF_SCOPE"
+
+            # Liberar siempre la conexión antes de seguir al siguiente hop.
+            await response.aclose()
+
+            if response.status_code == 303 and current_method != "HEAD":
+                current_method = "GET"
+
+            current_url = str(parsed_target)
+            redirects_followed += 1
+
     async def _fetch_robots_txt(self, robots_url: str) -> RobotsFetchResult:
         response, status_code, error = await self._send_request(
             "GET",
             robots_url,
+            rate_limit_delay=self._active_rate_limit.get(),
+            check_robots=False,
             headers={"Accept": "text/plain,*/*;q=0.1"},
             conditional=False,
             request_budget=self._active_budget.get(),
+            allowed_redirect_hosts=self._active_allowed_redirect_hosts.get(),
+            max_redirects=self._active_max_redirects.get(),
         )
         if response is None:
             return RobotsFetchResult(status_code, None, error)
@@ -220,30 +385,34 @@ class AsyncResilientHttpClient:
         stream: bool = False,
         conditional: bool = False,
         request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ) -> HttpRequestResult:
-        token = self._active_budget.set(request_budget or self._request_budget)
+        normalized_hosts = self._normalize_allowed_hosts(allowed_redirect_hosts)
+        budget_token = self._active_budget.set(request_budget or self._request_budget)
+        rate_token = self._active_rate_limit.set(rate_limit_delay)
+        hosts_token = self._active_allowed_redirect_hosts.set(normalized_hosts)
+        redirects_token = self._active_max_redirects.set(max_redirects)
         try:
-            if check_robots:
-                decision = await self._robots_policy.check(
-                    url,
-                    user_agent=self.ROBOTS_USER_AGENT,
-                    ignore_robots_txt=ignore_robots_txt,
-                    robots_override_reason=robots_override_reason,
-                )
-                if not decision.allowed:
-                    return None, None, decision.code
-
             return await self._send_request(
                 method,
                 url,
                 rate_limit_delay=rate_limit_delay,
+                check_robots=check_robots,
+                ignore_robots_txt=ignore_robots_txt,
+                robots_override_reason=robots_override_reason,
                 headers=headers,
                 stream=stream,
                 conditional=conditional,
                 request_budget=request_budget,
+                allowed_redirect_hosts=normalized_hosts,
+                max_redirects=max_redirects,
             )
         finally:
-            self._active_budget.reset(token)
+            self._active_max_redirects.reset(redirects_token)
+            self._active_allowed_redirect_hosts.reset(hosts_token)
+            self._active_rate_limit.reset(rate_token)
+            self._active_budget.reset(budget_token)
 
     async def fetch_html(
         self,
@@ -255,6 +424,8 @@ class AsyncResilientHttpClient:
         robots_override_reason: Optional[str] = None,
         conditional: bool = True,
         request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
         response, status_code, error = await self._request(
             "GET",
@@ -265,6 +436,8 @@ class AsyncResilientHttpClient:
             robots_override_reason=robots_override_reason,
             conditional=conditional,
             request_budget=request_budget,
+            allowed_redirect_hosts=allowed_redirect_hosts,
+            max_redirects=max_redirects,
         )
         if response is None:
             return None, status_code, error
@@ -280,6 +453,8 @@ class AsyncResilientHttpClient:
         robots_override_reason: Optional[str] = None,
         conditional: bool = True,
         request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ) -> Tuple[Optional[Dict[str, str]], Optional[int], Optional[str]]:
         response, status_code, error = await self._request(
             "HEAD",
@@ -290,6 +465,8 @@ class AsyncResilientHttpClient:
             robots_override_reason=robots_override_reason,
             conditional=conditional,
             request_budget=request_budget,
+            allowed_redirect_hosts=allowed_redirect_hosts,
+            max_redirects=max_redirects,
         )
 
         if status_code == 304:
@@ -310,6 +487,8 @@ class AsyncResilientHttpClient:
             stream=True,
             conditional=conditional,
             request_budget=request_budget,
+            allowed_redirect_hosts=allowed_redirect_hosts,
+            max_redirects=max_redirects,
         )
 
         if fallback_status == 304:
@@ -325,11 +504,18 @@ class AsyncResilientHttpClient:
         self,
         url: str,
         *,
+        rate_limit_delay: Optional[float] = None,
         ignore_robots_txt: bool = False,
         robots_override_reason: Optional[str] = None,
         request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ):
-        token = self._active_budget.set(request_budget or self._request_budget)
+        normalized_hosts = self._normalize_allowed_hosts(allowed_redirect_hosts)
+        budget_token = self._active_budget.set(request_budget or self._request_budget)
+        rate_token = self._active_rate_limit.set(rate_limit_delay)
+        hosts_token = self._active_allowed_redirect_hosts.set(normalized_hosts)
+        redirects_token = self._active_max_redirects.set(max_redirects)
         try:
             return await self._robots_policy.sitemap_urls_for(
                 url,
@@ -338,7 +524,10 @@ class AsyncResilientHttpClient:
                 robots_override_reason=robots_override_reason,
             )
         finally:
-            self._active_budget.reset(token)
+            self._active_max_redirects.reset(redirects_token)
+            self._active_allowed_redirect_hosts.reset(hosts_token)
+            self._active_rate_limit.reset(rate_token)
+            self._active_budget.reset(budget_token)
 
     async def fetch_bytes_limited(
         self,
@@ -350,6 +539,8 @@ class AsyncResilientHttpClient:
         ignore_robots_txt: bool = False,
         robots_override_reason: Optional[str] = None,
         request_budget: Optional[RequestBudget] = None,
+        allowed_redirect_hosts: Optional[Iterable[str]] = None,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
     ) -> Tuple[Optional[bytes], Optional[int], Optional[str], Dict[str, str]]:
         if max_bytes <= 0:
             raise ValueError("max_bytes debe ser mayor que cero")
@@ -364,6 +555,8 @@ class AsyncResilientHttpClient:
             stream=True,
             conditional=False,
             request_budget=request_budget,
+            allowed_redirect_hosts=allowed_redirect_hosts,
+            max_redirects=max_redirects,
         )
         if response is None:
             return None, status_code, error, {}

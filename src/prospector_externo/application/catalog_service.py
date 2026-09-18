@@ -81,6 +81,23 @@ class CatalogApplicationService:
         else:
             content_status = ContentStatus.NO_CHANGE
 
+        # Actualizar primero la entidad Source para que adaptadores de salida
+        # puedan exportar metadata real en el mismo checkpoint inicial.
+        source_entity = self.catalog_repo.get_source(source_id) or Source(
+            source_id=source_id,
+            name=config.name or source_id.upper(),
+            entrypoint=config.entrypoint,
+            workflow=config.workflow,
+            update_category=config.update_category,
+        )
+        source_entity.name = config.name or source_entity.name or source_id.upper()
+        source_entity.entrypoint = config.entrypoint
+        source_entity.workflow = config.workflow
+        source_entity.last_run_id = run_id
+        source_entity.last_run_at = now
+        source_entity.updated_at = now
+        self.catalog_repo.save_source(source_entity)
+
         # Crear y persistir nuevo snapshot (Checkpoint incremental)
         new_snapshot = Snapshot(
             source_id=source_id,
@@ -92,18 +109,6 @@ class CatalogApplicationService:
         )
         self.catalog_repo.save_snapshot(new_snapshot)
         logger.info(f"Checkpoint incremental persistido con éxito para [{source_id}] ({len(new_snapshot.resources)} recursos).")
-
-        # Actualizar entidad Source en el catálogo
-        source_entity = self.catalog_repo.get_source(source_id) or Source(
-            source_id=source_id,
-            name=config.name or source_id.upper(),
-            entrypoint=config.entrypoint,
-            workflow=config.workflow
-        )
-        source_entity.last_run_id = run_id
-        source_entity.last_run_at = now
-        source_entity.updated_at = now
-        self.catalog_repo.save_source(source_entity)
 
         # Generar observación de corrida
         observation = SourceRunObservation(
