@@ -294,7 +294,9 @@ class BaseWorkflow(SourceWorkflow):
         if not headings:
             strong_period_re = re.compile(
                 rf"(?:\bAL\s+\d{{1,2}}\s+DE\s+(?:{month_pattern})\s+DE\s+20\d{{2}}\b|"
-                rf"OPERACIONES\s+DEL\s+SISTEMA\s+DE\s+PAGOS\s+NACIONAL.*(?:{month_pattern}).*20\d{{2}})",
+                rf"OPERACIONES\s+DEL\s+SISTEMA\s+DE\s+PAGOS\s+NACIONAL.*(?:{month_pattern}).*20\d{{2}}|"
+                rf"BOLET[IÍ]N\s+MENSUAL(?:\s+(?:N[°º.]?\s*)?\d+)?"
+                rf"\s*[-–—:(]*\s*(?:{month_pattern})\s+20\d{{2}}\b)",
                 flags=re.IGNORECASE,
             )
             for node in tag.find_all_previous(string=True, limit=80):

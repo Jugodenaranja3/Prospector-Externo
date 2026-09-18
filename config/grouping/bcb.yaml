@@ -23,6 +23,14 @@ rules:
     family_key_template: 'boletin-mensual-cuadro-{code}-{label}'
     family_title_template: 'Boletín Mensual — Cuadro {code}: {label}'
 
+  - rule_id: bcb_boletin_mensual_publicacion_pdf
+    match:
+      origin_url_regex: '[?&]q=(?:pub_)?boletin-mensual(?:&|$)'
+      url_regex: '/webdocs/publicacionesbcb/.*\.pdf(?:$|[?#])'
+      context_regex: 'bolet[ií]n\s+mensual(?:\s+(?:n[°º.]?\s*)?\d+)?\s*[-–—:(]*\s*(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+20\d{2}'
+    family_key_template: boletin-mensual-publicacion-completa
+    family_title_template: Boletín Mensual — Publicación completa
+
   - rule_id: bcb_boletin_estadistico_cuadro
     match:
       origin_url_regex: '[?&]q=(?:pub_)?boletin-estadistico(?:&|$)'

@@ -114,3 +114,33 @@ Después de re-crawlear este smoke, el resultado esperado es: 70 raw, 61 cuadros
 caracterizados, 61 familias y los 61 con periodo `2026-01`. Los 9 recursos
 globales permanecen raw y fuera de downstream por `unmatched_policy: exclude`.
 
+## Muestreo histórico del Boletín Mensual y hardening BATCH 5E (2026-09-18)
+
+Se ejecutó un muestreo real, acotado y sin crawl lateral sobre siete páginas del
+Boletín Mensual (`page=0,36,72,108,144,180,216`). La corrida utilizó robots +
+siete HTML, terminó sin errores y produjo 76 recursos raw. La página actual
+aporta 61 cuadros XLSX del Boletín Mensual N° 373 (enero 2026); las seis páginas
+históricas muestreadas aportan una publicación PDF completa cada una.
+
+El muestreo confirmó dos modelos de publicación que no deben colapsarse:
+
+- modelo moderno: múltiples cuadros XLSX, cada código/título constituye una
+  familia estadística independiente para un periodo común;
+- modelo histórico: un PDF de publicación completa representa el boletín del
+  mes y debe conservarse como la familia
+  `boletin-mensual-publicacion-completa`, sin inventar 61 cuadros internos que
+  no fueron publicados como recursos separados.
+
+También se observó que en páginas antiguas el enlace puede llamarse solamente
+`Ver archivo Pdf` y la URL puede no contener el año o el mes (`mensualenero14.pdf`,
+`mensualeneroxxx.pdf`). BATCH 5E amplía la recuperación de contexto cercano para
+reconocer etiquetas fuertes del tipo `Boletín Mensual <número> - <mes> <año>`.
+Así el periodo se obtiene del encabezado humano del registro y no de la fecha de
+publicación ni de una heurística de URL.
+
+Con el recrawl del mismo muestreo, los seis PDF históricos esperados deben quedar
+con periodos `2023-01`, `2020-01`, `2017-01`, `2014-01`, `2011-01` y `2008-01`.
+El contrato BCB proyecta esos PDF como una sola familia histórica con seis
+periodos, mientras mantiene las 61 familias XLSX modernas separadas. Los recursos
+globales/nav continúan en raw y fuera de downstream.
+
