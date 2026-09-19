@@ -748,8 +748,8 @@ def main() -> int:
     finally:
         if browser is not None:
             browser.close()
-        if browser_context_manager is not None:
-            browser_context_manager.stop()
+        if pw is not None:
+            pw.stop()
 
     status_counts = Counter(row["status"] for row in results)
     route_counts = Counter(row["recommended_route"] for row in results)
