@@ -730,14 +730,15 @@ sources:
   rate_limit_seconds: 1.0
   source_id: data_gov
   name: Portal de Datos Abiertos USA
-  entrypoint: https://data.gov/
+  entrypoint: https://catalog.data.gov/
   seeds:
-  - https://data.gov/
-  workflow: api
+  - https://catalog.data.gov/
+  workflow: html
   discover_apis: true
   allowed_hosts:
   - data.gov
   - www.data.gov
+  - catalog.data.gov
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf

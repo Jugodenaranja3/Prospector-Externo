@@ -17,9 +17,9 @@ EXPECTED = {
         "hosts": {"asofinbolivia.com", "www.asofinbolivia.com"},
     },
     "data_gov": {
-        "entrypoint": "https://data.gov/",
-        "workflow": "api",
-        "hosts": {"data.gov", "www.data.gov"},
+        "entrypoint": "https://catalog.data.gov/",
+        "workflow": "html",
+        "hosts": {"catalog.data.gov", "data.gov", "www.data.gov"},
     },
     "ibce_cao": {
         "entrypoint": "https://ibce.org.bo/",
