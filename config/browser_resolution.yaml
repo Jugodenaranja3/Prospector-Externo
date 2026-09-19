@@ -1,0 +1,297 @@
+schema_version: browser-resolution-1.0
+generated_at_utc: '2026-09-19T00:03:38.049539+00:00'
+candidate_sources: 11
+summary_by_status:
+  B8_CUSTOM_CANDIDATE: 4
+  JAVASCRIPT_NETWORK_REVIEW: 1
+  READY_JAVASCRIPT_DATA_NETWORK: 3
+  READY_JAVASCRIPT_FILES: 2
+  READY_JAVASCRIPT_STRUCTURED_FILES: 1
+summary_by_route:
+  B7_NETWORK_SEMANTIC_REVIEW: 1
+  B8_CUSTOM_REVIEW: 4
+  PROMOTE_JAVASCRIPT_WORKFLOW: 6
+sources:
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  effective_entrypoint: https://fegasacruz.org/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_NO_DATA_EVIDENCE
+  navigation_ok: true
+  final_url: https://fegasacruz.org/
+  rendered_links: 2
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 0
+  data_network_events_original: 0
+  resolution_status: B8_CUSTOM_CANDIDATE
+  route: B8_CUSTOM_REVIEW
+  workflow_strategy: null
+  file_category_counts: {}
+  network_category_counts: {}
+  meaningful_network_events: 0
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: statistics_denmark
+  logical_code: Statistics Denmark
+  name: Danmarks Statistik
+  effective_entrypoint: https://www.dst.dk/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://www.dst.dk/da/
+  rendered_links: 89
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 1
+  data_network_events_original: 1
+  resolution_status: READY_JAVASCRIPT_DATA_NETWORK
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts: {}
+  network_category_counts:
+    DATA_ENDPOINT: 1
+  meaningful_network_events: 1
+  data_endpoint_urls:
+  - https://heatmaps.monsido.com/v1/settings/QARWrCQaiBrafClOpVkiEQ.json
+  same_origin_json_urls: []
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: vipfe
+  logical_code: VIPFE
+  name: Viceministerio de Inversión Pública y Financiamiento Externo
+  effective_entrypoint: https://sisin.planificacion.gob.bo/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_FILE_DISCOVERY
+  navigation_ok: true
+  final_url: https://sisin.planificacion.gob.bo/
+  rendered_links: 5
+  direct_downloads: 2
+  direct_download_urls:
+  - https://sisin.planificacion.gob.bo/docs/140520211746_lista_proyectos.xlsx
+  - https://sisin.planificacion.gob.bo/docs/1609261831_Perfiles_de_usuario_SISIN.pdf
+  xhr_fetch_events: 1
+  data_network_events_original: 0
+  resolution_status: READY_JAVASCRIPT_STRUCTURED_FILES
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts:
+    DOCUMENT_FILE: 1
+    STRUCTURED_FILE: 1
+  network_category_counts:
+    SAME_ORIGIN_XHR: 1
+  meaningful_network_events: 1
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  effective_entrypoint: https://www.redenlace.com.bo
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://www.redenlace.com.bo/
+  rendered_links: 53
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 4
+  data_network_events_original: 2
+  resolution_status: B8_CUSTOM_CANDIDATE
+  route: B8_CUSTOM_REVIEW
+  workflow_strategy: null
+  file_category_counts: {}
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 1
+    THIRD_PARTY_JSON: 2
+    THIRD_PARTY_XHR: 1
+  meaningful_network_events: 0
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  effective_entrypoint: https://cadexco.bo/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://cadexco.bo/
+  rendered_links: 59
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 3
+  data_network_events_original: 0
+  resolution_status: B8_CUSTOM_CANDIDATE
+  route: B8_CUSTOM_REVIEW
+  workflow_strategy: null
+  file_category_counts: {}
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 3
+  meaningful_network_events: 0
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  effective_entrypoint: https://fam.org.bo/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://fam.org.bo/
+  rendered_links: 45
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 1
+  data_network_events_original: 0
+  resolution_status: JAVASCRIPT_NETWORK_REVIEW
+  route: B7_NETWORK_SEMANTIC_REVIEW
+  workflow_strategy: null
+  file_category_counts: {}
+  network_category_counts:
+    SAME_ORIGIN_XHR: 1
+  meaningful_network_events: 1
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: Browser reveló tráfico de aplicación, pero B7C aún no demuestra que represente datasets/descargas.
+- source_id: sicoes
+  logical_code: SICOES
+  name: Sistema de Contrataciones Estatales
+  effective_entrypoint: https://www.sicoes.gob.bo
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_FILE_DISCOVERY
+  navigation_ok: true
+  final_url: https://www.sicoes.gob.bo/portal/index.php
+  rendered_links: 10
+  direct_downloads: 1
+  direct_download_urls:
+  - https://appportal.sigep.gob.bo/wp-content/uploads/2026/09/MEFPVPCFDGSGIF482026.pdf
+  xhr_fetch_events: 3
+  data_network_events_original: 0
+  resolution_status: READY_JAVASCRIPT_FILES
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts:
+    DOCUMENT_FILE: 1
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 1
+    SAME_ORIGIN_XHR: 2
+  meaningful_network_events: 2
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: mhe
+  logical_code: MHE
+  name: Ministerio de Hidrocarburos y Energías
+  effective_entrypoint: https://www.mhe.gob.bo/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_FILE_DISCOVERY
+  navigation_ok: true
+  final_url: https://www.mhe.gob.bo/
+  rendered_links: 86
+  direct_downloads: 7
+  direct_download_urls:
+  - https://www.mhe.gob.bo/wp-content/uploads/2025/09/OBJETIVOS-Y-ESTRATEGIAS-INSTITUCIONALES-MHE.pdf
+  - https://www.mhe.gob.bo/wp-content/uploads/2025/09/Principios-Institucionales-MHE.pdf
+  - https://www.mhe.gob.bo/wp-content/uploads/2025/09/Valores-Institucionales-MHE.pdf
+  - https://www.mhe.gob.bo/wp-content/uploads/2026/01/RM-050-2024.pdf
+  - https://www.mhe.gob.bo/wp-content/uploads/2026/05/DS55952028NCPP.pdf
+  - https://www.mhe.gob.bo/wp-content/uploads/2026/05/reglamento-tranca-cero.pdf
+  - https://wwwt.ypfbrefinacion.com.bo/files/publicaciones/resultados_indicadores_produccion_22.pdf
+  xhr_fetch_events: 4
+  data_network_events_original: 2
+  resolution_status: READY_JAVASCRIPT_FILES
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts:
+    DOCUMENT_FILE: 7
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 2
+    CMS_OR_GENERIC_BACKEND: 1
+    THIRD_PARTY_JSON: 1
+  meaningful_network_events: 0
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: undata
+  logical_code: UNDATA
+  name: United Nations Data
+  effective_entrypoint: https://data.un.org
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://data.un.org/
+  rendered_links: 8
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 9
+  data_network_events_original: 4
+  resolution_status: READY_JAVASCRIPT_DATA_NETWORK
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts: {}
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 5
+    DATA_ENDPOINT: 3
+    THIRD_PARTY_JSON: 1
+  meaningful_network_events: 3
+  data_endpoint_urls:
+  - https://data.un.org/config/home_suggestions.json
+  - https://data.un.org/config/partners.json
+  - https://data.un.org/config/sidebar.json
+  same_origin_json_urls: []
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: sigma
+  logical_code: SIGMA
+  name: Industria Farmacéutica Sigma
+  effective_entrypoint: https://www.sigmacorp.com.bo/
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://www.sigmacorp.com.bo/
+  rendered_links: 26
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 5
+  data_network_events_original: 4
+  resolution_status: READY_JAVASCRIPT_DATA_NETWORK
+  route: PROMOTE_JAVASCRIPT_WORKFLOW
+  workflow_strategy: javascript
+  file_category_counts: {}
+  network_category_counts:
+    CMS_OR_GENERIC_BACKEND: 1
+    DATA_ENDPOINT: 3
+    SAME_ORIGIN_XHR: 1
+  meaningful_network_events: 4
+  data_endpoint_urls:
+  - https://www.sigmacorp.com.bo/_next/data/fnQeJ8yr1iYGAzcQS4sqB/es/about.json
+  - https://www.sigmacorp.com.bo/_next/data/fnQeJ8yr1iYGAzcQS4sqB/es/recursos/contacto.json
+  - https://www.sigmacorp.com.bo/_next/data/fnQeJ8yr1iYGAzcQS4sqB/es/recursos/farmacovigilancia.json
+  same_origin_json_urls: []
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  effective_entrypoint: https://www.transtats.bts.gov
+  b6_status: B7_B8_CANDIDATE
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  navigation_ok: true
+  final_url: https://www.transtats.bts.gov/
+  rendered_links: 170
+  direct_downloads: 0
+  direct_download_urls: []
+  xhr_fetch_events: 7
+  data_network_events_original: 3
+  resolution_status: B8_CUSTOM_CANDIDATE
+  route: B8_CUSTOM_REVIEW
+  workflow_strategy: null
+  file_category_counts: {}
+  network_category_counts:
+    ANALYTICS_TELEMETRY: 4
+    THIRD_PARTY_JSON: 3
+  meaningful_network_events: 0
+  data_endpoint_urls: []
+  same_origin_json_urls: []
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
