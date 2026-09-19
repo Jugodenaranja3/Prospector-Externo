@@ -1,0 +1,35 @@
+schema_version: persistence-resolution-1.0
+b9_closed: true
+
+checkpoint:
+  scope: logical_source
+  states:
+    - PENDING
+    - RUNNING
+    - SUCCEEDED
+    - FAILED
+    - SKIPPED_STATUS
+  plan_fingerprint_guard: true
+  interrupted_running_recovery: true
+
+backends:
+  json:
+    implemented: true
+    atomic_write: true
+    live_smoke: true
+    smoke_run_id: b9b-smoke
+  mongo:
+    implemented: true
+    lazy_driver: true
+    contract_tested: true
+    live_server_smoke: false
+    live_server_note: Requires deployment-specific PROSPECTOR_MONGO_URI and PROSPECTOR_MONGO_DATABASE.
+
+execution:
+  logical_operational_sources: 41
+  physical_config_sources: 35
+  execution_map: config/source_execution_map.yaml
+  live_resume_proof:
+    first_source: anapo
+    resumed_source: aps
+    first_source_reexecuted: false
