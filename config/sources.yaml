@@ -285,11 +285,15 @@ sources:
   rate_limit_seconds: 1.0
   source_id: statistics_denmark
   name: Danmarks Statistik
-  entrypoint: https://www.dst.dk/
+  entrypoint: https://api.statbank.dk/v1/tables?lang=en
   seeds:
-  - https://www.dst.dk/
-  workflow: javascript
+  - https://api.statbank.dk/v1/tables?lang=en
+  workflow: api
   discover_apis: true
+  follow_api_pagination: true
+  probe_api_documentation: false
+  allowed_hosts:
+  - api.statbank.dk
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
