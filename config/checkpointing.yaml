@@ -1,0 +1,11 @@
+schema_version: checkpointing-config-1.0
+backend_env: PROSPECTOR_CHECKPOINT_BACKEND
+default_backend: json
+
+json:
+  path: .runtime/checkpoints/latest.json
+
+mongo:
+  uri_env: PROSPECTOR_MONGO_URI
+  database_env: PROSPECTOR_MONGO_DATABASE
+  collection: prospector_run_checkpoints

@@ -1,0 +1,1 @@
+"""Checkpoint administration CLI."""
