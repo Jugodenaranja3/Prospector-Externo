@@ -262,10 +262,14 @@ sources:
   rate_limit_seconds: 1.0
   source_id: omc
   name: Organización Mundial del Comercio
-  entrypoint: https://www.wto.org
+  entrypoint: https://data.wto.org/dataset/bulkdownload
   seeds:
-  - https://www.wto.org
+  - https://data.wto.org/dataset/bulkdownload
   workflow: html
+  allowed_hosts:
+  - data.wto.org
+  - www.wto.org
+  - wto.org
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf

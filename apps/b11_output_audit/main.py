@@ -89,6 +89,7 @@ MEDIUM_PRIORITY_EXTENSIONS = {
 
 BASELINE_ROOT_REL = Path("output") / "b10-final" / "b10-final"
 REMEDIATION_ROOT_REL = Path("output") / "b10-remediation"
+B11_REFRESH_ROOT_REL = Path("output") / "b11-refresh"
 REMEDIATION_STATE_REL = Path(".runtime") / "b10_remediation" / "state.json"
 CLOSURE_REPORT_REL = Path(".runtime") / "b10_closure" / "latest.json"
 
@@ -133,8 +134,13 @@ def choose_evidence_root(
     source_id: str,
     remediation_state: dict[str, Any],
 ) -> tuple[Path, str]:
+    refresh = repo_root / B11_REFRESH_ROOT_REL / source_id
+    if (refresh / "reports").exists():
+        return refresh, "b11_refresh"
+
     if source_id in remediation_state:
         return repo_root / REMEDIATION_ROOT_REL / source_id, "remediation"
+
     return repo_root / BASELINE_ROOT_REL / source_id, "baseline"
 
 
@@ -377,6 +383,22 @@ def resource_statistics(snapshot: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def find_special_downstream_manifest(
+    evidence_root: Path,
+) -> tuple[Path | None, str | None]:
+    candidates = sorted(
+        evidence_root.rglob("acquisition_job.json")
+    )
+    for path in candidates:
+        raw = safe_load_json(path)
+        if not isinstance(raw, dict):
+            continue
+        decision = raw.get("decision")
+        if decision == "ACQUISITION_JOB_READY":
+            return path, decision
+    return None, None
+
+
 def classify_source(
     *,
     source_id: str,
@@ -384,6 +406,7 @@ def classify_source(
     execution_status: str | None,
     raw_resource_count: int | None,
     legacy_record_count: int,
+    special_decision: str | None = None,
 ) -> str:
     if source_id in EXTERNAL_BLOCKERS and execution_status == "FAILED":
         return "EXTERNAL_BLOCKER"
@@ -393,6 +416,9 @@ def classify_source(
 
     if execution_status != "SUCCESS":
         return "EXECUTION_NOT_SUCCESS"
+
+    if special_decision == "ACQUISITION_JOB_READY":
+        return "ACQUISITION_JOB_READY"
 
     if not raw_resource_count:
         return "SUCCESS_EMPTY"
@@ -457,6 +483,10 @@ def audit_source(
         for item in projection_files
     )
 
+    special_manifest_path, special_decision = (
+        find_special_downstream_manifest(evidence_root)
+    )
+
     execution_status = source_result.get("execution_status")
     execution_status = (
         str(execution_status)
@@ -470,6 +500,7 @@ def audit_source(
         execution_status=execution_status,
         raw_resource_count=raw_resource_count,
         legacy_record_count=projection_record_count,
+        special_decision=special_decision,
     )
 
     issues: list[str] = []
@@ -532,6 +563,12 @@ def audit_source(
         "legacy_projection_files": projection_files,
         "legacy_projection_records": projection_record_count,
         "legacy_projection_invalid_records": projection_invalid_count,
+        "special_downstream_manifest": (
+            str(special_manifest_path)
+            if special_manifest_path is not None
+            else None
+        ),
+        "special_downstream_decision": special_decision,
         "classification": classification,
         "external_blocker_classification": EXTERNAL_BLOCKERS.get(source_id),
         "issues": issues,
@@ -693,7 +730,8 @@ def render_markdown(report: dict[str, Any]) -> str:
             "## Interpretación",
             "",
             "- `DATAX_READY`: hay recursos raw y al menos una proyección legacy detectada.",
-            "- `RAW_READY_NO_PROJECTION`: el Prospector encontró recursos, pero no existe todavía una salida legacy consumible en la evidencia auditada.",
+            "- `ACQUISITION_JOB_READY`: la evidencia representa un trabajo público de adquisición, no un archivo materializado; se conserva en un manifest especializado y no se falsea dentro de ESTADISTICAS.",
+            "- `RAW_READY_NO_PROJECTION`: el Prospector encontró recursos, pero no existe todavía una salida legacy ni una decisión downstream especializada.",
             "- `SUCCESS_EMPTY`: la ejecución terminó correctamente pero no produjo recursos en su evidencia más reciente.",
             "- `EXTERNAL_BLOCKER`: bloqueo externo aceptado durante B10; no se falsea como éxito.",
             "- `EVIDENCE_MISSING` / `EXECUTION_NOT_SUCCESS`: requiere revisión estructural antes de proyección.",
@@ -724,6 +762,7 @@ def print_console(report: dict[str, Any]) -> None:
     print("Classification:")
     for key in (
         "DATAX_READY",
+        "ACQUISITION_JOB_READY",
         "RAW_READY_NO_PROJECTION",
         "SUCCESS_EMPTY",
         "EXTERNAL_BLOCKER",
