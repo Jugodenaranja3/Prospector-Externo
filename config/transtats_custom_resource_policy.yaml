@@ -1,0 +1,23 @@
+schema_version: transtats-custom-resource-policy-1.0
+source_id: transtats
+logical_code: TRANSTATS
+entrypoint: https://www.transtats.bts.gov
+workflow_strategy: custom
+resource_model: download_form_acquisition_job
+submission_policy: metadata_only_no_post
+allowed_methods:
+  - GET
+  - HEAD
+resource_url_patterns:
+  - /DL_SelectFields.aspx
+evidence_seed_urls:
+  - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED
+required_page_signals:
+  - Download Instructions
+  - Filter Year
+  - Filter Period
+minimum_field_inputs: 5
+notes:
+  - Prospector treats each public DL_SelectFields page as an acquisition-job resource.
+  - Prospector does not submit the POST download form during discovery.
+  - Actual CSV acquisition remains a downstream fetch concern.

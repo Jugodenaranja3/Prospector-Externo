@@ -190,7 +190,7 @@ def inspect_transtats_forms(
 
         forms = page.eval_on_selector_all(
             "form",
-            """forms => forms.map((form, index) => ({
+            r"""forms => forms.map((form, index) => ({
                 index,
                 method: (form.getAttribute('method') || 'get').toLowerCase(),
                 action: form.action || location.href,
