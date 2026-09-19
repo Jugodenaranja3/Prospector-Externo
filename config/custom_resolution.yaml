@@ -1,0 +1,142 @@
+schema_version: custom-resolution-1.0
+generated_at_utc: '2026-09-19T01:36:24.664937+00:00'
+sources_resolved: 8
+summary_by_resolution_status:
+  IDENTITY_UNRESOLVED: 1
+  NO_PUBLIC_DATA_EVIDENCE: 3
+  NO_PUBLIC_DATA_SCOPE: 1
+  OPERATIONAL_CUSTOM_DATA_API: 1
+  OPERATIONAL_CUSTOM_FORM_RESOURCE: 1
+  OPERATIONAL_HTTP_HTML_CURATED: 1
+summary_by_next_phase:
+  B10_STATUS: 5
+  OPERATIONAL_CONFIG: 3
+summary_by_workflow:
+  UNRESOLVED: 5
+  custom: 2
+  html: 1
+sources:
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  b8_probe_status: CUSTOM_NO_DATA_EVIDENCE
+  resolution_status: NO_PUBLIC_DATA_EVIDENCE
+  workflow_strategy: null
+  next_phase: B10_STATUS
+  effective_entrypoint_override: null
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+  operational_config: null
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  b8_probe_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_policy_status: RESOLVED_NO_PUBLIC_DATA_SCOPE
+  resolution_status: NO_PUBLIC_DATA_SCOPE
+  workflow_strategy: null
+  next_phase: B10_STATUS
+  effective_entrypoint_override: null
+  decision_note: 'Los formularios públicos observados pertenecen a soporte/solicitudes y el Portal de Comercios requiere usuarios
+    afiliados. No se autoriza enviar formularios ni intentar autenticación para discovery público.
+
+    '
+  operational_config: null
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  b8_probe_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_policy_status: RESOLVED_CURATED_HTTP_SEEDS
+  resolution_status: OPERATIONAL_HTTP_HTML_CURATED
+  workflow_strategy: html
+  next_phase: OPERATIONAL_CONFIG
+  effective_entrypoint_override: null
+  decision_note: B8C confirmó páginas GET públicas específicas con recursos; se promociona HTML con seeds curados.
+  operational_config:
+    custom_kind: curated_html_seeds
+    allowed_methods:
+    - GET
+    - HEAD
+    seed_urls:
+    - https://cadexco.bo/publicaciones/
+    - https://cadexco.bo/cochabamba/
+    - https://cadexco.bo/inteligencia/
+    - https://cadexco.bo/lcoext/
+    - https://cadexco.bo/ltributaria/
+    discovered_resource_hints:
+    - http://cadexco.bo/actual/boletin-inteligencia/Channels-segments-europe-footwear-2015.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/Product-factsheet-wine-nordic-countries-%20CBI.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/buyer-requirements-europe-cacao-%20CBI.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/product-factsheet-linseeds-europe-vegetable-oils-oilseeds.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/trade-statistics-europe-cut-flowers-foliage.pdf
+    - http://cadexco.bo/esp/download/re007.pdf
+    - https://cadexco.bo/exportaciones-de-cochabamba-2026/
+    - https://cadexco.bo/publicaciones/encuentro-nacional-de-exportadores-enex-2025/
+    - https://cadexco.bo/publicaciones/premiacion-al-merito-exportador-2024/
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  b8_probe_status: CUSTOM_NO_DATA_EVIDENCE
+  resolution_status: NO_PUBLIC_DATA_EVIDENCE
+  workflow_strategy: null
+  next_phase: B10_STATUS
+  effective_entrypoint_override: null
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+  operational_config: null
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  b8_probe_status: CUSTOM_DATA_ENDPOINT_CONFIRMED
+  resolution_status: OPERATIONAL_CUSTOM_DATA_API
+  workflow_strategy: custom
+  next_phase: OPERATIONAL_CONFIG
+  effective_entrypoint_override: null
+  decision_note: B8 confirmó por GET un endpoint con estructura real de datos; se conserva como workflow custom.
+  operational_config:
+    custom_kind: data_endpoint
+    allowed_methods:
+    - GET
+    - HEAD
+    data_endpoints:
+    - https://cxm-api.fifa.com/fifaplusweb/api/themePalette
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  b8_probe_status: CUSTOM_IDENTITY_UNRESOLVED
+  resolution_status: IDENTITY_UNRESOLVED
+  workflow_strategy: null
+  next_phase: B10_STATUS
+  effective_entrypoint_override: null
+  decision_note: No existe una sustitución institucional segura para la fuente histórica.
+  operational_config: null
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  b8_probe_status: CUSTOM_NO_DATA_EVIDENCE
+  resolution_status: NO_PUBLIC_DATA_EVIDENCE
+  workflow_strategy: null
+  next_phase: B10_STATUS
+  effective_entrypoint_override: https://www.ibch.com/
+  decision_note: La identidad institucional fue reconciliada, pero el sitio actual no expuso evidencia pública suficiente
+    de datos.
+  operational_config: null
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  b8_probe_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_policy_status: READ_ONLY_POST_QUERY_CANDIDATES
+  b8d_status: TRANSTATS_FORM_RESOURCE_CONFIRMED
+  resolution_status: OPERATIONAL_CUSTOM_FORM_RESOURCE
+  workflow_strategy: custom
+  next_phase: OPERATIONAL_CONFIG
+  effective_entrypoint_override: null
+  decision_note: B8D confirmó por GET que DL_SelectFields representa un trabajo público de adquisición; discovery no envía
+    POST.
+  operational_config:
+    custom_kind: download_form_acquisition_job
+    allowed_methods:
+    - GET
+    - HEAD
+    submission_policy: metadata_only_no_post
+    resource_url_patterns:
+    - /DL_SelectFields.aspx
+    evidence_seed_urls:
+    - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED

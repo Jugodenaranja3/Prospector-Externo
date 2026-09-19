@@ -1,25 +1,32 @@
-schema_version: source-operational-plan-1.0
-generated_at_utc: '2026-09-19T00:06:31.059768+00:00'
 logical_sources: 52
 browser_sources_resolved: 11
+schema_version: source-operational-plan-2.0
+generated_at_utc: '2026-09-19T01:36:24.747408+00:00'
+custom_sources_resolved: 8
+b8_closed: true
 summary_by_operational_status:
   ACCESS_RESTRICTED: 1
   ARCHIVE_ONLY: 1
-  B8_CUSTOM_CANDIDATE: 8
+  IDENTITY_UNRESOLVED: 1
+  NO_PUBLIC_DATA_EVIDENCE: 3
+  NO_PUBLIC_DATA_SCOPE: 1
+  OPERATIONAL_CUSTOM_DATA_API: 1
+  OPERATIONAL_CUSTOM_FORM_RESOURCE: 1
   OPERATIONAL_DATA_API: 1
   OPERATIONAL_HTML_API_DISCOVERY: 8
   OPERATIONAL_HTTP_HTML: 23
+  OPERATIONAL_HTTP_HTML_CURATED: 1
   OPERATIONAL_JAVASCRIPT: 6
   RETIRED_HISTORICAL_SOURCE: 3
   TLS_TECHNICAL_HOLD: 1
 summary_by_next_phase:
-  B10_STATUS: 6
-  B8_CUSTOM: 8
-  OPERATIONAL_CONFIG: 38
+  B10_STATUS: 11
+  OPERATIONAL_CONFIG: 41
 summary_by_workflow:
-  UNRESOLVED: 13
+  UNRESOLVED: 10
   api: 1
-  html: 32
+  custom: 2
+  html: 33
   javascript: 6
 sources:
 - source_id: anapo
@@ -177,13 +184,16 @@ sources:
   browser_status: BROWSER_NO_DATA_EVIDENCE
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
+  operational_status: NO_PUBLIC_DATA_EVIDENCE
   workflow_strategy: null
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+  b8_status: CUSTOM_NO_DATA_EVIDENCE
+  b8_route: B10_STATUS
+  operational_config: null
 - source_id: finrural
   logical_code: FINRURAL
   name: Finrural Bolivia
@@ -385,13 +395,19 @@ sources:
   browser_status: BROWSER_DATA_NETWORK_EVIDENCE
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
+  operational_status: NO_PUBLIC_DATA_SCOPE
   workflow_strategy: null
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: 'Los formularios públicos observados pertenecen a soporte/solicitudes y el Portal de Comercios requiere usuarios
+    afiliados. No se autoriza enviar formularios ni intentar autenticación para discovery público.
+
+    '
+  b8_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_route: B10_STATUS
+  operational_config: null
 - source_id: cadexco
   logical_code: CADEXCO
   name: Cámara de Exportadores de Cochabamba
@@ -408,13 +424,36 @@ sources:
   browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
-  workflow_strategy: null
+  operational_status: OPERATIONAL_HTTP_HTML_CURATED
+  workflow_strategy: html
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B8C confirmó páginas GET públicas específicas con recursos; se promociona HTML con seeds curados.
+  b8_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_route: OPERATIONAL_CONFIG
+  operational_config:
+    custom_kind: curated_html_seeds
+    allowed_methods:
+    - GET
+    - HEAD
+    seed_urls:
+    - https://cadexco.bo/publicaciones/
+    - https://cadexco.bo/cochabamba/
+    - https://cadexco.bo/inteligencia/
+    - https://cadexco.bo/lcoext/
+    - https://cadexco.bo/ltributaria/
+    discovered_resource_hints:
+    - http://cadexco.bo/actual/boletin-inteligencia/Channels-segments-europe-footwear-2015.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/Product-factsheet-wine-nordic-countries-%20CBI.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/buyer-requirements-europe-cacao-%20CBI.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/product-factsheet-linseeds-europe-vegetable-oils-oilseeds.pdf
+    - http://cadexco.bo/actual/boletin-inteligencia/trade-statistics-europe-cut-flowers-foliage.pdf
+    - http://cadexco.bo/esp/download/re007.pdf
+    - https://cadexco.bo/exportaciones-de-cochabamba-2026/
+    - https://cadexco.bo/publicaciones/encuentro-nacional-de-exportadores-enex-2025/
+    - https://cadexco.bo/publicaciones/premiacion-al-merito-exportador-2024/
 - source_id: cndc
   logical_code: CNDC
   name: Comisión Nacional de Defensa de la Competencia
@@ -479,13 +518,16 @@ sources:
   browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
+  operational_status: NO_PUBLIC_DATA_EVIDENCE
   workflow_strategy: null
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Browser reveló tráfico de aplicación, pero B7C aún no demuestra que represente datasets/descargas.
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+  b8_status: CUSTOM_NO_DATA_EVIDENCE
+  b8_route: B10_STATUS
+  operational_config: null
 - source_id: fifa
   logical_code: FIFA
   name: Federación Internacional de Fútbol Asociación
@@ -502,13 +544,22 @@ sources:
   browser_status: null
   resource_count: 2
   api_quality: GENERIC_API_REVIEW
-  operational_status: B8_CUSTOM_CANDIDATE
-  workflow_strategy: null
+  operational_status: OPERATIONAL_CUSTOM_DATA_API
+  workflow_strategy: custom
   discover_apis: true
   browser_required: false
   custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Existe API genérica pero B6 no demostró todavía que sea una API de datos.
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B8 confirmó por GET un endpoint con estructura real de datos; se conserva como workflow custom.
+  b8_status: CUSTOM_DATA_ENDPOINT_CONFIRMED
+  b8_route: OPERATIONAL_CONFIG
+  operational_config:
+    custom_kind: data_endpoint
+    allowed_methods:
+    - GET
+    - HEAD
+    data_endpoints:
+    - https://cxm-api.fifa.com/fifaplusweb/api/themePalette
 - source_id: fundempresa
   logical_code: FUNDEMPRESA
   name: Registro de Comercio de Bolivia
@@ -756,13 +807,16 @@ sources:
   browser_status: null
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
+  operational_status: IDENTITY_UNRESOLVED
   workflow_strategy: null
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: No existe una sustitución institucional segura para la fuente histórica.
+  b8_status: CUSTOM_IDENTITY_UNRESOLVED
+  b8_route: B10_STATUS
+  operational_config: null
 - source_id: ceprobol
   logical_code: CEPROBOL
   name: Centro Promoción Bolivia
@@ -814,7 +868,7 @@ sources:
   logical_code: IBCH
   name: Instituto Boliviano del Cemento y Hormigón
   historical_entrypoint: https://www.ibch.org.bo
-  effective_entrypoint: https://www.ibch.org.bo
+  effective_entrypoint: https://www.ibch.com/
   lifecycle: HISTORICAL_DOMAIN_DEAD
   physical_probe_source_id: ibch
   baseline_status: EXECUTION_ERROR
@@ -826,13 +880,17 @@ sources:
   browser_status: null
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
+  operational_status: NO_PUBLIC_DATA_EVIDENCE
   workflow_strategy: null
   discover_apis: false
   browser_required: false
-  custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: La identidad institucional fue reconciliada, pero el sitio actual no expuso evidencia pública suficiente
+    de datos.
+  b8_status: CUSTOM_NO_DATA_EVIDENCE
+  b8_route: B10_STATUS
+  operational_config: null
 - source_id: ine
   logical_code: INE
   name: Instituto Nacional de Estadística
@@ -1219,10 +1277,23 @@ sources:
   browser_status: BROWSER_DATA_NETWORK_EVIDENCE
   resource_count: 0
   api_quality: null
-  operational_status: B8_CUSTOM_CANDIDATE
-  workflow_strategy: null
+  operational_status: OPERATIONAL_CUSTOM_FORM_RESOURCE
+  workflow_strategy: custom
   discover_apis: false
   browser_required: false
   custom_required: true
-  next_phase: B8_CUSTOM
-  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B8D confirmó por GET que DL_SelectFields representa un trabajo público de adquisición; discovery no envía
+    POST.
+  b8_status: CUSTOM_REQUIRES_FORM_POLICY
+  b8_route: OPERATIONAL_CONFIG
+  operational_config:
+    custom_kind: download_form_acquisition_job
+    allowed_methods:
+    - GET
+    - HEAD
+    submission_policy: metadata_only_no_post
+    resource_url_patterns:
+    - /DL_SelectFields.aspx
+    evidence_seed_urls:
+    - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED
