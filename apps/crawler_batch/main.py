@@ -16,11 +16,23 @@ import prospector_externo.workflows  # noqa: F401 - autoregistro
 
 
 def setup_logging(verbose: bool = False) -> None:
+    # Evita que un mensaje de excepción con bytes/caracteres extraños genere
+    # un segundo UnicodeEncodeError en consolas Windows.
+    try:
+        sys.stdout.reconfigure(errors="backslashreplace")
+    except (AttributeError, ValueError):
+        pass
+
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
+
+
+def report_exit_code(report) -> int:
+    """El proceso debe fallar si el reporte contiene fuentes FAILED."""
+    return 2 if int(getattr(report, "sources_failed", 0) or 0) > 0 else 0
 
 
 def main() -> None:
@@ -57,8 +69,19 @@ def main() -> None:
             )
         )
         logger.info("Proceso concluido. Run ID: %s", report.run_id)
+
+        exit_code = report_exit_code(report)
+        if exit_code:
+            logger.error(
+                "La corrida terminó con %d fuente(s) FAILED; "
+                "se propaga código de salida %d.",
+                report.sources_failed,
+                exit_code,
+            )
+            raise SystemExit(exit_code)
+
     except Exception as exc:
-        logger.critical("Fallo durante la corrida batch: %s", exc, exc_info=True)
+        logger.critical("Fallo durante la corrida batch: %s", ascii(exc))
         raise SystemExit(1)
 
 

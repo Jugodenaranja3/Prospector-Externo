@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 import uuid
 
@@ -78,6 +78,7 @@ class SourceConfig(BaseModel):
     # Límites seguros de discovery por fuente.
     max_depth: int = 2
     max_urls: int = 250
+    max_resources: int = 1000
     max_runtime_seconds: float = 900.0
     max_requests: int = 250
     max_query_variants: int = 25
@@ -111,6 +112,12 @@ class SourceConfig(BaseModel):
     max_api_documents: int = 8
     max_api_document_depth: int = 1
     max_api_document_bytes: int = 2_000_000
+
+    # Browser workflow bounded.
+    max_browser_pages: int = 15
+
+    # Configuración declarativa para los pocos workflows custom justificados.
+    custom_config: Dict[str, Any] = Field(default_factory=dict)
 
     # Contrato opcional de agrupamiento downstream. El crawler no lo ejecuta;
     # se aplica en la etapa offline de proyección DATAX.

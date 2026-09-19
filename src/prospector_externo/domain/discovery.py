@@ -39,6 +39,7 @@ class DiscoveryFrontier:
         self._started_at = monotonic()
         self._queue: Deque[DiscoveryItem] = deque()
         self._seen: Set[str] = set()
+        self._resource_seen: Set[str] = set()
         self._visited: Set[str] = set()
         self._rejected = 0
         self._rejection_reasons: Counter[str] = Counter()
@@ -71,7 +72,7 @@ class DiscoveryFrontier:
 
     @property
     def discovered_count(self) -> int:
-        return len(self._seen)
+        return len(self._seen | self._resource_seen)
 
     @property
     def visited_count(self) -> int:
@@ -165,14 +166,18 @@ class DiscoveryFrontier:
         return True
 
     def register_resource(self, normalized_url: str) -> bool:
-        """Cuenta una URL de recurso en max_urls sin encolarla para navegación."""
+        """Registra un recurso sin consumir el presupuesto de navegación.
+
+        `max_urls` acota la frontera de páginas. Los recursos descubiertos
+        tienen un límite independiente (`max_resources`) para evitar que un
+        sitemap lleno de páginas deje cero espacio para PDF/XLS/CSV/API.
+        """
         identity = f"{self.config.source_id}|{normalized_url}"
-        if identity in self._seen:
+        if identity in self._resource_seen:
             return False
-        if len(self._seen) >= self.config.max_urls:
-            self.stop_reason = StopReason.MAX_URLS
-            return self.reject("MAX_URLS")
-        self._seen.add(identity)
+        if len(self._resource_seen) >= self.config.max_resources:
+            return self.reject("MAX_RESOURCES")
+        self._resource_seen.add(identity)
         return True
 
     def seed(self, urls: Iterable[str]) -> None:

@@ -434,6 +434,13 @@ sources:
   - https://cxm-api.fifa.com/fifaplusweb/api/themePalette
   workflow: custom
   discover_apis: true
+  custom_config:
+    custom_kind: data_endpoint
+    allowed_methods:
+    - GET
+    - HEAD
+    data_endpoints:
+    - https://cxm-api.fifa.com/fifaplusweb/api/themePalette
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
@@ -855,3 +862,13 @@ sources:
   seeds:
   - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED
   workflow: custom
+  custom_config:
+    custom_kind: download_form_acquisition_job
+    allowed_methods:
+    - GET
+    - HEAD
+    submission_policy: metadata_only_no_post
+    resource_url_patterns:
+    - /DL_SelectFields.aspx
+    evidence_seed_urls:
+    - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED

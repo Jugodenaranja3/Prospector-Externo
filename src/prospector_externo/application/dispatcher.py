@@ -21,14 +21,6 @@ class SourceDispatcher:
         self.http_runtime = runtime
 
     async def dispatch(self, config: SourceConfig) -> ExtractionResult:
-        if config.workflow.lower() == "javascript":
-            return ExtractionResult(
-                source_id=config.source_id,
-                success=False,
-                failure_code="WORKFLOW_DEFERRED",
-                error_message="JavascriptWorkflow se mantiene aislado hasta BATCH 7",
-            )
-
         if self.http_runtime is None:
             return ExtractionResult(
                 source_id=config.source_id,
@@ -54,10 +46,16 @@ class SourceDispatcher:
                 result = await result
             return result
         except Exception as exc:
-            logger.exception("Fallo no controlado en workflow %s", config.workflow)
+            safe_error = ascii(exc)
+            logger.error(
+                "Fallo no controlado en workflow %s: %s: %s",
+                config.workflow,
+                type(exc).__name__,
+                safe_error,
+            )
             return ExtractionResult(
                 source_id=config.source_id,
                 success=False,
                 failure_code="UNHANDLED_WORKFLOW_EXCEPTION",
-                error_message=str(exc),
+                error_message=f"{type(exc).__name__}: {safe_error}",
             )
