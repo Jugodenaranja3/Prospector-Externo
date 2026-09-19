@@ -1,0 +1,22 @@
+schema_version: custom-identity-resolution-1.0
+generated_at: "2026-09-18"
+sources:
+  - source_id: ibch
+    logical_code: IBCH
+    status: RESOLVED_SAME_INSTITUTION
+    historical_entrypoint: https://www.ibch.org.bo
+    candidate_entrypoint: https://www.ibch.com/
+    evidence_note: >
+      El sitio público actual se identifica como Instituto Boliviano del Cemento y el Hormigón
+      (IBCH) y mantiene presencia institucional en Bolivia.
+    evidence_url: https://www.ibch.com/
+
+  - source_id: bolcereales
+    logical_code: BOLCEREALES
+    status: UNRESOLVED_NO_SAFE_SUCCESSOR
+    historical_entrypoint: https://www.bolsadecereales.org.bo
+    candidate_entrypoint: null
+    excluded_candidate: https://www.bolsadecereales.com/
+    evidence_note: >
+      El dominio histórico boliviano no resuelve. El dominio bolsadecereales.com corresponde
+      a una Bolsa de Cereales argentina, por lo que no debe sustituirse automáticamente.
