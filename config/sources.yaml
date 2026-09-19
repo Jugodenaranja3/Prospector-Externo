@@ -513,10 +513,13 @@ sources:
   rate_limit_seconds: 1.0
   source_id: mdryt_oap
   name: Ministerio de Desarrollo Rural y Tierras - OAP
-  entrypoint: https://www.ruralytierras.gob.bo
+  entrypoint: https://ruralytierras.gob.bo/
   seeds:
-  - https://www.ruralytierras.gob.bo
+  - https://ruralytierras.gob.bo/
   workflow: html
+  allowed_hosts:
+  - ruralytierras.gob.bo
+  - www.ruralytierras.gob.bo
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
@@ -678,10 +681,13 @@ sources:
   rate_limit_seconds: 1.0
   source_id: asofin
   name: Asociación de Instituciones Financieras de Microfinanzas de Bolivia
-  entrypoint: https://www.asofinbolivia.com
+  entrypoint: https://asofinbolivia.com/
   seeds:
-  - https://www.asofinbolivia.com
+  - https://asofinbolivia.com/
   workflow: html
+  allowed_hosts:
+  - asofinbolivia.com
+  - www.asofinbolivia.com
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
@@ -724,11 +730,14 @@ sources:
   rate_limit_seconds: 1.0
   source_id: data_gov
   name: Portal de Datos Abiertos USA
-  entrypoint: https://www.data.gov
+  entrypoint: https://data.gov/
   seeds:
-  - https://www.data.gov
+  - https://data.gov/
   workflow: api
   discover_apis: true
+  allowed_hosts:
+  - data.gov
+  - www.data.gov
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
@@ -748,10 +757,13 @@ sources:
   rate_limit_seconds: 1.0
   source_id: ibce_cao
   name: Instituto Boliviano de Comercio Exterior / Cámara Agropecuaria del Oriente
-  entrypoint: https://www.ibce.org.bo
+  entrypoint: https://ibce.org.bo/
   seeds:
-  - https://www.ibce.org.bo
+  - https://ibce.org.bo/
   workflow: html
+  allowed_hosts:
+  - ibce.org.bo
+  - www.ibce.org.bo
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
@@ -794,10 +806,13 @@ sources:
   rate_limit_seconds: 1.0
   source_id: senamhi
   name: Servicio Nacional de Meteorología e Hidrología
-  entrypoint: https://www.senamhi.gob.bo
+  entrypoint: https://senamhi.gob.bo/
   seeds:
-  - https://www.senamhi.gob.bo
+  - https://senamhi.gob.bo/
   workflow: html
+  allowed_hosts:
+  - senamhi.gob.bo
+  - www.senamhi.gob.bo
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
