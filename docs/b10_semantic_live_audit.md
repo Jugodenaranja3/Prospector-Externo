@@ -1,36 +1,21 @@
-# B10B.1 — Auditoría semántica del crawl live
+# B10B.2.1 — Parser robusto del log final
 
-El run `b10-final` terminó con 41/41 fuentes en estado `SUCCEEDED`, pero el estado del proceso hijo no es evidencia suficiente por sí sola.
+B10B.2 añadió autodetección de encoding, pero una prueba UTF-8 falló en Windows.
 
-Durante SNIS se observó un `ParserRejectedMarkup` dentro del workflow HTML. El dispatcher registró el fallo y el proceso `crawler_batch` terminó con código 0, por lo que el runner externo lo marcó como `SUCCEEDED`.
+El ajuste B10B.2.1 elimina dos supuestos frágiles:
 
-Eso demuestra una condición de falso positivo:
+1. ya no se elige un encoding alternativo si un UTF-8 estricto contiene headers válidos;
+2. los headers `[01/41] SOURCE (source_id)` ya no tienen que ocupar exactamente toda la línea.
 
-```text
-workflow interno falla
-→ crawler_batch conserva exit code 0
-→ checkpoint externo marca SUCCEEDED
-```
+Esto último es importante porque PowerShell puede prefijar registros de procesos nativos.
 
-B10B.1 audita el log completo del run ya ejecutado y cruza:
+## Estrategia
 
-- estado del checkpoint;
-- workflow esperado en `final_source_matrix.yaml`;
-- workflow observado en consola;
-- señales de error internas;
-- conteo de recursos;
-- presencia del segmento de log por fuente.
+- BOM UTF-16 / UTF-8: autoritativo;
+- UTF-8 estricto + headers: se acepta inmediatamente;
+- si no hay evidencia estructural: UTF-16LE, UTF-16BE y CP1252;
+- el número de headers domina el ranking de candidatos;
+- parser de headers tolera prefijos de PowerShell;
+- no se repite el crawl.
 
-No hace red y no modifica el checkpoint.
-
-## Clasificaciones bloqueantes
-
-- `CHECKPOINT_NOT_SUCCEEDED`
-- `PROCESS_OK_WITH_INTERNAL_ERROR`
-- `WORKFLOW_MISMATCH`
-- `WORKFLOW_NOT_OBSERVED`
-- `ZERO_RESOURCES_REVIEW`
-- `RESOURCE_COUNT_NOT_OBSERVED`
-- `MISSING_LOG_SEGMENT`
-
-El objetivo es determinar qué debe corregirse antes del cierre B10C, sin repetir las 41 fuentes a ciegas.
+La auditoría conserva las clasificaciones semánticas de B10B.1.
