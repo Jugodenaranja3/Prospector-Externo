@@ -1,0 +1,84 @@
+schema_version: custom-candidates-1.0
+generated_from: config/source_operational_plan.yaml
+candidate_count: 8
+sources:
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  historical_entrypoint: https://www.fegasacruz.org.bo
+  effective_entrypoint: https://fegasacruz.org/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  historical_entrypoint: https://www.redenlace.com.bo
+  effective_entrypoint: https://www.redenlace.com.bo
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  historical_entrypoint: https://www.cadexco.org.bo
+  effective_entrypoint: https://cadexco.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  historical_entrypoint: https://www.fam.bo
+  effective_entrypoint: https://fam.org.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: JAVASCRIPT_NETWORK_REVIEW
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser reveló tráfico de aplicación, pero B7C aún no demuestra que represente datasets/descargas.
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  historical_entrypoint: https://www.fifa.com
+  effective_entrypoint: https://www.fifa.com
+  lifecycle: CURRENT
+  b6_status: API_SEMANTIC_REVIEW
+  b7_status: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Existe API genérica pero B6 no demostró todavía que sea una API de datos.
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  historical_entrypoint: https://www.bolsadecereales.org.bo
+  effective_entrypoint: https://www.bolsadecereales.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b7_status: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  historical_entrypoint: https://www.ibch.org.bo
+  effective_entrypoint: https://www.ibch.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b7_status: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  historical_entrypoint: https://www.transtats.bts.gov
+  effective_entrypoint: https://www.transtats.bts.gov
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  operational_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.

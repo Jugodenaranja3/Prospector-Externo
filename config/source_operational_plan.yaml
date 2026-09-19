@@ -1,0 +1,1228 @@
+schema_version: source-operational-plan-1.0
+generated_at_utc: '2026-09-19T00:06:31.059768+00:00'
+logical_sources: 52
+browser_sources_resolved: 11
+summary_by_operational_status:
+  ACCESS_RESTRICTED: 1
+  ARCHIVE_ONLY: 1
+  B8_CUSTOM_CANDIDATE: 8
+  OPERATIONAL_DATA_API: 1
+  OPERATIONAL_HTML_API_DISCOVERY: 8
+  OPERATIONAL_HTTP_HTML: 23
+  OPERATIONAL_JAVASCRIPT: 6
+  RETIRED_HISTORICAL_SOURCE: 3
+  TLS_TECHNICAL_HOLD: 1
+summary_by_next_phase:
+  B10_STATUS: 6
+  B8_CUSTOM: 8
+  OPERATIONAL_CONFIG: 38
+summary_by_workflow:
+  UNRESOLVED: 13
+  api: 1
+  html: 32
+  javascript: 6
+sources:
+- source_id: anapo
+  logical_code: ANAPO
+  name: Asociación de Productores de Oleaginosas y Trigo
+  historical_entrypoint: https://www.anapobolivia.org
+  effective_entrypoint: https://www.anapobolivia.org
+  lifecycle: CURRENT
+  physical_probe_source_id: anapo
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 12
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: aps
+  logical_code: APS
+  name: Autoridad de Fiscalización y Control de Pensiones y Seguros
+  historical_entrypoint: https://www.aps.gob.bo
+  effective_entrypoint: https://www.aps.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: aps
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 18
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_valores
+  logical_code: ASFI-Valores
+  name: Autoridad de Supervisión del Sistema Financiero
+  historical_entrypoint: https://www.asfi.gob.bo
+  effective_entrypoint: https://www.asfi.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: asfi_valores
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 82
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bcb
+  logical_code: BCB
+  name: Banco Central de Bolivia
+  historical_entrypoint: https://www.bcb.gob.bo
+  effective_entrypoint: https://www.bcb.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: bcb
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 40
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bm
+  logical_code: BM
+  name: Banco Mundial
+  historical_entrypoint: https://www.worldbank.org
+  effective_entrypoint: https://www.worldbank.org
+  lifecycle: CURRENT
+  physical_probe_source_id: bm
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 20
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: cepal
+  logical_code: CEPAL
+  name: Comisión Económica para América Latina y el Caribe
+  historical_entrypoint: https://www.cepal.org
+  effective_entrypoint: https://www.cepal.org
+  lifecycle: CURRENT
+  physical_probe_source_id: cepal
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 2
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  historical_entrypoint: https://www.fegasacruz.org.bo
+  effective_entrypoint: https://fegasacruz.org/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  physical_probe_source_id: fegasacruz
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: B8_CUSTOM_CANDIDATE
+  b7_route: B8_CUSTOM_REVIEW
+  browser_status: BROWSER_NO_DATA_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: finrural
+  logical_code: FINRURAL
+  name: Finrural Bolivia
+  historical_entrypoint: https://www.finrural.org.bo
+  effective_entrypoint: https://www.finrural.org.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: finrural
+  baseline_status: GREEN_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 17
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: fmi
+  logical_code: FMI
+  name: Fondo Monetario Internacional
+  historical_entrypoint: https://www.imf.org
+  effective_entrypoint: https://www.imf.org
+  lifecycle: CURRENT_ACCESS_RESTRICTED
+  physical_probe_source_id: fmi
+  baseline_status: EXECUTION_ERROR
+  characterization_status: ACCESS_RESTRICTED
+  b6_status: ACCESS_RESTRICTED
+  b6_route: ACCESS_POLICY_REVIEW
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: ACCESS_RESTRICTED
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: Acceso restringido observado; no intentar bypass.
+- source_id: mefp
+  logical_code: MEFP
+  name: Ministerio de Economía y Finanzas Públicas
+  historical_entrypoint: https://www.economiayfinanzas.gob.bo
+  effective_entrypoint: https://www.economiayfinanzas.gob.bo
+  lifecycle: CURRENT_TLS_CLIENT_INCOMPATIBILITY
+  physical_probe_source_id: mefp
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: TLS_TECHNICAL_HOLD
+  b6_route: TLS_CLIENT_REVIEW
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: TLS_TECHNICAL_HOLD
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: La institución sigue vigente pero el cliente actual presenta incompatibilidad TLS.
+- source_id: mmym
+  logical_code: MMYM
+  name: Ministerio de Minería y Metalurgia
+  historical_entrypoint: https://www.mineria.gob.bo
+  effective_entrypoint: https://www.mineria.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: mmym
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 12
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: omc
+  logical_code: OMC
+  name: Organización Mundial del Comercio
+  historical_entrypoint: https://www.wto.org
+  effective_entrypoint: https://www.wto.org
+  lifecycle: CURRENT
+  physical_probe_source_id: omc
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 3
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: statistics_denmark
+  logical_code: Statistics Denmark
+  name: Danmarks Statistik
+  historical_entrypoint: https://www.dst.dk
+  effective_entrypoint: https://www.dst.dk/
+  lifecycle: CURRENT_RECOVERED_HTTP
+  physical_probe_source_id: statistics_denmark
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_DATA_NETWORK
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: vipfe
+  logical_code: VIPFE
+  name: Viceministerio de Inversión Pública y Financiamiento Externo
+  historical_entrypoint: https://www.vipfe.gob.bo
+  effective_entrypoint: https://sisin.planificacion.gob.bo/
+  lifecycle: CURRENT_SERVICE_ENDPOINT_CANDIDATE
+  physical_probe_source_id: vipfe
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_STRUCTURED_FILES
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_FILE_DISCOVERY
+  resource_count: 2
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: ada
+  logical_code: ADA
+  name: ADA Bolivia
+  historical_entrypoint: https://www.adascz.com.bo
+  effective_entrypoint: https://www.adascz.com.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: ada
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 2
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  historical_entrypoint: https://www.redenlace.com.bo
+  effective_entrypoint: https://www.redenlace.com.bo
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  physical_probe_source_id: atc
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: REACHABLE_NEEDS_DEEPER_REVIEW
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: B8_CUSTOM_CANDIDATE
+  b7_route: B8_CUSTOM_REVIEW
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  historical_entrypoint: https://www.cadexco.org.bo
+  effective_entrypoint: https://cadexco.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  physical_probe_source_id: cadexco
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: B8_CUSTOM_CANDIDATE
+  b7_route: B8_CUSTOM_REVIEW
+  browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+- source_id: cndc
+  logical_code: CNDC
+  name: Comisión Nacional de Defensa de la Competencia
+  historical_entrypoint: https://www.cndc.bo
+  effective_entrypoint: https://www.cndc.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: cndc
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 98
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: dgac
+  logical_code: DGAC
+  name: Dirección General de Aeronáutica Civil
+  historical_entrypoint: https://www.dgac.gob.bo
+  effective_entrypoint: https://www.dgac.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: dgac
+  baseline_status: GREEN_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 75
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  historical_entrypoint: https://www.fam.bo
+  effective_entrypoint: https://fam.org.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  physical_probe_source_id: fam
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: JAVASCRIPT_NETWORK_REVIEW
+  b7_route: B7_NETWORK_SEMANTIC_REVIEW
+  browser_status: BROWSER_GENERIC_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Browser reveló tráfico de aplicación, pero B7C aún no demuestra que represente datasets/descargas.
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  historical_entrypoint: https://www.fifa.com
+  effective_entrypoint: https://www.fifa.com
+  lifecycle: CURRENT
+  physical_probe_source_id: fifa
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: API_SEMANTIC_REVIEW
+  b6_route: REVIEW_BEFORE_PROMOTION
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 2
+  api_quality: GENERIC_API_REVIEW
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: true
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Existe API genérica pero B6 no demostró todavía que sea una API de datos.
+- source_id: fundempresa
+  logical_code: FUNDEMPRESA
+  name: Registro de Comercio de Bolivia
+  historical_entrypoint: https://www.fundempresa.org.bo
+  effective_entrypoint: https://www.fundempresa.org.bo
+  lifecycle: RETIRED_SUCCESSOR_IDENTIFIED
+  physical_probe_source_id: fundempresa
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: RETIRED_HISTORICAL_SOURCE
+  b6_route: B10_HISTORICAL_STATUS
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: RETIRED_HISTORICAL_SOURCE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: icco
+  logical_code: ICCO
+  name: International Cocoa Organization
+  historical_entrypoint: https://www.icco.org
+  effective_entrypoint: https://www.icco.org
+  lifecycle: CURRENT
+  physical_probe_source_id: icco
+  baseline_status: GREEN_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 17
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: itu
+  logical_code: ITU
+  name: International Telecommunication Union
+  historical_entrypoint: https://www.itu.int
+  effective_entrypoint: https://www.itu.int
+  lifecycle: CURRENT
+  physical_probe_source_id: itu
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 4
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: mdryt_oap
+  logical_code: MDRyT/OAP
+  name: Ministerio de Desarrollo Rural y Tierras - OAP
+  historical_entrypoint: https://www.ruralytierras.gob.bo
+  effective_entrypoint: https://www.ruralytierras.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: mdryt_oap
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 6
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: otros_historicos
+  logical_code: OTROS HISTORICOS
+  name: Doing Business (Banco Mundial)
+  historical_entrypoint: https://www.doingbusiness.org
+  effective_entrypoint: https://datacatalog.worldbank.org/search/dataset/0038564/doing-business
+  lifecycle: ARCHIVE_ONLY
+  physical_probe_source_id: otros_historicos
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: ARCHIVE_ONLY
+  b6_route: B10_ARCHIVE_STATUS
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: ARCHIVE_ONLY
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: Fuente discontinuada con archivo histórico; no tratar como portal live actual.
+- source_id: sabsa
+  logical_code: SABSA
+  name: Servicios de Aeropuertos Bolivianos S.A.
+  historical_entrypoint: https://www.sabsa.aero
+  effective_entrypoint: https://www.sabsa.aero
+  lifecycle: RETIRED_SUCCESSOR_IDENTIFIED
+  physical_probe_source_id: sabsa
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: RETIRED_HISTORICAL_SOURCE
+  b6_route: B10_HISTORICAL_STATUS
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: RETIRED_HISTORICAL_SOURCE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: sicoes
+  logical_code: SICOES
+  name: Sistema de Contrataciones Estatales
+  historical_entrypoint: https://www.sicoes.gob.bo
+  effective_entrypoint: https://www.sicoes.gob.bo
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  physical_probe_source_id: sicoes
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: REACHABLE_NEEDS_DEEPER_REVIEW
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_FILES
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_FILE_DISCOVERY
+  resource_count: 1
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: aps_soat
+  logical_code: APS/SOAT
+  name: APS - Seguros SOAT
+  historical_entrypoint: https://www.aps.gob.bo
+  effective_entrypoint: https://www.aps.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: aps
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 18
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi
+  logical_code: ASFI
+  name: Autoridad de Supervisión del Sistema Financiero
+  historical_entrypoint: https://www.asfi.gob.bo
+  effective_entrypoint: https://www.asfi.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: asfi_valores
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 82
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_finrural
+  logical_code: ASFI - FINRURAL
+  name: ASFI / Finrural
+  historical_entrypoint: https://www.asfi.gob.bo
+  effective_entrypoint: https://www.asfi.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: asfi_valores
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 82
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  historical_entrypoint: https://www.bolsadecereales.org.bo
+  effective_entrypoint: https://www.bolsadecereales.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  physical_probe_source_id: bolcereales
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b6_route: B8_IDENTITY_CUSTOM_REVIEW
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+- source_id: ceprobol
+  logical_code: CEPROBOL
+  name: Centro Promoción Bolivia
+  historical_entrypoint: https://www.ceprobol.gob.bo
+  effective_entrypoint: https://www.ceprobol.gob.bo
+  lifecycle: RETIRED
+  physical_probe_source_id: ceprobol
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: RETIRED_HISTORICAL_SOURCE
+  b6_route: B10_HISTORICAL_STATUS
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: RETIRED_HISTORICAL_SOURCE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: B10_STATUS
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: fdta_valles
+  logical_code: FDTA-Valles
+  name: Fundación para el Desarrollo Tecnológico Agropecuario de los Valles
+  historical_entrypoint: https://www.icco.org
+  effective_entrypoint: https://www.icco.org
+  lifecycle: CURRENT
+  physical_probe_source_id: icco
+  baseline_status: GREEN_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 17
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  historical_entrypoint: https://www.ibch.org.bo
+  effective_entrypoint: https://www.ibch.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  physical_probe_source_id: ibch
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b6_route: B8_IDENTITY_CUSTOM_REVIEW
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+- source_id: ine
+  logical_code: INE
+  name: Instituto Nacional de Estadística
+  historical_entrypoint: https://www.ine.gob.bo
+  effective_entrypoint: https://www.ine.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: ine
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 21
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: mhe
+  logical_code: MHE
+  name: Ministerio de Hidrocarburos y Energías
+  historical_entrypoint: https://www.hidrocarburos.gob.bo
+  effective_entrypoint: https://www.mhe.gob.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  physical_probe_source_id: mhe
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_FILES
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_FILE_DISCOVERY
+  resource_count: 7
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: seprec
+  logical_code: SEPREC
+  name: Servicio Plurinacional de Registro de Comercio
+  historical_entrypoint: https://www.seprec.gob.bo
+  effective_entrypoint: https://www.seprec.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: seprec
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 28
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: undata
+  logical_code: UNDATA
+  name: United Nations Data
+  historical_entrypoint: https://data.un.org
+  effective_entrypoint: https://data.un.org
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  physical_probe_source_id: undata
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: REACHABLE_NEEDS_DEEPER_REVIEW
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_DATA_NETWORK
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: ae
+  logical_code: AE
+  name: Autoridad de Fiscalizacion de Electricidad dey Tecnologia Nuclear
+  historical_entrypoint: https://aetn.gob.bo
+  effective_entrypoint: https://aetn.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: ae
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 9
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_bcb
+  logical_code: ASFI - BCB
+  name: ASFI / Banco Central de Bolivia
+  historical_entrypoint: https://www.bcb.gob.bo
+  effective_entrypoint: https://www.bcb.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: bcb
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 40
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asofin
+  logical_code: ASOFIN
+  name: Asociación de Instituciones Financieras de Microfinanzas de Bolivia
+  historical_entrypoint: https://www.asofinbolivia.com
+  effective_entrypoint: https://www.asofinbolivia.com
+  lifecycle: CURRENT
+  physical_probe_source_id: asofin
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 2
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: att
+  logical_code: ATT
+  name: Autoridad de Regulación y Fiscalización de Telecomunicaciones y Transportes
+  historical_entrypoint: https://www.att.gob.bo
+  effective_entrypoint: https://www.att.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: att
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 87
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bbv
+  logical_code: BBV
+  name: Bolsa Boliviana de Valores
+  historical_entrypoint: https://www.bbv.com.bo
+  effective_entrypoint: https://www.bbv.com.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: bbv
+  baseline_status: GREEN_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_HTML_WITH_API_DISCOVERY
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 104
+  api_quality: CMS_OR_METADATA_ONLY
+  operational_status: OPERATIONAL_HTML_API_DISCOVERY
+  workflow_strategy: html
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: data_gov
+  logical_code: Data.Gov
+  name: Portal de Datos Abiertos USA
+  historical_entrypoint: https://www.data.gov
+  effective_entrypoint: https://www.data.gov
+  lifecycle: CURRENT
+  physical_probe_source_id: data_gov
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: API_CANDIDATE
+  b6_status: READY_DATA_API
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 13
+  api_quality: DATA_API_EVIDENCE
+  operational_status: OPERATIONAL_DATA_API
+  workflow_strategy: api
+  discover_apis: true
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: Existe evidencia explícita de API orientada a datos.
+- source_id: ibce_cao
+  logical_code: IBCE - CAO
+  name: Instituto Boliviano de Comercio Exterior / Cámara Agropecuaria del Oriente
+  historical_entrypoint: https://www.ibce.org.bo
+  effective_entrypoint: https://www.ibce.org.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: ibce_cao
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 2
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: mdryt
+  logical_code: MDRyT
+  name: Ministerio de Desarrollo Rural y Tierras
+  historical_entrypoint: https://www.ruralytierras.gob.bo
+  effective_entrypoint: https://www.ruralytierras.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: mdryt_oap
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 6
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: min_educacion
+  logical_code: Min. Educacion
+  name: Ministerio de Educación
+  historical_entrypoint: https://www.minedu.gob.bo
+  effective_entrypoint: https://www.minedu.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: min_educacion
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 21
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: senamhi
+  logical_code: SENAMHI
+  name: Servicio Nacional de Meteorología e Hidrología
+  historical_entrypoint: https://www.senamhi.gob.bo
+  effective_entrypoint: https://www.senamhi.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: senamhi
+  baseline_status: EXECUTION_ERROR
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 7
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: sigma
+  logical_code: SIGMA
+  name: Industria Farmacéutica Sigma
+  historical_entrypoint: https://www.sigmacorp.com.bo
+  effective_entrypoint: https://www.sigmacorp.com.bo/
+  lifecycle: CURRENT_RECOVERED_HTTP
+  physical_probe_source_id: sigma
+  baseline_status: EXECUTION_ERROR
+  characterization_status: EXECUTION_ERROR
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: READY_JAVASCRIPT_DATA_NETWORK
+  b7_route: PROMOTE_JAVASCRIPT_WORKFLOW
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: OPERATIONAL_JAVASCRIPT
+  workflow_strategy: javascript
+  discover_apis: true
+  browser_required: true
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: snis
+  logical_code: SNIS
+  name: Sistema Nacional de Información en Salud
+  historical_entrypoint: https://snis.minsalud.gob.bo
+  effective_entrypoint: https://snis.minsalud.gob.bo
+  lifecycle: CURRENT
+  physical_probe_source_id: snis
+  baseline_status: GREEN_RESOURCES
+  characterization_status: HTTP_HTML_CANDIDATE
+  b6_status: READY_HTTP_HTML
+  b6_route: PROMOTE_OPERATIONAL_CONFIG
+  b7_status: null
+  b7_route: null
+  browser_status: null
+  resource_count: 18
+  api_quality: NO_API_EVIDENCE
+  operational_status: OPERATIONAL_HTTP_HTML
+  workflow_strategy: html
+  discover_apis: false
+  browser_required: false
+  custom_required: false
+  next_phase: OPERATIONAL_CONFIG
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  historical_entrypoint: https://www.transtats.bts.gov
+  effective_entrypoint: https://www.transtats.bts.gov
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  physical_probe_source_id: transtats
+  baseline_status: REACHABLE_NO_RESOURCES
+  characterization_status: REACHABLE_NEEDS_DEEPER_REVIEW
+  b6_status: B7_B8_CANDIDATE
+  b6_route: B7_BROWSER_CHARACTERIZATION
+  b7_status: B8_CUSTOM_CANDIDATE
+  b7_route: B8_CUSTOM_REVIEW
+  browser_status: BROWSER_DATA_NETWORK_EVIDENCE
+  resource_count: 0
+  api_quality: null
+  operational_status: B8_CUSTOM_CANDIDATE
+  workflow_strategy: null
+  discover_apis: false
+  browser_required: false
+  custom_required: true
+  next_phase: B8_CUSTOM
+  decision_note: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
