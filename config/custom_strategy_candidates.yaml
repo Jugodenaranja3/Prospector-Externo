@@ -1,0 +1,398 @@
+schema_version: custom-strategy-candidates-1.0
+generated_at_utc: '2026-09-19T00:11:24.959829+00:00'
+candidate_count: 8
+summary_by_class:
+  API_SEMANTIC_REVIEW: 1
+  BROWSER_INTERACTION_REVIEW: 4
+  BROWSER_NETWORK_SEMANTIC_REVIEW: 1
+  IDENTITY_RESEARCH_REQUIRED: 2
+summary_by_strategy:
+  API_SEMANTIC_PROBE: 1
+  CUSTOM_SITE_REVIEW: 2
+  IDENTITY_RESEARCH: 2
+  NETWORK_ENDPOINT_PROBE: 1
+  SAFE_BROWSER_INTERACTION: 2
+sources:
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  historical_entrypoint: https://www.fegasacruz.org.bo
+  effective_entrypoint: https://fegasacruz.org/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  candidate_class: BROWSER_INTERACTION_REVIEW
+  recommended_strategy: CUSTOM_SITE_REVIEW
+  browser_evidence:
+    browser_artifacts_available: true
+    rendered_links: 2
+    keyword_links: []
+    xhr_fetch_events: 0
+    xhr_fetch_urls: []
+    direct_download_urls: []
+    network_category_counts: {}
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: true
+      forms: 0
+      selects: 0
+      buttons: 0
+      keyword_hits: {}
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  historical_entrypoint: https://www.redenlace.com.bo
+  effective_entrypoint: https://www.redenlace.com.bo
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  candidate_class: BROWSER_INTERACTION_REVIEW
+  recommended_strategy: CUSTOM_SITE_REVIEW
+  browser_evidence:
+    browser_artifacts_available: true
+    rendered_links: 53
+    keyword_links: []
+    xhr_fetch_events: 4
+    xhr_fetch_urls:
+    - https://maps.googleapis.com/maps/api/mapsjs/gen_204?csp_test=true
+    - https://analytics.google.com/g/collect?v=2&tid=G-DFZWFH37W8&gtm=45je69g1v9108660643za20gxf1&_p=1789775949045&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=EAAIAGA&cid=385998429.1789775951&frm=0&ir=1&pscdl=noapi&rcb=6&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&gaf=2&_s=1&tag_exp=115938465~115938468~118897920~118897930~120213116~120385423~120469145~120469153&sid=1789775950&sct=1&seg=0&dl=https%3A%2F%2Fwww.redenlace.com.bo%2F&dt=Red%20Enlace&en=page_view&_fv=1&_ss=1&tfd=3126
+    - https://www.google.com/recaptcha/api2/reload?k=6LcH48wUAAAAAF6XUN9yqZVvnn1STU5XcKy8hBTW
+    - https://www.google.com/recaptcha/api2/clr?k=6LcH48wUAAAAAF6XUN9yqZVvnn1STU5XcKy8hBTW
+    direct_download_urls: []
+    network_category_counts:
+      ANALYTICS_TELEMETRY: 1
+      THIRD_PARTY_JSON: 2
+      THIRD_PARTY_XHR: 1
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: true
+      forms: 0
+      selects: 0
+      buttons: 0
+      keyword_hits:
+        consult: 2
+        consulta: 2
+        data: 5
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  historical_entrypoint: https://www.cadexco.org.bo
+  effective_entrypoint: https://cadexco.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  candidate_class: BROWSER_INTERACTION_REVIEW
+  recommended_strategy: SAFE_BROWSER_INTERACTION
+  browser_evidence:
+    browser_artifacts_available: true
+    rendered_links: 59
+    keyword_links:
+    - https://cadexco.bo/exportaciones-de-cochabamba-2026/
+    - https://cadexco.bo/publicaciones/encuentro-nacional-de-exportadores-enex-2025/
+    - https://cadexco.bo/publicaciones/premiacion-al-merito-exportador-2024/
+    xhr_fetch_events: 3
+    xhr_fetch_urls:
+    - https://www.google-analytics.com/g/collect?v=2&tid=G-LE80EGX2L2&gtm=45je69g1v9184284643za200zd9184284643xf1&_p=1789775959342&gcd=13l3l3l3l1l1&npa=0&dma=0&cid=448065982.1789775961&frm=0&ngs=1&pscdl=noapi&rcb=1&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&_s=1&tag_exp=115938465~115938469~118897920~118897930~120213116~120385423~120469145~120469153&sid=1789775960&sct=1&seg=0&dl=https%3A%2F%2Fcadexco.bo%2F&dt=cadexco%20%E2%80%93%20Pagina%20Institucional%20de%20la%20C%C3%A1mara%20de%20Exportadores%20de%20Cochabamba&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=3275
+    - https://www.facebook.com/platform/plugin/page/logging/
+    - https://www.facebook.com/platform/plugin/tab/renderer/?key=timeline&config_json=%7B%22app_id%22%3A%22776730922422337%22%2C%22href%22%3A%22https%3A%2F%2Fwww.facebook.com%2Fcadexco%22%2C%22width%22%3A360%2C%22height%22%3A400%2C%22has_cta%22%3Afalse%2C%22has_small_header%22%3Afalse%2C%22has_adapt_container_width%22%3Atrue%2C%22has_cover%22%3Atrue%2C%22has_posts%22%3Afalse%2C%22tabs%22%3A%22timeline%22%2C%22can_personalize%22%3Afalse%2C%22is_xfbml%22%3Atrue%2C%22referer_uri%22%3A%22https%3A%2F%2Fcadexco.bo%2F%22%7D&fb_dtsg_ag&__user=0&__a=1&__req=1&__hs=20714.BP%3Aplugin_default_pkg.2.0...0&dpr=1&__ccg=MODERATE&__rev=1047920321&__s=%3A%3Axmoxig&__hsi=7687029207463282875&__dyn=7wKxa13wt8K2Wmh0Sw8W5U4e1Fx-ewpU3WwvE3vx609vCwjE0AC1xwEw7Bx61vw5zw78w5Uw64w8W1uw2oE17U2ZwrU1Xo1UU1JE&locale=es_LA&__sp=1&__jssesw=8
+    direct_download_urls: []
+    network_category_counts:
+      ANALYTICS_TELEMETRY: 3
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: true
+      forms: 9
+      selects: 0
+      buttons: 16
+      keyword_hits:
+        buscar: 14
+        csv: 40
+        data: 799
+        dataset: 1
+        datos: 4
+        export: 35
+        filter: 11
+        search: 56
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  historical_entrypoint: https://www.fam.bo
+  effective_entrypoint: https://fam.org.bo/
+  lifecycle: CURRENT_DOMAIN_CHANGED
+  b6_status: B7_B8_CANDIDATE
+  b7_status: JAVASCRIPT_NETWORK_REVIEW
+  custom_reason: Browser reveló tráfico de aplicación, pero B7C aún no demuestra que represente datasets/descargas.
+  candidate_class: BROWSER_NETWORK_SEMANTIC_REVIEW
+  recommended_strategy: NETWORK_ENDPOINT_PROBE
+  browser_evidence:
+    browser_artifacts_available: true
+    rendered_links: 45
+    keyword_links:
+    - https://datosurbanosdebolivia.fam.org.bo/
+    - https://indicadoresurbanos.oopp.gob.bo/
+    xhr_fetch_events: 1
+    xhr_fetch_urls:
+    - https://fam.org.bo/cdn-cgi/rum?
+    direct_download_urls: []
+    network_category_counts:
+      SAME_ORIGIN_XHR: 1
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: true
+      forms: 1
+      selects: 0
+      buttons: 1
+      keyword_hits:
+        data: 444
+        datos: 2
+        descarga: 2
+        download: 2
+        export: 1
+        filter: 3
+        indicador: 1
+        search: 17
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  historical_entrypoint: https://www.fifa.com
+  effective_entrypoint: https://www.fifa.com
+  lifecycle: CURRENT
+  b6_status: API_SEMANTIC_REVIEW
+  b7_status: null
+  custom_reason: Existe API genérica pero B6 no demostró todavía que sea una API de datos.
+  candidate_class: API_SEMANTIC_REVIEW
+  recommended_strategy: API_SEMANTIC_PROBE
+  browser_evidence:
+    browser_artifacts_available: false
+    rendered_links: 0
+    keyword_links: []
+    xhr_fetch_events: 0
+    xhr_fetch_urls: []
+    direct_download_urls: []
+    network_category_counts: {}
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: false
+      forms: 0
+      selects: 0
+      buttons: 0
+      keyword_hits: {}
+  api_evidence:
+    api_quality: GENERIC_API_REVIEW
+    api_resource_count: 2
+    resource_count: 2
+    api_category_counts:
+      GENERIC_API: 2
+    sample_resources:
+    - url: https://cxm-api.fifa.com/fifaplusweb/api
+      extension: ''
+      methods:
+      - html_api_reference
+      types:
+      - api
+      api: true
+      api_category: GENERIC_API
+    - url: https://cxm-api.fifa.com/fifaplusweb/api/themePalette
+      extension: ''
+      methods:
+      - html_api_reference
+      types:
+      - api
+      api: true
+      api_category: GENERIC_API
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  historical_entrypoint: https://www.bolsadecereales.org.bo
+  effective_entrypoint: https://www.bolsadecereales.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b7_status: null
+  custom_reason: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+  candidate_class: IDENTITY_RESEARCH_REQUIRED
+  recommended_strategy: IDENTITY_RESEARCH
+  browser_evidence:
+    browser_artifacts_available: false
+    rendered_links: 0
+    keyword_links: []
+    xhr_fetch_events: 0
+    xhr_fetch_urls: []
+    direct_download_urls: []
+    network_category_counts: {}
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: false
+      forms: 0
+      selects: 0
+      buttons: 0
+      keyword_hits: {}
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  historical_entrypoint: https://www.ibch.org.bo
+  effective_entrypoint: https://www.ibch.org.bo
+  lifecycle: HISTORICAL_DOMAIN_DEAD
+  b6_status: IDENTITY_REVIEW_REQUIRED
+  b7_status: null
+  custom_reason: Dominio histórico muerto y no existe reemplazo seguro confirmado.
+  candidate_class: IDENTITY_RESEARCH_REQUIRED
+  recommended_strategy: IDENTITY_RESEARCH
+  browser_evidence:
+    browser_artifacts_available: false
+    rendered_links: 0
+    keyword_links: []
+    xhr_fetch_events: 0
+    xhr_fetch_urls: []
+    direct_download_urls: []
+    network_category_counts: {}
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: false
+      forms: 0
+      selects: 0
+      buttons: 0
+      keyword_hits: {}
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  historical_entrypoint: https://www.transtats.bts.gov
+  effective_entrypoint: https://www.transtats.bts.gov
+  lifecycle: CURRENT_REACHABLE_NO_RESOURCES
+  b6_status: B7_B8_CANDIDATE
+  b7_status: B8_CUSTOM_CANDIDATE
+  custom_reason: Browser no añadió evidencia útil de datos frente a B6; requiere revisión custom.
+  candidate_class: BROWSER_INTERACTION_REVIEW
+  recommended_strategy: SAFE_BROWSER_INTERACTION
+  browser_evidence:
+    browser_artifacts_available: true
+    rendered_links: 170
+    keyword_links:
+    - https://www.bts.gov/explore-topics-and-geography/introduction-transportation-statistics
+    - https://www.bts.gov/browse-statistical-products-and-data
+    - https://www.bts.gov/browse-statistical-products-and-data/bts-publications/z-index
+    - https://www.bts.gov/airline-data-downloads
+    - https://data.bts.gov/stories/s/jswi-2e7b
+    - https://data.bts.gov/
+    - https://www.bts.gov/data-spotlights
+    - https://www.bts.gov/browse-statistical-products-and-data/surveys/evius/evius-electrical-vehicle-inventory-and-use
+    - https://www.bts.gov/browse-statistical-products-and-data/statistical-products/intermodal-transportation-database
+    - https://data.bts.gov/stories/s/m9eb-yevh
+    - https://www.bts.gov/topics/national-transportation-statistics
+    - https://www.bts.gov/geospatial/national-transportation-atlas-database
+    - https://www.bts.gov/browse-statistical-products-and-data/statistical-products/national-transportation-data-archive
+    - https://www.bts.gov/precursor-data
+    - https://www.bts.gov/browse-statistical-products-and-data/preliminary-estimates/preliminary-estimates
+    - https://www.bts.gov/product/state-transportation-statistics
+    - https://www.bts.gov/freight-indicators
+    - https://data.bts.gov/stories/s/kijm-95mr
+    - https://data.bts.gov/stories/s/28tb-cpjy
+    - https://data.bts.gov/stories/s/Transportation-as-an-Economic-Indicator/9czv-tjte
+    - https://fdd.bts.gov/freight-data-dictionary/
+    - https://www.transtats.bts.gov/SearchInfo.asp
+    - https://www.transtats.bts.gov/DataIndex.asp
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=E&Z1qr_Qr5p=N8vn6v10&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=F&Z1qr_Qr5p=Zn4v6vzr&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=G&Z1qr_Qr5p=Uvtu9nB&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=H&Z1qr_Qr5p=g4n05v6&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=I&Z1qr_Qr5p=envy&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?Z1qr_VQ=J&Z1qr_Qr5p=cv2ryv0r&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/Databases.asp?Z1qr_VQ=K&Z1qr_Qr5p=Ovxr/crqr564vn0&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/Databases.asp?Z1qr_VQ=MM&Z1qr_Qr5p=b6ur4&f7owrp6_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=E&f7owrp6_Qr5p=fnsr6B&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=F&f7owrp6_Qr5p=S4rvtu6%FDg4n052146&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=G&f7owrp6_Qr5p=cn55r0tr4%FDg4n8ry&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=H&f7owrp6_Qr5p=V0s4n5647p674r&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=I&f7owrp6_Qr5p=Rp101zvp/Sv0n0pvny&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=J&f7owrp6_Qr5p=f1pvny/Qrz1t4n2uvp&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=K&f7owrp6_Qr5p=R0r4tB&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=L&f7owrp6_Qr5p=R08v410zr06&Z1qr_VQF=D
+    - https://www.transtats.bts.gov/databases.asp?f7owrp6_VQ=M&f7owrp6_Qr5p=an6v10ny%FDfrp74v6B&Z1qr_VQF=D
+    - https://www.linkedin.com/company/bureau-of-transportation-statistics-bts
+    - https://www.transportation.gov/administrations/research-and-technology
+    xhr_fetch_events: 7
+    xhr_fetch_urls:
+    - https://www.google-analytics.com/g/collect?v=2&tid=G-CSLL4ZEK4L&gtm=45je69h0h2v9131934939za200xf1&_p=1789776026933&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dMDhkMT&cid=850727891.1789776028&frm=0&ngs=1&pscdl=noapi&rcb=5&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&_s=1&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120469145~120469153&dl=https%3A%2F%2Ftranstats.bts.gov%2F&dt=OST_R%20%7C%20BTS%20%7C%20Transtats%20Homepage&dr=&sid=1789776027&sct=1&seg=0&_tu=wA&en=page_view&_fv=1&_ss=1&_ee=1&ep.agency=DOT&ep.subagency=BTS&ep.site_topic=unspecified%3Atranstats.bts.gov&ep.site_platform=unspecified%3Atranstats.bts.gov&ep.script_source=https%3A%2F%2Fdap.digitalgov.gov%2Funiversal-federated-analytics-min.js&ep.version=20260107%20v8.8%20-%20ga4&ep.protocol=https%3A&ep.using_parallel_tracker=no&ep.hostname_dimension=transtats.bts.gov&tfd=7912
+    - https://www.google-analytics.com/g/collect?v=2&tid=G-NQ5ZN114SB&gtm=45je69g1v888840101za20gxf1&_p=1789776026933&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAI&cid=850727891.1789776028&frm=0&ngs=1&pscdl=noapi&rcb=12&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&_s=1&tag_exp=115616986~115938466~115938468~118897920~118897930~120213116~120385422~120469145~120469153&sid=1789776028&sct=1&seg=0&dl=https%3A%2F%2Fwww.transtats.bts.gov%2F&dt=OST_R%20%7C%20BTS%20%7C%20Transtats%20Homepage&en=page_view&_fv=1&_ss=1&tfd=7990
+    - https://www.google-analytics.com/g/collect?v=2&tid=G-TS9639848Y&gtm=45je69g1v886670394za200xf1&_p=1789776026933&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dMDhkMT&cid=850727891.1789776028&frm=0&pscdl=noapi&rcb=17&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&_s=1&tag_exp=115938466~115938469~118897920~118897930~120213116~120385422~120469145~120469153&sid=1789776028&sct=1&seg=0&dl=https%3A%2F%2Fwww.transtats.bts.gov%2F&dt=OST_R%20%7C%20BTS%20%7C%20Transtats%20Homepage&en=page_view&_fv=1&_ss=1&_ee=1&ep.page_placeholder=PLACEHOLDER_page_location&tfd=8089
+    - https://gov1.siteintercept.qualtrics.com/WRSiteInterceptEngine/Targeting.php?Q_ZoneID=ZN_5zoA3vXq9g9IftP&Q_CLIENTVERSION=2.57.0&Q_CLIENTTYPE=web
+    - https://gov1.siteintercept.qualtrics.com/WRSiteInterceptEngine/Asset.php?Module=SI_e8TSnTOxZxScWdT&Version=5&Q_ORIGIN=https://www.transtats.bts.gov&Q_CLIENTVERSION=2.57.0&Q_CLIENTTYPE=web&Q_BrandTier=&Q_ARCACHEVERSION=21&Q_BRANDDC=gov1
+    - https://gov1.siteintercept.qualtrics.com/WRSiteInterceptEngine/Asset.php?Module=CR_bx6HB7LEB0QThwp&Version=5&Q_InterceptID=SI_e8TSnTOxZxScWdT&Q_ORIGIN=https://www.transtats.bts.gov&Q_CLIENTVERSION=2.57.0&Q_CLIENTTYPE=web&Q_BrandTier=&Q_ARCACHEVERSION=21&Q_BRANDDC=gov1
+    - https://www.google-analytics.com/g/collect?v=2&tid=G-CSLL4ZEK4L&gtm=45je69h0h2v9131934939za200xf1&_p=1789776026933&gcd=13l3l3l3l1l1&npa=0&dma=0&gdid=dMDhkMT&_eu=AAAAAAQ&cid=850727891.1789776028&frm=0&ngs=1&pscdl=noapi&rcb=5&sr=1280x720&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B153.0.8010.48%7CNot_A%2520Brand%3B8.0.0.0%7CChromium%3B153.0.8010.48&uam=&uamb=0&uap=Windows&uapv=10.0.0&uaw=0&ul=es-es&tag_exp=115616985~115938466~115938468~118897920~118897930~120213116~120385422~120469145~120469153&dl=https%3A%2F%2Ftranstats.bts.gov%2F&dt=OST_R%20%7C%20BTS%20%7C%20Transtats%20Homepage&dr=&sid=1789776027&sct=1&seg=0&_tu=wA&_s=2&tfd=12930
+    direct_download_urls: []
+    network_category_counts:
+      ANALYTICS_TELEMETRY: 4
+      THIRD_PARTY_JSON: 3
+    data_endpoint_urls: []
+    same_origin_json_urls: []
+    html_signals:
+      html_available: true
+      forms: 2
+      selects: 0
+      buttons: 5
+      keyword_hits:
+        csv: 1
+        data: 481
+        dataset: 2
+        download: 8
+        export: 5
+        indicator: 10
+        ods: 2
+        pdf: 1
+        report: 2
+        search: 42
+        serie: 26
+        series: 26
+        statistics: 33
+        xls: 1
+  api_evidence:
+    api_quality: null
+    api_resource_count: 0
+    resource_count: 0
+    api_category_counts: {}
+    sample_resources: []
