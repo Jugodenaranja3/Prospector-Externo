@@ -1,109 +1,857 @@
-# Configuración Centralizada de Fuentes — Prospector Externo DATAX
-# Integra parámetros operativos de FINRURAL y BBV con selección de workflows y semillas focalizadas.
-
 sources:
-  - source_id: finrural
-    name: "FINRURAL — Asociación de Instituciones Financieras de Desarrollo"
-    entrypoint: https://www.finrural.org.bo
-    workflow: html
-    seeds:
-      - https://www.finrural.org.bo/reporte-financiero-mensual-instituciones-financieras-de-desarrollo/
-      - https://www.finrural.org.bo/archivo-historico/
-    update_category: MONTHLY
-    allowed_extensions:
-      - .pdf
-      - .xlsx
-      - .xls
-      - .csv
-      - .zip
-    excluded_path_keywords:
-      - "/historia/"
-      - "/mision-y-vision/"
-      - "/estructura-organizacional/"
-      - "/glosario-de-microfinanzas/"
-      - "/manifiesto-de-las-microfinanzas/"
-      - "/que-son-las-ifd/"
-      - "/enlaces-de-interes/"
-      - "/impro-ifd/"
-    rate_limit_seconds: 1.0
-
-  - source_id: bbv
-    name: "Bolsa Boliviana de Valores (BBV)"
-    entrypoint: https://www.bbv.com.bo
-    workflow: commented_html
-    seeds:
-      - https://www.bbv.com.bo/estadisticas/
-      - https://www.bbv.com.bo/acerca-de-la-bolsa/memorias-anuales/
-      - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera/
-      - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera-2024/
-      - https://www.bbv.com.bo/hechos-relevantes-y-noticias/
-    update_category: DAILY
-    allowed_extensions:
-      - .pdf
-      - .xlsx
-      - .xls
-      - .csv
-      - .zip
-    excluded_path_keywords:
-      - "/historia/"
-      - "/mision-y-vision/"
-      - "/valores-y-estrategias/"
-      - "/trabaja-con-nosotros/"
-      - "/contacto/"
-      - "/aula-bursatil/"
-    rate_limit_seconds: 1.0
-
-  - source_id: bcb
-    name: "Banco Central de Bolivia (BCB)"
-    entrypoint: https://www.bcb.gob.bo
-    workflow: html
-    seeds:
-      - https://www.bcb.gob.bo/?q=estad-sticas-semanales
-      - https://www.bcb.gob.bo/?q=pub_boletin-mensual
-      - https://www.bcb.gob.bo/?q=pub_boletin-estadistico
-      - https://www.bcb.gob.bo/?q=pub_boletin-sector-externo
-      - https://www.bcb.gob.bo/?q=reporte-estadistico
-    update_category: WEEKLY
-    allowed_extensions:
-      - .xlsx
-      - .xls
-      - .ods
-      - .csv
-      - .pdf
-      - .zip
-    excluded_path_keywords: []
-    ignore_robots_txt: false
-    robots_override_reason: null
-    rate_limit_seconds: 1.5
-    allowed_hosts:
-      - bcb.gob.bo
-      - www.bcb.gob.bo
-    max_depth: 1
-    max_urls: 120
-    max_runtime_seconds: 300
-    max_requests: 120
-    max_query_variants: 12
-    max_consecutive_errors: 4
-    max_redirects: 4
-    max_calendar_variants: 18
-    max_url_length: 2048
-    max_query_keys: 10
-    pagination_min_pages: 2
-    pagination_empty_streak: 2
-    pagination_window: 3
-    discover_sitemaps: true
-    max_sitemap_documents: 4
-    max_sitemap_urls: 120
-    max_sitemap_bytes: 500000
-    discover_apis: true
-    max_api_endpoints: 30
-    max_api_response_bytes: 1000000
-    follow_api_pagination: true
-    max_api_pages: 3
-    max_api_records_sampled: 500
-    max_api_stagnant_pages: 2
-    probe_api_documentation: false
-    max_api_documents: 2
-    max_api_document_depth: 1
-    max_api_document_bytes: 500000
-    grouping_contract: config/grouping/bcb.yaml
+- source_id: finrural
+  name: FINRURAL — Asociación de Instituciones Financieras de Desarrollo
+  entrypoint: https://www.finrural.org.bo
+  workflow: html
+  seeds:
+  - https://www.finrural.org.bo/reporte-financiero-mensual-instituciones-financieras-de-desarrollo/
+  - https://www.finrural.org.bo/archivo-historico/
+  update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+- source_id: bbv
+  name: Bolsa Boliviana de Valores (BBV)
+  entrypoint: https://www.bbv.com.bo
+  workflow: commented_html
+  seeds:
+  - https://www.bbv.com.bo/estadisticas/
+  - https://www.bbv.com.bo/acerca-de-la-bolsa/memorias-anuales/
+  - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera/
+  - https://www.bbv.com.bo/acerca-de-la-bolsa/informacion-financiera-2024/
+  - https://www.bbv.com.bo/hechos-relevantes-y-noticias/
+  update_category: DAILY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /valores-y-estrategias/
+  - /trabaja-con-nosotros/
+  - /contacto/
+  - /aula-bursatil/
+  rate_limit_seconds: 1.0
+- source_id: bcb
+  name: Banco Central de Bolivia (BCB)
+  entrypoint: https://www.bcb.gob.bo
+  workflow: html
+  seeds:
+  - https://www.bcb.gob.bo/?q=estad-sticas-semanales
+  - https://www.bcb.gob.bo/?q=pub_boletin-mensual
+  - https://www.bcb.gob.bo/?q=pub_boletin-estadistico
+  - https://www.bcb.gob.bo/?q=pub_boletin-sector-externo
+  - https://www.bcb.gob.bo/?q=reporte-estadistico
+  update_category: WEEKLY
+  allowed_extensions:
+  - .xlsx
+  - .xls
+  - .ods
+  - .csv
+  - .pdf
+  - .zip
+  excluded_path_keywords: []
+  ignore_robots_txt: false
+  robots_override_reason: null
+  rate_limit_seconds: 1.5
+  allowed_hosts:
+  - bcb.gob.bo
+  - www.bcb.gob.bo
+  max_depth: 1
+  max_urls: 120
+  max_runtime_seconds: 300
+  max_requests: 120
+  max_query_variants: 12
+  max_consecutive_errors: 4
+  max_redirects: 4
+  max_calendar_variants: 18
+  max_url_length: 2048
+  max_query_keys: 10
+  pagination_min_pages: 2
+  pagination_empty_streak: 2
+  pagination_window: 3
+  discover_sitemaps: true
+  max_sitemap_documents: 4
+  max_sitemap_urls: 120
+  max_sitemap_bytes: 500000
+  discover_apis: true
+  max_api_endpoints: 30
+  max_api_response_bytes: 1000000
+  follow_api_pagination: true
+  max_api_pages: 3
+  max_api_records_sampled: 500
+  max_api_stagnant_pages: 2
+  probe_api_documentation: false
+  max_api_documents: 2
+  max_api_document_depth: 1
+  max_api_document_bytes: 500000
+  grouping_contract: config/grouping/bcb.yaml
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: anapo
+  name: Asociación de Productores de Oleaginosas y Trigo
+  entrypoint: https://www.anapobolivia.org
+  seeds:
+  - https://www.anapobolivia.org
+  workflow: html
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: aps
+  name: Autoridad de Fiscalización y Control de Pensiones y Seguros
+  entrypoint: https://www.aps.gob.bo
+  seeds:
+  - https://www.aps.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: asfi_valores
+  name: Autoridad de Supervisión del Sistema Financiero
+  entrypoint: https://www.asfi.gob.bo
+  seeds:
+  - https://www.asfi.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: bm
+  name: Banco Mundial
+  entrypoint: https://www.worldbank.org
+  seeds:
+  - https://www.worldbank.org
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: cepal
+  name: Comisión Económica para América Latina y el Caribe
+  entrypoint: https://www.cepal.org
+  seeds:
+  - https://www.cepal.org
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: mmym
+  name: Ministerio de Minería y Metalurgia
+  entrypoint: https://www.mineria.gob.bo
+  seeds:
+  - https://www.mineria.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: omc
+  name: Organización Mundial del Comercio
+  entrypoint: https://www.wto.org
+  seeds:
+  - https://www.wto.org
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: statistics_denmark
+  name: Danmarks Statistik
+  entrypoint: https://www.dst.dk/
+  seeds:
+  - https://www.dst.dk/
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: vipfe
+  name: Viceministerio de Inversión Pública y Financiamiento Externo
+  entrypoint: https://sisin.planificacion.gob.bo/
+  seeds:
+  - https://sisin.planificacion.gob.bo/
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: ada
+  name: ADA Bolivia
+  entrypoint: https://www.adascz.com.bo
+  seeds:
+  - https://www.adascz.com.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: cadexco
+  name: Cámara de Exportadores de Cochabamba
+  entrypoint: https://cadexco.bo/
+  seeds:
+  - https://cadexco.bo/publicaciones/
+  - https://cadexco.bo/cochabamba/
+  - https://cadexco.bo/inteligencia/
+  - https://cadexco.bo/lcoext/
+  - https://cadexco.bo/ltributaria/
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: cndc
+  name: Comisión Nacional de Defensa de la Competencia
+  entrypoint: https://www.cndc.bo
+  seeds:
+  - https://www.cndc.bo
+  workflow: html
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: dgac
+  name: Dirección General de Aeronáutica Civil
+  entrypoint: https://www.dgac.gob.bo
+  seeds:
+  - https://www.dgac.gob.bo
+  workflow: html
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: fifa
+  name: Federación Internacional de Fútbol Asociación
+  entrypoint: https://www.fifa.com
+  seeds:
+  - https://cxm-api.fifa.com/fifaplusweb/api/themePalette
+  workflow: custom
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: icco
+  name: International Cocoa Organization
+  entrypoint: https://www.icco.org
+  seeds:
+  - https://www.icco.org
+  workflow: html
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: itu
+  name: International Telecommunication Union
+  entrypoint: https://www.itu.int
+  seeds:
+  - https://www.itu.int
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: mdryt_oap
+  name: Ministerio de Desarrollo Rural y Tierras - OAP
+  entrypoint: https://www.ruralytierras.gob.bo
+  seeds:
+  - https://www.ruralytierras.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: sicoes
+  name: Sistema de Contrataciones Estatales
+  entrypoint: https://www.sicoes.gob.bo
+  seeds:
+  - https://www.sicoes.gob.bo
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: ine
+  name: Instituto Nacional de Estadística
+  entrypoint: https://www.ine.gob.bo
+  seeds:
+  - https://www.ine.gob.bo
+  workflow: html
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: mhe
+  name: Ministerio de Hidrocarburos y Energías
+  entrypoint: https://www.mhe.gob.bo/
+  seeds:
+  - https://www.mhe.gob.bo/
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: seprec
+  name: Servicio Plurinacional de Registro de Comercio
+  entrypoint: https://www.seprec.gob.bo
+  seeds:
+  - https://www.seprec.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: undata
+  name: United Nations Data
+  entrypoint: https://data.un.org
+  seeds:
+  - https://data.un.org
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: ae
+  name: Autoridad de Fiscalizacion de Electricidad dey Tecnologia Nuclear
+  entrypoint: https://aetn.gob.bo
+  seeds:
+  - https://aetn.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: asofin
+  name: Asociación de Instituciones Financieras de Microfinanzas de Bolivia
+  entrypoint: https://www.asofinbolivia.com
+  seeds:
+  - https://www.asofinbolivia.com
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: att
+  name: Autoridad de Regulación y Fiscalización de Telecomunicaciones y Transportes
+  entrypoint: https://www.att.gob.bo
+  seeds:
+  - https://www.att.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: data_gov
+  name: Portal de Datos Abiertos USA
+  entrypoint: https://www.data.gov
+  seeds:
+  - https://www.data.gov
+  workflow: api
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: ibce_cao
+  name: Instituto Boliviano de Comercio Exterior / Cámara Agropecuaria del Oriente
+  entrypoint: https://www.ibce.org.bo
+  seeds:
+  - https://www.ibce.org.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: min_educacion
+  name: Ministerio de Educación
+  entrypoint: https://www.minedu.gob.bo
+  seeds:
+  - https://www.minedu.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: senamhi
+  name: Servicio Nacional de Meteorología e Hidrología
+  entrypoint: https://www.senamhi.gob.bo
+  seeds:
+  - https://www.senamhi.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: sigma
+  name: Industria Farmacéutica Sigma
+  entrypoint: https://www.sigmacorp.com.bo/
+  seeds:
+  - https://www.sigmacorp.com.bo/
+  workflow: javascript
+  discover_apis: true
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: snis
+  name: Sistema Nacional de Información en Salud
+  entrypoint: https://snis.minsalud.gob.bo
+  seeds:
+  - https://snis.minsalud.gob.bo
+  workflow: html
+- update_category: MONTHLY
+  allowed_extensions:
+  - .pdf
+  - .xlsx
+  - .xls
+  - .csv
+  - .zip
+  excluded_path_keywords:
+  - /historia/
+  - /mision-y-vision/
+  - /estructura-organizacional/
+  - /glosario-de-microfinanzas/
+  - /manifiesto-de-las-microfinanzas/
+  - /que-son-las-ifd/
+  - /enlaces-de-interes/
+  - /impro-ifd/
+  rate_limit_seconds: 1.0
+  source_id: transtats
+  name: US Bureau of Transportation Statistics
+  entrypoint: https://www.transtats.bts.gov
+  seeds:
+  - https://www.transtats.bts.gov/DL_SelectFields.aspx?QO_fu146_anzr=&gnoyr_VQ=GED
+  workflow: custom

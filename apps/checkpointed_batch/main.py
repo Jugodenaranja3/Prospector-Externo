@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 from src.execution.checkpointed_batch import (
     initialize_or_resume,
+    load_execution_map,
     load_plan,
     load_yaml,
     run_checkpointed_sources,
@@ -37,6 +37,10 @@ def main() -> int:
     parser.add_argument(
         "--sources-config",
         default="config/sources.yaml",
+    )
+    parser.add_argument(
+        "--execution-map",
+        default="config/source_execution_map.yaml",
     )
     parser.add_argument(
         "--checkpoint-config",
@@ -78,11 +82,13 @@ def main() -> int:
 
     plan = load_plan(args.plan)
     source_config = load_yaml(args.sources_config)
+    execution_map = load_execution_map(args.execution_map)
 
     if args.command == "validate":
         report = validate_source_mapping(
             plan,
             source_config,
+            execution_map,
         )
         write_report(Path(args.report), report)
 
@@ -140,6 +146,7 @@ def main() -> int:
         store=store,
         work_dir=Path(args.work_dir) / checkpoint["run_id"],
         output_root=Path(args.output_dir) / checkpoint["run_id"],
+        execution_map=execution_map,
         max_sources=args.max_sources,
         fail_fast=args.fail_fast,
         python_executable=sys.executable,

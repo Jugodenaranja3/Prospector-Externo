@@ -53,6 +53,35 @@ def load_plan(path: str | Path) -> dict[str, Any]:
     return value
 
 
+def load_execution_map(path: str | Path | None) -> dict[str, Any] | None:
+    if path is None:
+        return None
+    candidate = Path(path)
+    if not candidate.exists():
+        return None
+    value = load_yaml(candidate)
+    if not isinstance(value, dict):
+        raise ValueError("Execution map inválido")
+    return value
+
+
+def execution_map_index(
+    execution_map: dict[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    if not execution_map:
+        return {}
+    rows = execution_map.get("sources")
+    if not isinstance(rows, list):
+        raise ValueError("Execution map sin sources")
+    return {
+        str(row["logical_source_id"]): row
+        for row in rows
+        if isinstance(row, dict)
+        and isinstance(row.get("logical_source_id"), str)
+        and row.get("logical_source_id")
+    }
+
+
 def _container(config: Any) -> tuple[str, Any]:
     if isinstance(config, list):
         return "top_list", config
@@ -76,17 +105,17 @@ def iter_entries(config: Any) -> list[tuple[str | None, dict[str, Any]]]:
     kind, container = _container(config)
 
     if kind in {"top_list", "sources_list"}:
-        result: list[tuple[str | None, dict[str, Any]]] = []
-        for item in container:
-            if isinstance(item, dict):
-                result.append((None, item))
-        return result
+        return [
+            (None, item)
+            for item in container
+            if isinstance(item, dict)
+        ]
 
-    result = []
-    for key, item in container.items():
-        if isinstance(item, dict):
-            result.append((str(key), item))
-    return result
+    return [
+        (str(key), item)
+        for key, item in container.items()
+        if isinstance(item, dict)
+    ]
 
 
 def _norm(value: Any) -> str:
@@ -116,10 +145,44 @@ def _url_values(entry: dict[str, Any]) -> set[str]:
     return values
 
 
+def find_config_source_id(
+    config_source_id: str,
+    config: Any,
+) -> tuple[str | None, dict[str, Any]]:
+    target = _norm(config_source_id)
+    matches = [
+        (key, entry)
+        for key, entry in iter_entries(config)
+        if target in _identity_values(key, entry)
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    if not matches:
+        raise KeyError(
+            f"config_source_id {config_source_id!r} no existe en sources config"
+        )
+    raise ValueError(
+        f"config_source_id {config_source_id!r} tiene {len(matches)} matches"
+    )
+
+
 def match_source_entry(
     plan_source: dict[str, Any],
     config: Any,
+    execution_map: dict[str, Any] | None = None,
 ) -> tuple[str | None, dict[str, Any]]:
+    map_index = execution_map_index(execution_map)
+    source_id = str(plan_source.get("source_id") or "")
+
+    mapped = map_index.get(source_id)
+    if mapped is not None:
+        config_source_id = mapped.get("config_source_id")
+        if not isinstance(config_source_id, str) or not config_source_id:
+            raise ValueError(
+                f"{source_id}: execution map sin config_source_id"
+            )
+        return find_config_source_id(config_source_id, config)
+
     identity_targets = {
         _norm(plan_source.get("source_id")),
         _norm(plan_source.get("logical_code")),
@@ -129,32 +192,34 @@ def match_source_entry(
 
     entries = iter_entries(config)
 
-    identity_matches: list[tuple[str | None, dict[str, Any]]] = []
-    for key, entry in entries:
-        if identity_targets & _identity_values(key, entry):
-            identity_matches.append((key, entry))
+    identity_matches = [
+        (key, entry)
+        for key, entry in entries
+        if identity_targets & _identity_values(key, entry)
+    ]
 
     if len(identity_matches) == 1:
         return identity_matches[0]
     if len(identity_matches) > 1:
-        # Prefer exact source_id first.
-        source_id = _norm(plan_source.get("source_id"))
         exact = [
             item
             for item in identity_matches
-            if source_id in _identity_values(item[0], item[1])
+            if _norm(plan_source.get("source_id"))
+            in _identity_values(item[0], item[1])
         ]
         if len(exact) == 1:
             return exact[0]
         raise ValueError(
-            f"{plan_source.get('source_id')}: match ambiguo por identidad"
+            f"{source_id}: match ambiguo por identidad"
         )
 
     url_targets = set()
     for field in ("effective_entrypoint", "historical_entrypoint"):
         value = plan_source.get(field)
         if isinstance(value, str) and value.strip():
-            url_targets.add(value.strip().rstrip("/").casefold())
+            url_targets.add(
+                value.strip().rstrip("/").casefold()
+            )
 
     url_matches = [
         (key, entry)
@@ -166,11 +231,11 @@ def match_source_entry(
         return url_matches[0]
     if len(url_matches) > 1:
         raise ValueError(
-            f"{plan_source.get('source_id')}: match ambiguo por URL"
+            f"{source_id}: match ambiguo por URL"
         )
 
     raise KeyError(
-        f"{plan_source.get('source_id')}: no existe en config de fuentes"
+        f"{source_id}: no existe en config de fuentes"
     )
 
 
@@ -190,10 +255,9 @@ def build_single_source_config(
         result["sources"] = [entry]
         return result
 
-    key = matched_key
-    if key is None:
+    if matched_key is None:
         raise ValueError("sources:mapping requiere key")
-    result["sources"] = {key: entry}
+    result["sources"] = {matched_key: entry}
     return result
 
 
@@ -209,16 +273,27 @@ def operational_sources(plan: dict[str, Any]) -> list[dict[str, Any]]:
 def validate_source_mapping(
     plan: dict[str, Any],
     source_config: Any,
+    execution_map: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     rows = operational_sources(plan)
-    matched: list[str] = []
-    failures: list[dict[str, str]] = []
+    matched = []
+    failures = []
 
     for row in rows:
         source_id = str(row.get("source_id"))
         try:
-            match_source_entry(row, source_config)
-            matched.append(source_id)
+            key, entry = match_source_entry(
+                row,
+                source_config,
+                execution_map,
+            )
+            matched.append(
+                {
+                    "logical_source_id": source_id,
+                    "config_source_id": entry.get("source_id"),
+                    "mapping_key": key,
+                }
+            )
         except Exception as exc:
             failures.append(
                 {
@@ -231,7 +306,7 @@ def validate_source_mapping(
         "operational_sources": len(rows),
         "matched_sources": len(matched),
         "unmatched_sources": len(failures),
-        "matched_source_ids": matched,
+        "matches": matched,
         "failures": failures,
     }
 
@@ -253,8 +328,7 @@ def default_executor(
         str(output_dir),
     ]
     print("> " + subprocess.list2cmdline(command), flush=True)
-    completed = subprocess.run(command)
-    return int(completed.returncode)
+    return int(subprocess.run(command).returncode)
 
 
 def run_checkpointed_sources(
@@ -265,6 +339,7 @@ def run_checkpointed_sources(
     store: Any,
     work_dir: Path,
     output_root: Path,
+    execution_map: dict[str, Any] | None = None,
     max_sources: int | None = None,
     fail_fast: bool = False,
     executor: Callable[..., int] = default_executor,
@@ -301,13 +376,14 @@ def run_checkpointed_sources(
 
     succeeded = 0
     failed = 0
-    executed: list[str] = []
+    executed = []
 
     for index, source_id in enumerate(candidates, 1):
         source = plan_index[source_id]
         matched_key, matched_entry = match_source_entry(
             source,
             source_config,
+            execution_map,
         )
         single_config = build_single_source_config(
             source_config,
@@ -342,6 +418,7 @@ def run_checkpointed_sources(
             metadata={
                 "single_config": str(config_path),
                 "output_dir": str(source_output),
+                "config_source_id": matched_entry.get("source_id"),
             },
         )
         store.save(checkpoint)
