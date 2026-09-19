@@ -43,6 +43,18 @@ class JavascriptWorkflow(BaseWorkflow):
         elif error == "ROBOTS_DISALLOWED":
             coverage.robots_disallowed += 1
 
+    @staticmethod
+    def _render_exception_code(exc: Exception) -> str:
+        """Clasifica fallos del browser sin ocultarlos como UNHANDLED."""
+        message = str(exc).casefold()
+        if (
+            "executable doesn't exist" in message
+            or "playwright install" in message
+            or "download new browsers" in message
+        ):
+            return "PLAYWRIGHT_BROWSER_MISSING"
+        return "PLAYWRIGHT_ERROR"
+
     async def run(self, config: SourceConfig) -> ExtractionResult:
         logger.info(
             "Iniciando JavascriptWorkflow (Playwright) para fuente: [%s]",
@@ -111,10 +123,21 @@ class JavascriptWorkflow(BaseWorkflow):
                         break
                     continue
 
-                dom_html, render_error = await asyncio.to_thread(
-                    self.browser_driver.fetch_dynamic_dom,
-                    item.normalized_url,
-                )
+                try:
+                    dom_html, render_error = await asyncio.to_thread(
+                        self.browser_driver.fetch_dynamic_dom,
+                        item.normalized_url,
+                    )
+                except Exception as exc:
+                    last_error = self._render_exception_code(exc)
+                    self._record_error(coverage, last_error)
+                    logger.error(
+                        "Playwright no pudo renderizar [%s] %s: %s",
+                        config.source_id,
+                        item.normalized_url,
+                        ascii(str(exc)),
+                    )
+                    continue
                 if render_error or not dom_html:
                     last_error = render_error or "EMPTY_DYNAMIC_DOM"
                     self._record_error(coverage, "PLAYWRIGHT_ERROR")

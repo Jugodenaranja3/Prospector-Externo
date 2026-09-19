@@ -126,6 +126,8 @@ sources:
   - https://www.anapobolivia.org
   workflow: html
   discover_apis: true
+  allowed_hosts:
+  - anapobolivia.org
 - update_category: MONTHLY
   allowed_extensions:
   - .pdf
