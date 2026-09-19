@@ -1,0 +1,18 @@
+schema_version: workflow-compatibility-1.0
+
+# Logical workflow in source_operational_plan -> executable workflow(s)
+# permitted in config/sources.yaml.
+#
+# commented_html is a specialized HTML extractor, so it is compatible
+# with a logical "html" classification. No other cross-family aliases
+# are currently allowed.
+logical_to_physical:
+  html:
+    - html
+    - commented_html
+  javascript:
+    - javascript
+  api:
+    - api
+  custom:
+    - custom

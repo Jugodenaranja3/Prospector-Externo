@@ -1,0 +1,28 @@
+schema_version: b10-final-audit-resolution-1.1
+
+workflow_semantics:
+  planned_workflow_strategy: logical workflow family resolved during B6-B8
+  execution_workflow: concrete workflow executed by config/sources.yaml
+  compatibility_file: config/workflow_compatibility.yaml
+  strict_incompatibilities_fail_audit: true
+
+b10_structural_audit:
+  required: true
+  expected_logical_sources: 52
+  expected_operational_sources: 41
+  expected_status_only_sources: 11
+  expected_physical_configs: 35
+
+b10_live_audit:
+  required: true
+  run_id: b10-final
+  backend: json
+  execute_only_operational_sources: true
+  continue_on_source_failure: true
+  use_checkpoint_resume: true
+
+closure_rule:
+  structural_audit_must_pass: true
+  live_run_must_finish_all_operational_sources: true
+  source_failures_do_not_abort_matrix_generation: true
+  final_result_must_preserve_external_failure_states: true

@@ -1,0 +1,693 @@
+schema_version: final-source-matrix-1.1
+generated_at_utc: '2026-09-19T01:58:12.890781+00:00'
+logical_sources: 52
+sources:
+- source_id: anapo
+  logical_code: ANAPO
+  name: Asociación de Productores de Oleaginosas y Trigo
+  effective_entrypoint: https://www.anapobolivia.org
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: anapo
+  physical_entrypoint: https://www.anapobolivia.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: aps
+  logical_code: APS
+  name: Autoridad de Fiscalización y Control de Pensiones y Seguros
+  effective_entrypoint: https://www.aps.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: aps
+  physical_entrypoint: https://www.aps.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_valores
+  logical_code: ASFI-Valores
+  name: Autoridad de Supervisión del Sistema Financiero
+  effective_entrypoint: https://www.asfi.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: asfi_valores
+  physical_entrypoint: https://www.asfi.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bcb
+  logical_code: BCB
+  name: Banco Central de Bolivia
+  effective_entrypoint: https://www.bcb.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: bcb
+  physical_entrypoint: https://www.bcb.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bm
+  logical_code: BM
+  name: Banco Mundial
+  effective_entrypoint: https://www.worldbank.org
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: bm
+  physical_entrypoint: https://www.worldbank.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: cepal
+  logical_code: CEPAL
+  name: Comisión Económica para América Latina y el Caribe
+  effective_entrypoint: https://www.cepal.org
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: cepal
+  physical_entrypoint: https://www.cepal.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: fegasacruz
+  logical_code: FEGASACRUZ
+  name: Federación de Ganaderos de Santa Cruz
+  effective_entrypoint: https://fegasacruz.org/
+  final_status: NO_PUBLIC_DATA_EVIDENCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+- source_id: finrural
+  logical_code: FINRURAL
+  name: Finrural Bolivia
+  effective_entrypoint: https://www.finrural.org.bo
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: finrural
+  physical_entrypoint: https://www.finrural.org.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: fmi
+  logical_code: FMI
+  name: Fondo Monetario Internacional
+  effective_entrypoint: https://www.imf.org
+  final_status: ACCESS_RESTRICTED
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: Acceso restringido observado; no intentar bypass.
+- source_id: mefp
+  logical_code: MEFP
+  name: Ministerio de Economía y Finanzas Públicas
+  effective_entrypoint: https://www.economiayfinanzas.gob.bo
+  final_status: TLS_TECHNICAL_HOLD
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: La institución sigue vigente pero el cliente actual presenta incompatibilidad TLS.
+- source_id: mmym
+  logical_code: MMYM
+  name: Ministerio de Minería y Metalurgia
+  effective_entrypoint: https://www.mineria.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: mmym
+  physical_entrypoint: https://www.mineria.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: omc
+  logical_code: OMC
+  name: Organización Mundial del Comercio
+  effective_entrypoint: https://www.wto.org
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: omc
+  physical_entrypoint: https://www.wto.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: statistics_denmark
+  logical_code: Statistics Denmark
+  name: Danmarks Statistik
+  effective_entrypoint: https://www.dst.dk/
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: statistics_denmark
+  physical_entrypoint: https://www.dst.dk/
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: vipfe
+  logical_code: VIPFE
+  name: Viceministerio de Inversión Pública y Financiamiento Externo
+  effective_entrypoint: https://sisin.planificacion.gob.bo/
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: vipfe
+  physical_entrypoint: https://sisin.planificacion.gob.bo/
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: ada
+  logical_code: ADA
+  name: ADA Bolivia
+  effective_entrypoint: https://www.adascz.com.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: ada
+  physical_entrypoint: https://www.adascz.com.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: atc
+  logical_code: ATC
+  name: Administradora de Tarjetas de Crédito
+  effective_entrypoint: https://www.redenlace.com.bo
+  final_status: NO_PUBLIC_DATA_SCOPE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: 'Los formularios públicos observados pertenecen a soporte/solicitudes y el Portal de Comercios requiere usuarios
+    afiliados. No se autoriza enviar formularios ni intentar autenticación para discovery público.
+
+    '
+- source_id: cadexco
+  logical_code: CADEXCO
+  name: Cámara de Exportadores de Cochabamba
+  effective_entrypoint: https://cadexco.bo/
+  final_status: OPERATIONAL_HTTP_HTML_CURATED
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: cadexco
+  physical_entrypoint: https://cadexco.bo/
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B8C confirmó páginas GET públicas específicas con recursos; se promociona HTML con seeds curados.
+- source_id: cndc
+  logical_code: CNDC
+  name: Comisión Nacional de Defensa de la Competencia
+  effective_entrypoint: https://www.cndc.bo
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: cndc
+  physical_entrypoint: https://www.cndc.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: dgac
+  logical_code: DGAC
+  name: Dirección General de Aeronáutica Civil
+  effective_entrypoint: https://www.dgac.gob.bo
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: dgac
+  physical_entrypoint: https://www.dgac.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: fam
+  logical_code: FAM
+  name: Federación de Asociaciones Municipales de Bolivia
+  effective_entrypoint: https://fam.org.bo/
+  final_status: NO_PUBLIC_DATA_EVIDENCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: B8 no encontró evidencia pública suficiente de datasets o recursos descargables.
+- source_id: fifa
+  logical_code: FIFA
+  name: Federación Internacional de Fútbol Asociación
+  effective_entrypoint: https://www.fifa.com
+  final_status: OPERATIONAL_CUSTOM_DATA_API
+  planned_workflow_strategy: custom
+  execution_workflow: custom
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: fifa
+  physical_entrypoint: https://www.fifa.com
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B8 confirmó por GET un endpoint con estructura real de datos; se conserva como workflow custom.
+- source_id: fundempresa
+  logical_code: FUNDEMPRESA
+  name: Registro de Comercio de Bolivia
+  effective_entrypoint: https://www.fundempresa.org.bo
+  final_status: RETIRED_HISTORICAL_SOURCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: icco
+  logical_code: ICCO
+  name: International Cocoa Organization
+  effective_entrypoint: https://www.icco.org
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: icco
+  physical_entrypoint: https://www.icco.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: itu
+  logical_code: ITU
+  name: International Telecommunication Union
+  effective_entrypoint: https://www.itu.int
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: itu
+  physical_entrypoint: https://www.itu.int
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: mdryt_oap
+  logical_code: MDRyT/OAP
+  name: Ministerio de Desarrollo Rural y Tierras - OAP
+  effective_entrypoint: https://www.ruralytierras.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: mdryt_oap
+  physical_entrypoint: https://www.ruralytierras.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: otros_historicos
+  logical_code: OTROS HISTORICOS
+  name: Doing Business (Banco Mundial)
+  effective_entrypoint: https://datacatalog.worldbank.org/search/dataset/0038564/doing-business
+  final_status: ARCHIVE_ONLY
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: Fuente discontinuada con archivo histórico; no tratar como portal live actual.
+- source_id: sabsa
+  logical_code: SABSA
+  name: Servicios de Aeropuertos Bolivianos S.A.
+  effective_entrypoint: https://www.sabsa.aero
+  final_status: RETIRED_HISTORICAL_SOURCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: sicoes
+  logical_code: SICOES
+  name: Sistema de Contrataciones Estatales
+  effective_entrypoint: https://www.sicoes.gob.bo
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: sicoes
+  physical_entrypoint: https://www.sicoes.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: aps_soat
+  logical_code: APS/SOAT
+  name: APS - Seguros SOAT
+  effective_entrypoint: https://www.aps.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: aps
+  physical_entrypoint: https://www.aps.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi
+  logical_code: ASFI
+  name: Autoridad de Supervisión del Sistema Financiero
+  effective_entrypoint: https://www.asfi.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: asfi_valores
+  physical_entrypoint: https://www.asfi.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_finrural
+  logical_code: ASFI - FINRURAL
+  name: ASFI / Finrural
+  effective_entrypoint: https://www.asfi.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: asfi_valores
+  physical_entrypoint: https://www.asfi.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bolcereales
+  logical_code: BOLCEREALES
+  name: Bolcereales
+  effective_entrypoint: https://www.bolsadecereales.org.bo
+  final_status: IDENTITY_UNRESOLVED
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: No existe una sustitución institucional segura para la fuente histórica.
+- source_id: ceprobol
+  logical_code: CEPROBOL
+  name: Centro Promoción Bolivia
+  effective_entrypoint: https://www.ceprobol.gob.bo
+  final_status: RETIRED_HISTORICAL_SOURCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: Fuente histórica retirada. El sucesor se conserva como identidad separada; no sustituir silenciosamente.
+- source_id: fdta_valles
+  logical_code: FDTA-Valles
+  name: Fundación para el Desarrollo Tecnológico Agropecuario de los Valles
+  effective_entrypoint: https://www.icco.org
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: icco
+  physical_entrypoint: https://www.icco.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: ibch
+  logical_code: IBCH
+  name: Instituto Boliviano del Cemento y Hormigón
+  effective_entrypoint: https://www.ibch.com/
+  final_status: NO_PUBLIC_DATA_EVIDENCE
+  planned_workflow_strategy: null
+  execution_workflow: null
+  workflow_relation: null
+  next_phase: FINAL_STATUS
+  config_source_id: null
+  physical_entrypoint: null
+  execution_state: NOT_EXECUTED_BY_POLICY
+  decision_note: La identidad institucional fue reconciliada, pero el sitio actual no expuso evidencia pública suficiente
+    de datos.
+- source_id: ine
+  logical_code: INE
+  name: Instituto Nacional de Estadística
+  effective_entrypoint: https://www.ine.gob.bo
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: ine
+  physical_entrypoint: https://www.ine.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: mhe
+  logical_code: MHE
+  name: Ministerio de Hidrocarburos y Energías
+  effective_entrypoint: https://www.mhe.gob.bo/
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: mhe
+  physical_entrypoint: https://www.mhe.gob.bo/
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: El DOM renderizado expuso enlaces descargables que B6 HTTP/API no observó.
+- source_id: seprec
+  logical_code: SEPREC
+  name: Servicio Plurinacional de Registro de Comercio
+  effective_entrypoint: https://www.seprec.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: seprec
+  physical_entrypoint: https://www.seprec.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: undata
+  logical_code: UNDATA
+  name: United Nations Data
+  effective_entrypoint: https://data.un.org
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: undata
+  physical_entrypoint: https://data.un.org
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: ae
+  logical_code: AE
+  name: Autoridad de Fiscalizacion de Electricidad dey Tecnologia Nuclear
+  effective_entrypoint: https://aetn.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: ae
+  physical_entrypoint: https://aetn.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asfi_bcb
+  logical_code: ASFI - BCB
+  name: ASFI / Banco Central de Bolivia
+  effective_entrypoint: https://www.bcb.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: bcb
+  physical_entrypoint: https://www.bcb.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: asofin
+  logical_code: ASOFIN
+  name: Asociación de Instituciones Financieras de Microfinanzas de Bolivia
+  effective_entrypoint: https://www.asofinbolivia.com
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: asofin
+  physical_entrypoint: https://www.asofinbolivia.com
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: att
+  logical_code: ATT
+  name: Autoridad de Regulación y Fiscalización de Telecomunicaciones y Transportes
+  effective_entrypoint: https://www.att.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: att
+  physical_entrypoint: https://www.att.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: bbv
+  logical_code: BBV
+  name: Bolsa Boliviana de Valores
+  effective_entrypoint: https://www.bbv.com.bo
+  final_status: OPERATIONAL_HTML_API_DISCOVERY
+  planned_workflow_strategy: html
+  execution_workflow: commented_html
+  workflow_relation: COMPATIBLE_SPECIALIZATION
+  next_phase: LIVE_AUDIT
+  config_source_id: bbv
+  physical_entrypoint: https://www.bbv.com.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: La capa API encontrada parece CMS/metadatos; se conserva como mecanismo auxiliar de discovery y no se promociona
+    a workflow API puro.
+- source_id: data_gov
+  logical_code: Data.Gov
+  name: Portal de Datos Abiertos USA
+  effective_entrypoint: https://www.data.gov
+  final_status: OPERATIONAL_DATA_API
+  planned_workflow_strategy: api
+  execution_workflow: api
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: data_gov
+  physical_entrypoint: https://www.data.gov
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: Existe evidencia explícita de API orientada a datos.
+- source_id: ibce_cao
+  logical_code: IBCE - CAO
+  name: Instituto Boliviano de Comercio Exterior / Cámara Agropecuaria del Oriente
+  effective_entrypoint: https://www.ibce.org.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: ibce_cao
+  physical_entrypoint: https://www.ibce.org.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: mdryt
+  logical_code: MDRyT
+  name: Ministerio de Desarrollo Rural y Tierras
+  effective_entrypoint: https://www.ruralytierras.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: mdryt_oap
+  physical_entrypoint: https://www.ruralytierras.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: min_educacion
+  logical_code: Min. Educacion
+  name: Ministerio de Educación
+  effective_entrypoint: https://www.minedu.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: min_educacion
+  physical_entrypoint: https://www.minedu.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: senamhi
+  logical_code: SENAMHI
+  name: Servicio Nacional de Meteorología e Hidrología
+  effective_entrypoint: https://www.senamhi.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: senamhi
+  physical_entrypoint: https://www.senamhi.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: sigma
+  logical_code: SIGMA
+  name: Industria Farmacéutica Sigma
+  effective_entrypoint: https://www.sigmacorp.com.bo/
+  final_status: OPERATIONAL_JAVASCRIPT
+  planned_workflow_strategy: javascript
+  execution_workflow: javascript
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: sigma
+  physical_entrypoint: https://www.sigmacorp.com.bo/
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: JavaScript reveló endpoints con señales explícitas de datos.
+- source_id: snis
+  logical_code: SNIS
+  name: Sistema Nacional de Información en Salud
+  effective_entrypoint: https://snis.minsalud.gob.bo
+  final_status: OPERATIONAL_HTTP_HTML
+  planned_workflow_strategy: html
+  execution_workflow: html
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: snis
+  physical_entrypoint: https://snis.minsalud.gob.bo
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B6 encontró recursos mediante HTTP/HTML; no requiere browser para discovery básico.
+- source_id: transtats
+  logical_code: TRANSTATS
+  name: US Bureau of Transportation Statistics
+  effective_entrypoint: https://www.transtats.bts.gov
+  final_status: OPERATIONAL_CUSTOM_FORM_RESOURCE
+  planned_workflow_strategy: custom
+  execution_workflow: custom
+  workflow_relation: EXACT
+  next_phase: LIVE_AUDIT
+  config_source_id: transtats
+  physical_entrypoint: https://www.transtats.bts.gov
+  execution_state: READY_FOR_B10_LIVE
+  decision_note: B8D confirmó por GET que DL_SelectFields representa un trabajo público de adquisición; discovery no envía
+    POST.
