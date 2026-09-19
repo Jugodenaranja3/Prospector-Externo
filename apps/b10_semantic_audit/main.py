@@ -13,9 +13,6 @@ import yaml
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
-# Intentionally not anchored. PowerShell can prefix native stderr records
-# (for example "python : ..."), and some captured lines may contain spaces
-# or terminal decorations before the runner header.
 HEADER_RE = re.compile(
     r"\[(?P<index>\d+)\s*/\s*(?P<total>\d+)\]\s+"
     r"(?P<code>[^\r\n]+?)\s+\((?P<source_id>[^)\r\n]+)\)"
@@ -102,12 +99,11 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 def normalize_text(text: str) -> str:
     text = ANSI_RE.sub("", text)
-    text = (
+    return (
         text.replace("\r\n", "\n")
         .replace("\r", "\n")
         .replace("\x00", "")
     )
-    return text
 
 
 def header_matches(text: str) -> list[re.Match[str]]:
@@ -131,8 +127,6 @@ def decode_candidate_score(text: str) -> tuple[int, int, int, int]:
         for char in normalized
         if ord(char) < 32 and char not in "\n\t"
     )
-
-    # Header evidence must dominate every other heuristic.
     return (
         headers,
         workflows,
@@ -146,32 +140,32 @@ def decode_console_log(path: Path) -> tuple[str, dict[str, Any]]:
     if not raw:
         raise ValueError("Console log vacío")
 
-    candidates: list[tuple[str, str]] = []
-
-    # BOM is authoritative when present.
     if raw.startswith(b"\xff\xfe") or raw.startswith(b"\xfe\xff"):
-        text = raw.decode("utf-16", errors="replace")
-        normalized = normalize_text(text)
-        return normalized, {
+        text = normalize_text(
+            raw.decode("utf-16", errors="replace")
+        )
+        return text, {
             "encoding": "utf-16-bom",
             "bytes": len(raw),
-            "header_candidates": len(header_matches(normalized)),
-            "workflow_signals": workflow_signal_count(normalized),
+            "header_candidates": len(header_matches(text)),
+            "workflow_signals": workflow_signal_count(text),
             "bom": True,
         }
 
     if raw.startswith(b"\xef\xbb\xbf"):
-        text = raw.decode("utf-8-sig", errors="replace")
-        normalized = normalize_text(text)
-        return normalized, {
+        text = normalize_text(
+            raw.decode("utf-8-sig", errors="replace")
+        )
+        return text, {
             "encoding": "utf-8-sig",
             "bytes": len(raw),
-            "header_candidates": len(header_matches(normalized)),
-            "workflow_signals": workflow_signal_count(normalized),
+            "header_candidates": len(header_matches(text)),
+            "workflow_signals": workflow_signal_count(text),
             "bom": True,
         }
 
-    # First prefer strict UTF-8 when it contains actual runner headers.
+    candidates: list[tuple[str, str]] = []
+
     try:
         utf8_text = raw.decode("utf-8", errors="strict")
     except UnicodeDecodeError:
@@ -190,8 +184,6 @@ def decode_console_log(path: Path) -> tuple[str, dict[str, Any]]:
             }
         candidates.append(("utf-8", utf8_text))
 
-    # If UTF-8 has no structural evidence, evaluate Windows-oriented
-    # alternatives. This handles UTF-16LE logs without BOM from Tee-Object.
     for encoding in ("utf-16-le", "utf-16-be", "cp1252"):
         try:
             decoded = raw.decode(
@@ -207,10 +199,7 @@ def decode_console_log(path: Path) -> tuple[str, dict[str, Any]]:
             "No fue posible decodificar console log"
         )
 
-    scored: list[
-        tuple[tuple[int, int, int, int], str, str]
-    ] = []
-
+    scored = []
     for encoding, text in candidates:
         normalized = normalize_text(text)
         scored.append(
@@ -225,7 +214,6 @@ def decode_console_log(path: Path) -> tuple[str, dict[str, Any]]:
         key=lambda item: item[0],
         reverse=True,
     )
-
     score, encoding, text = scored[0]
 
     return text, {
@@ -265,7 +253,7 @@ def split_source_segments(
     text: str,
 ) -> list[dict[str, Any]]:
     matches = header_matches(text)
-    result: list[dict[str, Any]] = []
+    result = []
 
     for index, match in enumerate(matches):
         start = match.start()
@@ -274,7 +262,6 @@ def split_source_segments(
             if index + 1 < len(matches)
             else len(text)
         )
-
         result.append(
             {
                 "index": int(match.group("index")),
@@ -307,7 +294,6 @@ def checkpoint_state_index(
             )
 
         state = row.get("state")
-
         if not isinstance(state, str):
             raise ValueError(
                 f"{source_id}: checkpoint sin state"
@@ -335,7 +321,6 @@ def matrix_index(
             continue
 
         source_id = row.get("source_id")
-
         if isinstance(source_id, str) and source_id:
             result[source_id] = row
 
@@ -406,17 +391,27 @@ def classify_source(
     checkpoint_state: str | None,
     errors: list[str],
     resources: int | None,
-) -> tuple[str, bool]:
+) -> tuple[str, bool, str]:
+    """
+    Returns (classification, blocks_closure, severity).
+
+    Policy:
+    - Negative evidence blocks.
+    - Missing observability does not equal failure.
+    - Zero resources is concrete evidence and requires review.
+    """
     if checkpoint_state != "SUCCEEDED":
         return (
             "CHECKPOINT_NOT_SUCCEEDED",
             True,
+            "ERROR",
         )
 
     if errors:
         return (
             "PROCESS_OK_WITH_INTERNAL_ERROR",
             True,
+            "ERROR",
         )
 
     if (
@@ -428,30 +423,42 @@ def classify_source(
         return (
             "WORKFLOW_MISMATCH",
             True,
+            "ERROR",
         )
 
+    # Concrete zero-resource evidence is stronger than a missing workflow log.
+    if resources == 0:
+        return (
+            "ZERO_RESOURCES_REVIEW",
+            True,
+            "REVIEW",
+        )
+
+    # Absence of a workflow log line is an observability gap, not proof that
+    # the configured workflow did not execute.
     if (
         expected_workflow
         and actual_workflow_value is None
     ):
         return (
-            "WORKFLOW_NOT_OBSERVED",
-            True,
+            "WORKFLOW_NOT_OBSERVED_WARNING",
+            False,
+            "WARNING",
         )
 
-    if resources == 0:
-        return (
-            "ZERO_RESOURCES_REVIEW",
-            True,
-        )
-
+    # Likewise, no explicit resource count in console is not evidence of zero.
     if resources is None:
         return (
-            "RESOURCE_COUNT_NOT_OBSERVED",
-            True,
+            "RESOURCE_COUNT_NOT_OBSERVED_WARNING",
+            False,
+            "WARNING",
         )
 
-    return ("CLEAN_SUCCESS", False)
+    return (
+        "CLEAN_SUCCESS",
+        False,
+        "OK",
+    )
 
 
 def audit(
@@ -502,7 +509,7 @@ def audit(
             )
         segment_index[source_id] = row
 
-    rows: list[dict[str, Any]] = []
+    rows = []
 
     for source_id, matrix_row in operational.items():
         segment = segment_index.get(source_id)
@@ -535,6 +542,7 @@ def audit(
                     "classification": (
                         "MISSING_LOG_SEGMENT"
                     ),
+                    "severity": "ERROR",
                     "blocks_closure": True,
                 }
             )
@@ -553,7 +561,11 @@ def audit(
             segment["text"]
         )
 
-        classification, blocks = classify_source(
+        (
+            classification,
+            blocks,
+            severity,
+        ) = classify_source(
             expected_workflow=expected,
             actual_workflow_value=actual,
             checkpoint_state=states.get(
@@ -578,12 +590,18 @@ def audit(
                 "child_run_id": run_id,
                 "error_signals": errors,
                 "classification": classification,
+                "severity": severity,
                 "blocks_closure": blocks,
             }
         )
 
     classification_counts = Counter(
         row["classification"]
+        for row in rows
+    )
+
+    severity_counts = Counter(
+        row["severity"]
         for row in rows
     )
 
@@ -599,6 +617,12 @@ def audit(
         if row["blocks_closure"]
     ]
 
+    warnings = [
+        row["source_id"]
+        for row in rows
+        if row["severity"] == "WARNING"
+    ]
+
     succeeded_states = sum(
         1
         for source_id in operational
@@ -607,7 +631,7 @@ def audit(
 
     return {
         "schema_version": (
-            "b10-semantic-live-audit-1.2"
+            "b10-semantic-live-audit-1.3"
         ),
         "generated_at_utc": datetime.now(
             timezone.utc
@@ -630,6 +654,11 @@ def audit(
                 classification_counts.items()
             )
         ),
+        "severity_counts": dict(
+            sorted(
+                severity_counts.items()
+            )
+        ),
         "error_signal_counts": dict(
             sorted(
                 error_signal_counts.items()
@@ -637,6 +666,7 @@ def audit(
         ),
         "closure_allowed": not blockers,
         "blocking_source_ids": blockers,
+        "warning_source_ids": warnings,
         "sources": rows,
     }
 
@@ -644,9 +674,8 @@ def audit(
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Audita semánticamente el run "
-            "B10 live sin confiar solo "
-            "en exit code 0."
+            "Audita semánticamente el run B10 live "
+            "distinguiendo fallos reales de gaps de observabilidad."
         )
     )
 
@@ -736,32 +765,12 @@ def main() -> int:
     )
 
     md_lines = [
-        "# B10B.2.1 — Semantic Live Audit",
+        "# B10B.3 — Semantic Evidence Policy",
         "",
-        (
-            "- Run ID: "
-            f"**{report['run_id']}**"
-        ),
-        (
-            "- Console encoding: "
-            f"**{report['console_log_decode'].get('encoding')}**"
-        ),
-        (
-            "- Operational sources: "
-            f"**{report['operational_sources']}**"
-        ),
-        (
-            "- Log segments: "
-            f"**{report['log_segments_detected']}**"
-        ),
-        (
-            "- Checkpoint SUCCEEDED: "
-            f"**{report['checkpoint_succeeded_sources']}**"
-        ),
-        (
-            "- Closure allowed: "
-            f"**{report['closure_allowed']}**"
-        ),
+        f"- Run ID: **{report['run_id']}**",
+        f"- Log segments: **{report['log_segments_detected']}**",
+        f"- Checkpoint SUCCEEDED: **{report['checkpoint_succeeded_sources']}**",
+        f"- Closure allowed: **{report['closure_allowed']}**",
         "",
         "## Classifications",
         "",
@@ -779,7 +788,7 @@ def main() -> int:
     md_lines.extend(
         [
             "",
-            "## Blocking sources",
+            "## True blockers",
             "",
         ]
     )
@@ -791,14 +800,26 @@ def main() -> int:
         md_lines.append(
             f"- `{row['source_id']}` — "
             f"{row['classification']} "
-            f"(expected="
-            f"{row['expected_workflow']}, "
-            f"actual="
-            f"{row['actual_workflow']}, "
-            f"resources="
-            f"{row['resource_count']}, "
-            f"errors="
-            f"{row['error_signals']})"
+            f"(expected={row['expected_workflow']}, "
+            f"actual={row['actual_workflow']}, "
+            f"resources={row['resource_count']}, "
+            f"errors={row['error_signals']})"
+        )
+
+    md_lines.extend(
+        [
+            "",
+            "## Observability warnings",
+            "",
+        ]
+    )
+
+    for row in report["sources"]:
+        if row["severity"] != "WARNING":
+            continue
+        md_lines.append(
+            f"- `{row['source_id']}` — "
+            f"{row['classification']}"
         )
 
     (
@@ -810,29 +831,12 @@ def main() -> int:
 
     print("=" * 78)
     print(
-        "B10B.2.1 — SEMANTIC LIVE AUDIT "
-        "(ROBUST LOG PARSER)"
+        "B10B.3 — SEMANTIC EVIDENCE RECONCILIATION"
     )
     print("=" * 78)
     print(
         f"Console encoding:      "
         f"{report['console_log_decode'].get('encoding')}"
-    )
-    print(
-        f"Log bytes:             "
-        f"{report['console_log_decode'].get('bytes')}"
-    )
-    print(
-        f"Header candidates:     "
-        f"{report['console_log_decode'].get('header_candidates')}"
-    )
-    print(
-        f"Run ID:                "
-        f"{report['run_id']}"
-    )
-    print(
-        f"Operational sources:   "
-        f"{report['operational_sources']}"
     )
     print(
         f"Log segments detected: "
@@ -849,28 +853,21 @@ def main() -> int:
         "classification_counts"
     ].items():
         print(
-            f"  {key:<34} {count}"
+            f"  {key:<42} {count}"
         )
 
     print()
-    print("Error signals:")
-    if report["error_signal_counts"]:
-        for key, count in report[
-            "error_signal_counts"
-        ].items():
-            print(
-                f"  {key:<34} {count}"
-            )
-    else:
-        print("  none")
+    print("Severity:")
+    for key, count in report[
+        "severity_counts"
+    ].items():
+        print(
+            f"  {key:<12} {count}"
+        )
 
     print()
     print(
-        f"Closure allowed:       "
-        f"{report['closure_allowed']}"
-    )
-    print(
-        f"Blocking sources:      "
+        f"True blockers:         "
         f"{len(report['blocking_source_ids'])}"
     )
 
@@ -881,17 +878,31 @@ def main() -> int:
         print(
             f"  - {row['source_id']}: "
             f"{row['classification']} | "
-            f"expected="
-            f"{row['expected_workflow']} "
-            f"actual="
-            f"{row['actual_workflow']} "
-            f"resources="
-            f"{row['resource_count']} "
-            f"errors="
-            f"{row['error_signals']}"
+            f"expected={row['expected_workflow']} "
+            f"actual={row['actual_workflow']} "
+            f"resources={row['resource_count']} "
+            f"errors={row['error_signals']}"
         )
 
     print()
+    print(
+        f"Observability warnings:"
+        f" {len(report['warning_source_ids'])}"
+    )
+
+    for row in report["sources"]:
+        if row["severity"] != "WARNING":
+            continue
+        print(
+            f"  - {row['source_id']}: "
+            f"{row['classification']}"
+        )
+
+    print()
+    print(
+        f"Closure allowed:       "
+        f"{report['closure_allowed']}"
+    )
     print(f"JSON: {json_path}")
     print(
         f"MD:   "

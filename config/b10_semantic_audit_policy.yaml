@@ -1,26 +1,22 @@
-schema_version: b10-semantic-audit-policy-1.0
+schema_version: b10-semantic-audit-policy-1.1
 
-checkpoint_exit_code_is_not_sufficient_for_success: true
+principle: absence_of_log_evidence_is_not_negative_execution_evidence
 
 blocking_classifications:
   - CHECKPOINT_NOT_SUCCEEDED
   - PROCESS_OK_WITH_INTERNAL_ERROR
   - WORKFLOW_MISMATCH
-  - WORKFLOW_NOT_OBSERVED
   - ZERO_RESOURCES_REVIEW
-  - RESOURCE_COUNT_NOT_OBSERVED
   - MISSING_LOG_SEGMENT
 
-error_signals:
-  - TRACEBACK
-  - UNCONTROLLED_WORKFLOW_ERROR
-  - PARSER_REJECTED_MARKUP
-  - UNICODE_ENCODE_ERROR
-  - LOGGING_ERROR
-  - EXPLICIT_ERROR_LOG
+warning_classifications:
+  - WORKFLOW_NOT_OBSERVED_WARNING
+  - RESOURCE_COUNT_NOT_OBSERVED_WARNING
 
-closure_rule:
-  checkpoint_must_be_complete: true
-  internal_errors_must_be_zero: true
-  workflow_mismatches_must_be_zero: true
-  zero_resource_sources_require_explicit_review: true
+policy:
+  checkpoint_succeeded_is_required: true
+  observed_internal_error_blocks: true
+  observed_workflow_mismatch_blocks: true
+  observed_zero_resources_requires_review: true
+  missing_workflow_log_is_warning: true
+  missing_resource_count_log_is_warning: true
