@@ -1,0 +1,43 @@
+schema_version: custom-policy-decisions-1.0
+generated_at: "2026-09-18"
+sources:
+  - source_id: atc
+    logical_code: ATC
+    decision: NO_PUBLIC_DATA_SCOPE
+    action: CLOSE_B10_STATUS
+    entrypoint: https://www.redenlace.com.bo
+    evidence_urls:
+      - https://www.redenlace.com.bo/soporte/preguntas-frecuentes/preguntas-sobre-el-portal-de-comercios
+      - https://www.redenlace.com.bo/secciones-de-interes/solicitud-de-reembolso-activos-virtuales
+    rationale: >
+      Los formularios públicos observados pertenecen a soporte/solicitudes y el Portal de Comercios
+      requiere usuarios afiliados. No se autoriza enviar formularios ni intentar autenticación para
+      discovery público.
+
+  - source_id: cadexco
+    logical_code: CADEXCO
+    decision: CURATED_PUBLIC_SEEDS
+    action: PROBE_CURATED_GET_SEEDS
+    entrypoint: https://cadexco.bo/
+    seeds:
+      - https://cadexco.bo/publicaciones/
+      - https://cadexco.bo/cochabamba/
+      - https://cadexco.bo/inteligencia/
+      - https://cadexco.bo/lcoext/
+      - https://cadexco.bo/ltributaria/
+    rationale: >
+      El portal publica boletines, estadísticas y documentos en páginas públicas específicas.
+      El formulario detectado en la raíz no debe utilizarse para discovery.
+
+  - source_id: transtats
+    logical_code: TRANSTATS
+    decision: READ_ONLY_FORM_POLICY_INSPECTION
+    action: CAPTURE_FORM_METADATA_ONLY
+    entrypoint: https://www.transtats.bts.gov
+    evidence_urls:
+      - https://transtats.bts.gov/gettingstarted.asp
+      - https://transtats.bts.gov/faq.asp
+    rationale: >
+      TranStats documenta selección interactiva y descarga CSV. B8C inspecciona métodos/actions/campos
+      pero no envía formularios POST. La eventual habilitación de POST de consulta debe quedar
+      allowlisted y explícita.
