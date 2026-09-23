@@ -1,0 +1,77 @@
+# Matriz Final 52/52 — audit-final-001
+
+- Fuentes logicas auditadas: **52 / 52**
+- Fuentes fisicas unicas representadas: **46**
+
+## Estado previo de entrega
+
+- DATAX_READY: **38**
+- ACQUISITION_JOB_READY: **1**
+- EXTERNAL_BLOCKER: **2**
+- STATUS_ONLY: **11**
+
+## Agregado comparable de origin-rechecks
+
+- Fuentes fisicas comparables: **21**
+- Matched raw: **7009**
+- Raw recheckable: **9331**
+- Overlap agregado: **0.751152**
+
+> Este porcentaje NO es una nota global del Prospector. Solo agrega fuentes con origin-recheck comparable.
+
+## Matriz
+
+| # | Source | Fisica | Previo | Metodo | Clasificacion auditada | Cobertura comparable |
+|---:|---|---|---|---|---|---:|
+| 1 | ada | ada | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 1.0000 |
+| 2 | ae | ae | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.5729 |
+| 3 | anapo | anapo | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.1837 |
+| 4 | aps | aps | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 1.0000 |
+| 5 | aps_soat | aps | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 1.0000 |
+| 6 | asfi | asfi_valores | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9980 |
+| 7 | asfi_bcb | bcb | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9931 |
+| 8 | asfi_finrural | asfi_valores | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9980 |
+| 9 | asfi_valores | asfi_valores | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9980 |
+| 10 | asofin | asofin | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.4580 |
+| 11 | atc | atc | STATUS_ONLY | A8_STATUS_ONLY | STATUS_ONLY_SUPPORTED | - |
+| 12 | att | att | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9940 |
+| 13 | bbv | bbv | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 1.0000 |
+| 14 | bcb | bcb | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9931 |
+| 15 | bm | bm | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9630 |
+| 16 | bolcereales | bolcereales | STATUS_ONLY | A8_STATUS_ONLY | ACCESS_REVIEW | - |
+| 17 | cadexco | cadexco | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.0741 |
+| 18 | cepal | cepal | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.9928 |
+| 19 | ceprobol | ceprobol | STATUS_ONLY | A8_STATUS_ONLY | ACCESS_REVIEW | - |
+| 20 | cndc | cndc | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.3388 |
+| 21 | data_gov | data_gov | DATAX_READY | A7_SPECIALIZED | VALIDATED_WITH_TEMPORAL_DIFFERENCES | 0.0982 |
+| 22 | dgac | dgac | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.7377 |
+| 23 | fam | fam | STATUS_ONLY | A8_STATUS_ONLY | STATUS_ONLY_SUPPORTED | - |
+| 24 | fdta_valles | icco | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.0227 |
+| 25 | fegasacruz | fegasacruz | STATUS_ONLY | A8_STATUS_ONLY | STATUS_ONLY_SUPPORTED | - |
+| 26 | fifa | fifa | DATAX_READY | A7_SPECIALIZED | VALIDATED | - |
+| 27 | finrural | finrural | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 0.9078 |
+| 28 | fmi | fmi | STATUS_ONLY | A8_STATUS_ONLY | REVIEW_FOR_PROMOTION | - |
+| 29 | fundempresa | fundempresa | STATUS_ONLY | A8_STATUS_ONLY | ACCESS_REVIEW | - |
+| 30 | ibce_cao | ibce_cao | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.0227 |
+| 31 | ibch | ibch | STATUS_ONLY | A8_STATUS_ONLY | STATUS_ONLY_SUPPORTED_AFTER_ADJUDICATION | - |
+| 32 | icco | icco | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.0227 |
+| 33 | ine | ine | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.7242 |
+| 34 | itu | itu | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.5486 |
+| 35 | mdryt | mdryt_oap | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.1770 |
+| 36 | mdryt_oap | mdryt_oap | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.1770 |
+| 37 | mefp | mefp | STATUS_ONLY | A8_STATUS_ONLY | ACCESS_REVIEW_WITH_EXTERNAL_EVIDENCE | - |
+| 38 | mhe | mhe | EXTERNAL_BLOCKER | A9_SPECIAL_CASE | EXTERNAL_TLS_BLOCKER_CONFIRMED | - |
+| 39 | min_educacion | min_educacion | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 0.8500 |
+| 40 | mmym | mmym | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.3441 |
+| 41 | omc | omc | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.8667 |
+| 42 | otros_historicos | otros_historicos | STATUS_ONLY | A8_STATUS_ONLY | HISTORICAL_STATUS_SUPPORTED | - |
+| 43 | sabsa | sabsa | STATUS_ONLY | A8_STATUS_ONLY | ACCESS_REVIEW | - |
+| 44 | senamhi | senamhi | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 1.0000 |
+| 45 | seprec | seprec | DATAX_READY | A7_ORIGIN_RECHECK | ORIGIN_RECHECK_COMPLETED | 0.4582 |
+| 46 | sicoes | sicoes | DATAX_READY | A7_SPECIALIZED | VALIDATED_WITH_TEMPORAL_DIFFERENCES | 0.0000 |
+| 47 | sigma | sigma | EXTERNAL_BLOCKER | A9_SPECIAL_CASE | EXTERNAL_ROBOTS_5XX_CONFIRMED | - |
+| 48 | snis | snis | DATAX_READY | A6_SITEWIDE | GENERIC_STRONG | 0.9429 |
+| 49 | statistics_denmark | statistics_denmark | DATAX_READY | A7_SPECIALIZED | VALIDATED | - |
+| 50 | transtats | transtats | ACQUISITION_JOB_READY | A9_SPECIAL_CASE | ACQUISITION_JOB_VALIDATED | - |
+| 51 | undata | undata | DATAX_READY | A7_SPECIALIZED | VALIDATED_WITH_TEMPORAL_DIFFERENCES | 0.0000 |
+| 52 | vipfe | vipfe | DATAX_READY | A7_SPECIALIZED | VALIDATED_WITH_TEMPORAL_DIFFERENCES | 0.0000 |

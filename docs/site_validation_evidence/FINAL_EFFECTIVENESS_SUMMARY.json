@@ -1,0 +1,72 @@
+{
+  "logical_sources_audited": 52,
+  "unique_physical_sources": 46,
+  "prior_delivery_counts": {
+    "DATAX_READY": 38,
+    "ACQUISITION_JOB_READY": 1,
+    "EXTERNAL_BLOCKER": 2,
+    "STATUS_ONLY": 11
+  },
+  "audit_method_counts": {
+    "A7_ORIGIN_RECHECK": 26,
+    "A6_SITEWIDE": 6,
+    "A8_STATUS_ONLY": 11,
+    "A7_SPECIALIZED": 6,
+    "A9_SPECIAL_CASE": 3
+  },
+  "audit_classification_counts": {
+    "ORIGIN_RECHECK_COMPLETED": 26,
+    "GENERIC_STRONG": 6,
+    "STATUS_ONLY_SUPPORTED": 3,
+    "ACCESS_REVIEW": 4,
+    "VALIDATED_WITH_TEMPORAL_DIFFERENCES": 4,
+    "VALIDATED": 2,
+    "REVIEW_FOR_PROMOTION": 1,
+    "STATUS_ONLY_SUPPORTED_AFTER_ADJUDICATION": 1,
+    "ACCESS_REVIEW_WITH_EXTERNAL_EVIDENCE": 1,
+    "EXTERNAL_TLS_BLOCKER_CONFIRMED": 1,
+    "HISTORICAL_STATUS_SUPPORTED": 1,
+    "EXTERNAL_ROBOTS_5XX_CONFIRMED": 1,
+    "ACQUISITION_JOB_VALIDATED": 1
+  },
+  "comparable_origin_recheck": {
+    "physical_sources": 21,
+    "matched_raw": 7009,
+    "raw_recheckable": 9331,
+    "aggregate_overlap_ratio": 0.751152,
+    "note": "Este agregado solo incluye fuentes fisicas con origin-recheck comparable. No se mezcla con API/custom/JS, STATUS_ONLY ni blockers."
+  },
+  "bcb": {
+    "classification": "ORIGIN_RECHECK_COMPLETED",
+    "coverage_ratio": 0.993103,
+    "note": "origins_rechecked=22; origins_failed=0; raw_recheckable=580; matched=576."
+  },
+  "status_only_supported_sources": [
+    "atc",
+    "fam",
+    "fegasacruz",
+    "ibch",
+    "otros_historicos"
+  ],
+  "access_review_sources": [
+    "bolcereales",
+    "ceprobol",
+    "fundempresa",
+    "sabsa"
+  ],
+  "access_review_with_external_evidence": [
+    "mefp"
+  ],
+  "review_for_promotion_sources": [
+    "fmi"
+  ],
+  "special_cases": {
+    "mhe": "EXTERNAL_TLS_BLOCKER_CONFIRMED",
+    "sigma": "EXTERNAL_ROBOTS_5XX_CONFIRMED",
+    "transtats": "ACQUISITION_JOB_VALIDATED"
+  },
+  "fmi": {
+    "classification": "REVIEW_FOR_PROMOTION",
+    "note": "automatic=ACCESS_STATE_CHANGED; pages=1; ref=0; machine_readable=0; documents=0. Adjudicacion A8: existe evidencia publica actual de portal de datos/descargas/API; revisar promocion operacional."
+  }
+}

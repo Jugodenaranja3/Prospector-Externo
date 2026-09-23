@@ -18,8 +18,6 @@ ROOT = Path(".")
 PLAN_PATH = Path("config/source_operational_plan.yaml")
 SOURCES_CONFIG_PATH = Path("config/sources.yaml")
 EXECUTION_MAP_PATH = Path("config/source_execution_map.yaml")
-B11_AUDIT_PATH = Path(".runtime/b11_output_audit/latest.json")
-
 KNOWN_EXTERNAL_BLOCKERS = {"mhe", "sigma"}
 EXPECTED_INVENTORY = 52
 EXPECTED_OPERATIONAL = 41
@@ -62,17 +60,21 @@ def sha256_file(path: Path) -> str:
 
 
 def operational_roster(repo_root: Path) -> list[str]:
-    audit = load_json(repo_root / B11_AUDIT_PATH)
-    rows = audit.get("sources")
+    """Deriva el roster desde configuración durable/versionada, no runtime B11."""
+    import yaml
 
+    plan_path = repo_root / PLAN_PATH
+    plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+    rows = plan.get("sources") if isinstance(plan, dict) else None
     if not isinstance(rows, list):
-        raise ValueError("B11 audit no contiene sources:list")
+        raise ValueError("Plan operacional no contiene sources:list")
 
     result = sorted(
-        str(row["logical_source_id"])
+        str(row["source_id"])
         for row in rows
         if isinstance(row, dict)
-        and isinstance(row.get("logical_source_id"), str)
+        and row.get("next_phase") == "OPERATIONAL_CONFIG"
+        and isinstance(row.get("source_id"), str)
     )
 
     if len(result) != EXPECTED_OPERATIONAL:
@@ -82,7 +84,7 @@ def operational_roster(repo_root: Path) -> list[str]:
         )
 
     if len(set(result)) != len(result):
-        raise ValueError("B11 audit contiene logical_source_id duplicados")
+        raise ValueError("Plan operacional contiene source_id duplicados")
 
     return result
 
@@ -1078,7 +1080,6 @@ def command_plan(repo_root: Path) -> int:
         PLAN_PATH,
         SOURCES_CONFIG_PATH,
         EXECUTION_MAP_PATH,
-        B11_AUDIT_PATH,
     ]
 
     missing = [

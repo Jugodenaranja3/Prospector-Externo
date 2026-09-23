@@ -128,3 +128,34 @@ def test_exact_duplicate_groups_flags_cross_physical():
 
     assert len(groups) == 1
     assert groups[0]["shared_physical_source"] is False
+
+
+def test_operational_roster_uses_durable_plan_not_b11_runtime(tmp_path):
+    import yaml
+    from apps.b13_pipeline.main import operational_roster
+
+    config = tmp_path / "config"
+    config.mkdir()
+    rows = [
+        {
+            "source_id": f"operational_{index}",
+            "next_phase": "OPERATIONAL_CONFIG",
+        }
+        for index in range(41)
+    ]
+    rows.extend(
+        {
+            "source_id": f"status_{index}",
+            "next_phase": "B10_STATUS",
+        }
+        for index in range(11)
+    )
+    (config / "source_operational_plan.yaml").write_text(
+        yaml.safe_dump({"sources": rows}, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    result = operational_roster(tmp_path)
+    assert len(result) == 41
+    assert "operational_0" in result
+    assert not (tmp_path / ".runtime" / "b11_output_audit" / "latest.json").exists()
